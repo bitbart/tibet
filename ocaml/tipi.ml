@@ -1,6 +1,4 @@
 
-
-
 (************Sets ********)
 type 'a set = 'a list;;
 
@@ -12,20 +10,6 @@ type co2_guard = CO2Guard of (co2_clock * co2_relation * int) list;;
 type co2_reset = CO2Reset of co2_clock list;;
 
 type co2 = Success | IntChoice of (co2_action * co2_guard * co2_reset * co2) list | ExtChoice of (co2_action *co2_guard * co2_reset * co2) list ;; 
-
-
-(* (\************Timed Event structures**********************\) *)
-(* type event = Event of string;; *)
-(* (\**Timed Enabling: (a,2),b,(c,3) means t(a) + 2 <= t(b) < t(c) + 3 *****\) *)
-(* type timeBoundary = TimeB of int | Infinity;; *)
-(* type timeRel = None | RelEvent of string;; *)
-(* type timeConstraint = TimeConstraint of (timeRel * int) * (event)* (timeRel * timeBoundary);; *)
-(* type enabling = Enabling of event set * event * timeConstraint set  * int * int;; *)
-(* type conflict = Conflict of event  * event ;; *)
-(* type es = TimedEventStructure of event set * enabling set * conflict set;; *)
-
-(* let getEnablings (TimedEventStructure (s1,s2,s3)) = s2;; *)
-
 
 (***Timed Automa: first field is the name -- used in UPPAAL template******************************)
 (***name, locations, initial loc, labels, edges, invariants, clocks, globalClocks,  commited locations, variables, globalVariables,  procedures******************************)
