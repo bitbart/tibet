@@ -1,0 +1,1032 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_1.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+//Modelling the following enablings: 
+//IN THIS SITUATION the event a is on bot enablings
+//a|a1,a2 b|b1,b2 |--ab1,ab2--e 
+//a|a3,a4 c|c1,c2 d|d1,d2 |--cd1,cd2--e 
+//
+//Conflicts: b#c  
+
+//generic for a,b,c,d
+int t1 = 1;
+int t2 = 6;
+
+
+
+
+//for a only
+int ta1 = 2;
+int ta2 = 4; 
+
+bool aFired = false;
+bool bFired = false;
+bool cFired = false;
+bool dFired = false;
+bool eFired = false;
+bool fFired = false;
+bool gFired = false;
+
+clock  x;
+clock aC;
+clock bC;
+clock cC;
+clock dC;
+clock eC;
+
+urgent broadcast chan  a;
+urgent broadcast chan  b;
+urgent broadcast chan  c;
+urgent broadcast chan  d;
+urgent broadcast chan  e;
+
+
+
+
+</declaration>
+	<template>
+		<name x="5" y="5">Firing_e</name>
+		<declaration>// Place local declarations here.
+//generic for a,b,c,d
+int t1 = 1;
+int t2 = 2;
+
+//enablings
+int ab1 = 1;
+int ab2 = 2;
+int acd1 = 1;
+int acd2 = 2;
+
+int a1 = 0;
+int a2 = 2;
+int a3 = 0;
+int a4 = 2;
+int b1 = 0;
+int b2 = 2;
+int c1 = 0;
+int c2 = 2;
+int d1 = 0;
+int d2 = 2;
+
+bool abFired_ab = false;
+bool acdFired_acd = false;
+
+bool aInTime_ab = false;
+bool aInTime_acd = false;
+bool bInTime_ab = false;
+bool cInTime_acd = false;
+bool dInTime_acd = false;
+
+bool abInTime_ab = false;
+bool acdInTime_acd = false;
+
+clock abC_ab;
+clock acdC_acd;
+
+void aDone(){
+abFired_ab = aFired &amp;&amp; bFired; 
+abInTime_ab = aInTime_ab &amp;&amp; bInTime_ab;
+
+acdFired_acd = aFired &amp;&amp; cFired &amp;&amp; dFired;
+acdInTime_acd = aInTime_acd &amp;&amp; cInTime_acd &amp;&amp; dInTime_acd;
+}
+
+void bDone(){
+abFired_ab = aFired &amp;&amp; bFired; 
+abInTime_ab = aInTime_ab &amp;&amp; bInTime_ab;
+}
+
+void cDone(){
+acdFired_acd = aFired &amp;&amp; cFired &amp;&amp; dFired ; 
+acdInTime_acd = aInTime_acd &amp;&amp; cInTime_acd &amp;&amp; dInTime_acd;
+}
+
+void dDone(){
+acdFired_acd = aFired &amp;&amp; cFired &amp;&amp; dFired; 
+acdInTime_acd = aInTime_acd &amp;&amp; cInTime_acd &amp;&amp; dInTime_acd;
+}
+
+void eShot(){
+eFired = true;
+eC = 0;
+}
+
+              
+                </declaration>
+		<location id="id0" x="1584" y="136">
+			<committed/>
+		</location>
+		<location id="id1" x="1080" y="144">
+			<name x="1088" y="110">L1</name>
+			<committed/>
+		</location>
+		<location id="id2" x="1168" y="144">
+			<name x="1156" y="110">L2</name>
+			<committed/>
+		</location>
+		<location id="id3" x="170" y="0">
+			<name x="160" y="-34">KNa_acd2</name>
+			<committed/>
+		</location>
+		<location id="id4" x="272" y="348">
+			<name x="262" y="314">KSd_acd0</name>
+			<committed/>
+		</location>
+		<location id="id5" x="476" y="246">
+			<name x="466" y="212">KSc_acd2</name>
+			<committed/>
+		</location>
+		<location id="id6" x="476" y="0">
+			<name x="459" y="-34">KSa_acd2</name>
+			<committed/>
+		</location>
+		<location id="id7" x="382" y="-144">
+			<name x="372" y="-178">KSa_ab2</name>
+			<committed/>
+		</location>
+		<location id="id8" x="93" y="246">
+			<name x="83" y="212">KNc_acd1</name>
+			<committed/>
+		</location>
+		<location id="id9" x="170" y="-144">
+			<name x="136" y="-178">KNa_ab2</name>
+			<committed/>
+		</location>
+		<location id="id10" x="68" y="-255">
+			<name x="49" y="-289">KNb_ab1</name>
+			<committed/>
+		</location>
+		<location id="id11" x="374" y="-255">
+			<name x="364" y="-289">KSb_ab1</name>
+			<committed/>
+		</location>
+		<location id="id12" x="102" y="348">
+			<name x="92" y="314">KNd_acd1</name>
+			<committed/>
+		</location>
+		<location id="id13" x="373" y="246">
+			<name x="363" y="212">KSc_acd1</name>
+			<committed/>
+		</location>
+		<location id="id14" x="578" y="246">
+			<name x="568" y="212">KKc_acd0</name>
+			<committed/>
+		</location>
+		<location id="id15" x="1952" y="64">
+			<name x="1942" y="30">Fg1</name>
+		</location>
+		<location id="id16" x="1920" y="136">
+			<name x="1910" y="102">Fg0</name>
+			<committed/>
+		</location>
+		<location id="id17" x="1856" y="64">
+			<name x="1846" y="30">Ff1</name>
+		</location>
+		<location id="id18" x="1816" y="136">
+			<name x="1806" y="102">Ff0</name>
+			<committed/>
+		</location>
+		<location id="id19" x="1728" y="136">
+			<name x="1718" y="94">F0</name>
+			<committed/>
+		</location>
+		<location id="id20" x="722" y="-255">
+			<name x="712" y="-289">KKb_ab1</name>
+			<committed/>
+		</location>
+		<location id="id21" x="382" y="0">
+			<name x="372" y="-34">KSa_acd1</name>
+			<committed/>
+		</location>
+		<location id="id22" x="722" y="-144">
+			<name x="712" y="-178">KKa_ab1</name>
+			<committed/>
+		</location>
+		<location id="id23" x="569" y="-144">
+			<name x="559" y="-178">KKa_ab0</name>
+			<committed/>
+		</location>
+		<location id="id24" x="280" y="-144">
+			<name x="270" y="-178">KSa_ab1</name>
+			<committed/>
+		</location>
+		<location id="id25" x="68" y="-144">
+			<name x="43" y="-178">KNa_ab1</name>
+			<committed/>
+		</location>
+		<location id="id26" x="-17" y="-144">
+			<name x="-42" y="-178">KNa_ab0</name>
+			<committed/>
+		</location>
+		<location id="id27" x="960" y="348">
+			<name x="943" y="314">Sd2</name>
+			<committed/>
+		</location>
+		<location id="id28" x="850" y="348">
+			<name x="840" y="314">Sd1</name>
+			<committed/>
+		</location>
+		<location id="id29" x="841" y="246">
+			<name x="831" y="212">Sc1</name>
+			<committed/>
+		</location>
+		<location id="id30" x="832" y="-255">
+			<name x="822" y="-289">Sb1</name>
+			<committed/>
+		</location>
+		<location id="id31" x="943" y="-255">
+			<name x="933" y="-289">Sb2</name>
+			<committed/>
+		</location>
+		<location id="id32" x="-110" y="348">
+			<name x="-120" y="314">Sd0</name>
+			<committed/>
+		</location>
+		<location id="id33" x="-76" y="246">
+			<name x="-86" y="212">Sc0</name>
+			<committed/>
+		</location>
+		<location id="id34" x="-118" y="-254">
+			<name x="-128" y="-288">Sb0</name>
+			<committed/>
+		</location>
+		<location id="id35" x="842" y="0">
+			<name x="832" y="-34">Sa1</name>
+			<committed/>
+		</location>
+		<location id="id36" x="-76" y="-144">
+			<name x="-86" y="-178">Sa0</name>
+			<committed/>
+		</location>
+		<location id="id37" x="952" y="246">
+			<name x="942" y="212">Sc2</name>
+			<committed/>
+		</location>
+		<location id="id38" x="961" y="0">
+			<name x="951" y="-34">Sa2</name>
+			<committed/>
+		</location>
+		<location id="id39" x="1320" y="328">
+			<name x="1310" y="294">Kacd1</name>
+		</location>
+		<location id="id40" x="1232" y="224">
+			<name x="1222" y="190">Kacd0</name>
+			<committed/>
+		</location>
+		<location id="id41" x="1320" y="-8">
+			<name x="1310" y="-42">Kab1</name>
+		</location>
+		<location id="id42" x="1374" y="73">
+			<name x="1364" y="39">Wab0</name>
+			<label kind="invariant" x="1344" y="88">abC_ab&lt;= ab1</label>
+		</location>
+		<location id="id43" x="2144" y="136">
+			<name x="2102" y="93">Fired</name>
+		</location>
+		<location id="id44" x="2024" y="136">
+			<name x="1998" y="111">F1</name>
+			<committed/>
+		</location>
+		<location id="id45" x="1536" y="72">
+			<name x="1526" y="38">Wab1</name>
+			<label kind="invariant" x="1485" y="89">abC_ab &lt; ab2</label>
+		</location>
+		<location id="id46" x="1238" y="73">
+			<name x="1228" y="39">Kab0</name>
+			<committed/>
+		</location>
+		<location id="id47" x="-110" y="153">
+			<name x="-144" y="145">L0</name>
+		</location>
+		<location id="id48" x="272" y="-255">
+			<name x="262" y="-289">KSb_ab0</name>
+			<committed/>
+		</location>
+		<location id="id49" x="569" y="-255">
+			<name x="544" y="-289">KKb_ab0</name>
+			<committed/>
+		</location>
+		<location id="id50" x="-25" y="-255">
+			<name x="-35" y="-289">KNb_ab0</name>
+			<committed/>
+		</location>
+		<location id="id51" x="739" y="348">
+			<name x="714" y="314">KKd_acd1</name>
+			<committed/>
+		</location>
+		<location id="id52" x="1376" y="224">
+			<name x="1366" y="190">Wacd0</name>
+			<label kind="invariant" x="1352" y="240">acdC_acd &lt;= acd1</label>
+		</location>
+		<location id="id53" x="586" y="348">
+			<name x="576" y="314">KKd_acd0</name>
+			<committed/>
+		</location>
+		<location id="id54" x="-8" y="348">
+			<name x="-18" y="314">KNd_acd0</name>
+			<committed/>
+		</location>
+		<location id="id55" x="1536" y="224">
+			<name x="1526" y="190">Wacd1</name>
+			<label kind="invariant" x="1496" y="240">acdC_acd&lt; acd2</label>
+		</location>
+		<location id="id56" x="280" y="0">
+			<name x="270" y="-34">KSa_acd0</name>
+			<committed/>
+		</location>
+		<location id="id57" x="731" y="0">
+			<name x="697" y="-34">KKa_acd1</name>
+			<committed/>
+		</location>
+		<location id="id58" x="76" y="0">
+			<name x="51" y="-34">KNa_acd1</name>
+			<committed/>
+		</location>
+		<location id="id59" x="-17" y="0">
+			<name x="-42" y="-34">KNa_acd0</name>
+			<committed/>
+		</location>
+		<location id="id60" x="569" y="0">
+			<name x="559" y="-34">KKa_acd0</name>
+			<committed/>
+		</location>
+		<location id="id61" x="280" y="246">
+			<name x="246" y="212">KSc_acd0</name>
+			<committed/>
+		</location>
+		<location id="id62" x="731" y="246">
+			<name x="705" y="212">KKc_acd1</name>
+			<committed/>
+		</location>
+		<location id="id63" x="-8" y="246">
+			<name x="-18" y="212">KNc_acd0</name>
+			<committed/>
+		</location>
+		<init ref="id47"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id19"/>
+		</transition>
+		<transition>
+			<source ref="id55"/>
+			<target ref="id0"/>
+		</transition>
+		<transition>
+			<source ref="id45"/>
+			<target ref="id0"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id1"/>
+			<label kind="guard" x="928" y="96">acdFired_acd</label>
+			<label kind="assignment" x="952" y="112">acdC_acd = 0</label>
+			<nail x="968" y="88"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id1"/>
+			<label kind="guard" x="976" y="-24">abFired_ab</label>
+			<label kind="assignment" x="976" y="0">abC_ab = 0</label>
+			<nail x="1040" y="0"/>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id1"/>
+			<label kind="guard" x="968" y="224">acdFired_acd</label>
+			<label kind="assignment" x="976" y="248">acdC_acd = 0</label>
+			<nail x="1048" y="240"/>
+		</transition>
+		<transition>
+			<source ref="id27"/>
+			<target ref="id1"/>
+			<label kind="guard" x="992" y="320">acdFired_acd</label>
+			<label kind="assignment" x="1000" y="352">acdC_acd = 0</label>
+			<nail x="1080" y="344"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id1"/>
+			<label kind="guard" x="976" y="-272">abFired_ab</label>
+			<label kind="assignment" x="976" y="-256">abC_ab = 0</label>
+			<nail x="1072" y="-256"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id40"/>
+			<label kind="guard" x="1200" y="160">acdFired_acd</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id46"/>
+			<label kind="guard" x="1200" y="112">abFired_ab</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id56"/>
+		</transition>
+		<transition>
+			<source ref="id58"/>
+			<target ref="id3"/>
+			<label kind="guard" x="93" y="-17">cC&gt;=a3</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id53"/>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id4"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id14"/>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id5"/>
+			<label kind="guard" x="399" y="229">dC&lt;c2</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id60"/>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id6"/>
+			<label kind="guard" x="399" y="-17">dC&lt;a4</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id23"/>
+		</transition>
+		<transition>
+			<source ref="id24"/>
+			<target ref="id7"/>
+			<label kind="guard" x="306" y="-161">x&lt;a2</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id61"/>
+		</transition>
+		<transition>
+			<source ref="id63"/>
+			<target ref="id8"/>
+			<label kind="guard" x="17" y="229">x&gt;= c1</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id24"/>
+		</transition>
+		<transition>
+			<source ref="id25"/>
+			<target ref="id9"/>
+			<label kind="guard" x="85" y="-161">bC&gt;=a1</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id48"/>
+		</transition>
+		<transition>
+			<source ref="id50"/>
+			<target ref="id10"/>
+			<label kind="guard" x="-8" y="-272">x&gt;=b1</label>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id49"/>
+		</transition>
+		<transition>
+			<source ref="id48"/>
+			<target ref="id11"/>
+			<label kind="guard" x="289" y="-272">x&lt; b2</label>
+		</transition>
+		<transition>
+			<source ref="id54"/>
+			<target ref="id12"/>
+			<label kind="guard" x="25" y="331">x&gt;= d1</label>
+		</transition>
+		<transition>
+			<source ref="id50"/>
+			<target ref="id20"/>
+			<label kind="guard" x="0" y="-221">x&lt;b1</label>
+			<nail x="-17" y="-204"/>
+			<nail x="705" y="-204"/>
+		</transition>
+		<transition>
+			<source ref="id48"/>
+			<target ref="id20"/>
+			<label kind="guard" x="297" y="-229">x&gt;=2</label>
+			<nail x="289" y="-212"/>
+			<nail x="696" y="-212"/>
+		</transition>
+		<transition>
+			<source ref="id62"/>
+			<target ref="id29"/>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id63"/>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id62"/>
+			<label kind="guard" x="399" y="263">dC &gt;= c2</label>
+			<nail x="391" y="280"/>
+			<nail x="696" y="280"/>
+		</transition>
+		<transition>
+			<source ref="id61"/>
+			<target ref="id14"/>
+			<label kind="guard" x="331" y="170">!dFired</label>
+			<nail x="280" y="187"/>
+			<nail x="578" y="187"/>
+		</transition>
+		<transition>
+			<source ref="id61"/>
+			<target ref="id13"/>
+			<label kind="guard" x="305" y="229">dFired</label>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id62"/>
+			<label kind="assignment" x="586" y="246">cInTime_acd = true</label>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id15"/>
+			<label kind="guard" x="1896" y="72">gFired</label>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id44"/>
+			<label kind="guard" x="1944" y="112">!gFired</label>
+		</transition>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id16"/>
+			<label kind="guard" x="1848" y="112">!fFired</label>
+		</transition>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id17"/>
+			<label kind="guard" x="1800" y="72">fFired</label>
+		</transition>
+		<transition>
+			<source ref="id19"/>
+			<target ref="id18"/>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id30"/>
+		</transition>
+		<transition>
+			<source ref="id49"/>
+			<target ref="id20"/>
+			<label kind="assignment" x="578" y="-255">bInTime_ab = true</label>
+		</transition>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id59"/>
+			<nail x="756" y="-144"/>
+			<nail x="756" y="-68"/>
+			<nail x="-59" y="-68"/>
+			<nail x="-59" y="0"/>
+		</transition>
+		<transition>
+			<source ref="id57"/>
+			<target ref="id35"/>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id57"/>
+			<label kind="guard" x="399" y="25">dC&gt;= a4</label>
+			<nail x="399" y="42"/>
+			<nail x="663" y="42"/>
+		</transition>
+		<transition>
+			<source ref="id56"/>
+			<target ref="id60"/>
+			<label kind="guard" x="331" y="-59">!dFired</label>
+			<nail x="280" y="-42"/>
+			<nail x="569" y="-42"/>
+		</transition>
+		<transition>
+			<source ref="id56"/>
+			<target ref="id21"/>
+			<label kind="guard" x="306" y="-17">dFired</label>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id26"/>
+		</transition>
+		<transition>
+			<source ref="id24"/>
+			<target ref="id22"/>
+			<label kind="guard" x="306" y="-119">x&gt;=a2</label>
+			<nail x="297" y="-102"/>
+			<nail x="688" y="-102"/>
+		</transition>
+		<transition>
+			<source ref="id25"/>
+			<target ref="id22"/>
+			<label kind="guard" x="119" y="-110">bC&lt;a1</label>
+			<nail x="85" y="-93"/>
+			<nail x="696" y="-93"/>
+		</transition>
+		<transition>
+			<source ref="id26"/>
+			<target ref="id22"/>
+			<label kind="guard" x="-1" y="-102">!bFired</label>
+			<nail x="-8" y="-85"/>
+			<nail x="705" y="-85"/>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id22"/>
+			<label kind="assignment" x="587" y="-144">aInTime_ab = true</label>
+		</transition>
+		<transition>
+			<source ref="id26"/>
+			<target ref="id25"/>
+			<label kind="guard" x="8" y="-161">bFired</label>
+		</transition>
+		<transition>
+			<source ref="id27"/>
+			<target ref="id47"/>
+			<label kind="guard" x="713" y="391">!acdFired_acd</label>
+			<nail x="960" y="408"/>
+			<nail x="-153" y="408"/>
+			<nail x="-153" y="170"/>
+		</transition>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id27"/>
+			<label kind="assignment" x="876" y="348">dDone()</label>
+		</transition>
+		<transition>
+			<source ref="id51"/>
+			<target ref="id28"/>
+		</transition>
+		<transition>
+			<source ref="id29"/>
+			<target ref="id37"/>
+			<label kind="assignment" x="867" y="229">cDone()</label>
+		</transition>
+		<transition>
+			<source ref="id30"/>
+			<target ref="id31"/>
+			<label kind="assignment" x="858" y="-255">bDone()</label>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id47"/>
+			<label kind="guard" x="688" y="-323">!abFired_ab</label>
+			<nail x="943" y="-306"/>
+			<nail x="-153" y="-306"/>
+			<nail x="-153" y="119"/>
+		</transition>
+		<transition>
+			<source ref="id35"/>
+			<target ref="id38"/>
+			<label kind="assignment" x="876" y="-17">aDone()</label>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id33"/>
+			<label kind="synchronisation" x="-93" y="178">c?</label>
+		</transition>
+		<transition>
+			<source ref="id32"/>
+			<target ref="id54"/>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id32"/>
+			<label kind="synchronisation" x="-127" y="255">d?</label>
+		</transition>
+		<transition>
+			<source ref="id34"/>
+			<target ref="id50"/>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id34"/>
+			<label kind="synchronisation" x="-136" y="34">b?</label>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id36"/>
+			<label kind="synchronisation" x="-102" y="43">a?</label>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id47"/>
+			<label kind="guard" x="705" y="144">!acdFired_acd</label>
+			<nail x="909" y="161"/>
+			<nail x="-59" y="161"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id47"/>
+			<label kind="guard" x="612" y="110">!abFired_ab &amp;&amp; !acdFired_acd</label>
+			<nail x="901" y="127"/>
+			<nail x="-67" y="128"/>
+		</transition>
+		<transition>
+			<source ref="id40"/>
+			<target ref="id39"/>
+			<label kind="guard" x="1258" y="284">!acdInTime_acd</label>
+		</transition>
+		<transition>
+			<source ref="id40"/>
+			<target ref="id52"/>
+			<label kind="guard" x="1256" y="224">acdInTime_acd</label>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id41"/>
+			<label kind="guard" x="1247" y="13">!abInTime_ab</label>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id42"/>
+			<label kind="guard" x="1264" y="56">abInTime_ab</label>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id45"/>
+			<label kind="guard" x="1408" y="56">abC_ab == ab1</label>
+		</transition>
+		<transition>
+			<source ref="id52"/>
+			<target ref="id55"/>
+			<label kind="guard" x="1392" y="208">acdC_acd == acd1</label>
+		</transition>
+		<transition>
+			<source ref="id44"/>
+			<target ref="id43"/>
+			<label kind="synchronisation" x="2064" y="119">e!</label>
+			<label kind="assignment" x="2064" y="136">eShot()</label>
+		</transition>
+		<transition>
+			<source ref="id54"/>
+			<target ref="id51"/>
+			<label kind="guard" x="25" y="374">x&lt; d1</label>
+			<nail x="0" y="391"/>
+			<nail x="688" y="391"/>
+		</transition>
+		<transition>
+			<source ref="id53"/>
+			<target ref="id51"/>
+			<label kind="assignment" x="586" y="348">dInTime_acd = true</label>
+		</transition>
+		<transition>
+			<source ref="id58"/>
+			<target ref="id57"/>
+			<label kind="guard" x="119" y="34">cC&lt;a3</label>
+			<nail x="93" y="51"/>
+			<nail x="679" y="51"/>
+		</transition>
+		<transition>
+			<source ref="id59"/>
+			<target ref="id57"/>
+			<label kind="guard" x="0" y="42">!cFired</label>
+			<nail x="0" y="59"/>
+			<nail x="688" y="59"/>
+		</transition>
+		<transition>
+			<source ref="id60"/>
+			<target ref="id57"/>
+			<label kind="assignment" x="586" y="0">aInTime_acd = true</label>
+		</transition>
+		<transition>
+			<source ref="id59"/>
+			<target ref="id58"/>
+			<label kind="guard" x="8" y="-17">cFired</label>
+		</transition>
+		<transition>
+			<source ref="id63"/>
+			<target ref="id62"/>
+			<label kind="guard" x="17" y="272">x &lt; c1</label>
+			<nail x="8" y="289"/>
+			<nail x="705" y="289"/>
+		</transition>
+	</template>
+	<template>
+		<name>GoalA</name>
+		<location id="id64" x="280" y="0">
+		</location>
+		<location id="id65" x="0" y="0">
+		</location>
+		<init ref="id65"/>
+		<transition>
+			<source ref="id65"/>
+			<target ref="id64"/>
+			<label kind="synchronisation" x="18" y="-17">e?</label>
+		</transition>
+	</template>
+	<template>
+		<name>Firing_a</name>
+		<declaration>
+void aShot(){
+aFired = true;
+aC = 0;
+}               
+                </declaration>
+		<location id="id66" x="127" y="8">
+			<name x="117" y="-26">F0</name>
+			<committed/>
+		</location>
+		<location id="id67" x="-374" y="8">
+			<name x="-384" y="-26">L0</name>
+			<committed/>
+		</location>
+		<location id="id68" x="204" y="8">
+			<name x="194" y="-26">F1</name>
+			<committed/>
+		</location>
+		<location id="id69" x="-196" y="8">
+			<name x="-206" y="-26">W0</name>
+			<label kind="invariant" x="-206" y="25">x&lt;= t1</label>
+		</location>
+		<location id="id70" x="42" y="8">
+			<name x="32" y="-26">W1</name>
+			<label kind="invariant" x="17" y="25">x &lt; t2</label>
+		</location>
+		<location id="id71" x="408" y="8">
+			<name x="398" y="-26">Fired</name>
+		</location>
+		<init ref="id67"/>
+		<transition>
+			<source ref="id66"/>
+			<target ref="id68"/>
+		</transition>
+		<transition>
+			<source ref="id70"/>
+			<target ref="id66"/>
+		</transition>
+		<transition>
+			<source ref="id67"/>
+			<target ref="id69"/>
+		</transition>
+		<transition>
+			<source ref="id68"/>
+			<target ref="id71"/>
+			<label kind="synchronisation" x="265" y="0">a!</label>
+			<label kind="assignment" x="265" y="17">aShot()</label>
+		</transition>
+		<transition>
+			<source ref="id69"/>
+			<target ref="id70"/>
+			<label kind="guard" x="-119" y="-17">x == t1</label>
+		</transition>
+	</template>
+	<template>
+		<name>Firing_b</name>
+		<location id="id72" x="102" y="-93">
+		</location>
+		<location id="id73" x="34" y="8">
+			<committed/>
+		</location>
+		<location id="id74" x="246" y="8">
+			<name x="236" y="-26">A2</name>
+			<label kind="invariant" x="229" y="25">x&lt;t2</label>
+			<committed/>
+		</location>
+		<location id="id75" x="-391" y="8">
+			<name x="-401" y="-26">A0</name>
+			<label kind="invariant" x="-401" y="25">x&lt;= t1</label>
+		</location>
+		<location id="id76" x="-153" y="8">
+			<name x="-163" y="-26">A1</name>
+			<label kind="invariant" x="-178" y="25">x &lt; t2</label>
+		</location>
+		<location id="id77" x="408" y="8">
+			<name x="398" y="-26">A3</name>
+		</location>
+		<init ref="id75"/>
+		<transition>
+			<source ref="id73"/>
+			<target ref="id72"/>
+			<label kind="guard" x="52" y="-76">cFired</label>
+		</transition>
+		<transition>
+			<source ref="id73"/>
+			<target ref="id74"/>
+			<label kind="guard" x="110" y="-8">!cFired</label>
+		</transition>
+		<transition>
+			<source ref="id76"/>
+			<target ref="id73"/>
+		</transition>
+		<transition>
+			<source ref="id74"/>
+			<target ref="id77"/>
+			<label kind="synchronisation" x="265" y="0">b!</label>
+			<label kind="assignment" x="265" y="17">bFired = true</label>
+		</transition>
+		<transition>
+			<source ref="id75"/>
+			<target ref="id76"/>
+			<label kind="guard" x="-314" y="-17">x == t1</label>
+		</transition>
+	</template>
+	<template>
+		<name>Firing_c</name>
+		<location id="id78" x="34" y="8">
+			<committed/>
+		</location>
+		<location id="id79" x="102" y="-93">
+		</location>
+		<location id="id80" x="246" y="8">
+			<name x="236" y="-26">A2</name>
+			<label kind="invariant" x="229" y="25">x&lt;t2</label>
+			<committed/>
+		</location>
+		<location id="id81" x="-153" y="8">
+			<name x="-163" y="-26">A1</name>
+			<label kind="invariant" x="-178" y="25">x &lt; t2</label>
+		</location>
+		<location id="id82" x="408" y="8">
+			<name x="398" y="-26">A3</name>
+		</location>
+		<location id="id83" x="-391" y="8">
+			<name x="-401" y="-26">A0</name>
+			<label kind="invariant" x="-401" y="25">x&lt;= t1</label>
+		</location>
+		<init ref="id83"/>
+		<transition>
+			<source ref="id78"/>
+			<target ref="id79"/>
+			<label kind="guard" x="52" y="-76">bFired</label>
+		</transition>
+		<transition>
+			<source ref="id78"/>
+			<target ref="id80"/>
+			<label kind="guard" x="110" y="-8">!bFired</label>
+		</transition>
+		<transition>
+			<source ref="id81"/>
+			<target ref="id78"/>
+		</transition>
+		<transition>
+			<source ref="id80"/>
+			<target ref="id82"/>
+			<label kind="synchronisation" x="265" y="0">c!</label>
+			<label kind="assignment" x="265" y="17">cFired = true</label>
+		</transition>
+		<transition>
+			<source ref="id83"/>
+			<target ref="id81"/>
+			<label kind="guard" x="-314" y="-17">x == t1</label>
+		</transition>
+	</template>
+	<template>
+		<name>Firing_d</name>
+		<location id="id84" x="17" y="8">
+			<name x="7" y="-26">D2</name>
+			<committed/>
+		</location>
+		<location id="id85" x="178" y="8">
+			<name x="168" y="-26">D3</name>
+		</location>
+		<location id="id86" x="-153" y="8">
+			<name x="-163" y="-26">D1</name>
+			<label kind="invariant" x="-178" y="25">x &lt; t2</label>
+		</location>
+		<location id="id87" x="-391" y="8">
+			<name x="-401" y="-26">D0</name>
+			<label kind="invariant" x="-401" y="25">x&lt;= t1</label>
+		</location>
+		<init ref="id87"/>
+		<transition>
+			<source ref="id84"/>
+			<target ref="id85"/>
+			<label kind="synchronisation" x="35" y="-9">d!</label>
+			<label kind="assignment" x="35" y="8">dFired = true</label>
+		</transition>
+		<transition>
+			<source ref="id86"/>
+			<target ref="id84"/>
+		</transition>
+		<transition>
+			<source ref="id87"/>
+			<target ref="id86"/>
+			<label kind="guard" x="-314" y="-17">x == t1</label>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+E = Firing_e();
+A = Firing_a();
+B = Firing_b();
+C = Firing_c();
+D = Firing_d();
+
+// List one or more processes to be composed into a system.
+system E, A, B, C, D;</system>
+</nta>
