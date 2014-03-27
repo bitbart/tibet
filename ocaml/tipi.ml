@@ -1,10 +1,26 @@
 
 
-
+let successLoc = Loc "f";;
 (************Sets ********)
 let a = 5;;
 type 'a set = 'a list;;
 
+(************Timed c02*********************)
+type action = Action of string;;
+type clock = Clock of string;;
+type relation = Less | Great ;;
+type guard = Guard of (clock * relation * int) list;;
+type reset = Reset of clock list;;
+
+type co2 = Success | IntChoice of (action * guard * reset * co2) list | ExtChoice of (action * guard * reset * co2) list ;; 
+
+let t = Clock "t";;
+let g = Guard [(Clock "t", Less, 10); (Clock "t", Great, 1)];;
+let r = Reset [Clock "t"; Clock "x"];;
+(* \bar a, {g, r} \intsum \bar b, {g, r}. \bar a {g,r} *)
+let p = IntChoice [(Action "a", g, r , Success); 
+                   (Action "b", g, r , IntChoice[(Action "a", g, r, Success)])];;
+let p = ExtChoice [(Action "a", g, r , Success)];;
 
 (************Timed Event structures**********************)
 type event = Event of string;;
@@ -60,6 +76,8 @@ let setCommitted f e = fun x -> if x = e then true else f x;;
 (*************Utilities to debug ****************************************************)
 let emptyAutoma = TimedAutoma ("",[],Loc "",[],[],emptyInv, [], [], (fun x -> false)  , [], [],  []);;
 
+let successAutoma = TimedAutoma ("",[successLoc], successLoc,[],[],emptyInv, [], [], (fun x -> false)  , [], [],  []);;
+
 let rec print_vars la = match la with
      []-> []
 |  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures))::tl -> variables@(print_vars tl);; 
@@ -76,24 +94,8 @@ let rec print_clocks la = match la with
      []-> []
 |  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures))::tl -> clocks@(print_clocks tl);; 
 
-let rec print_events (TimedEventStructure (a,b,c)) = a;;
-
 let rec print_automataIds la = match la with
      []-> []
 |  (TimedAutoma (id, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures))::tl -> id::(print_automataIds tl);; 
 
-let printRelEvent e = match e with
-   None -> "-"
-| RelEvent ev -> ""^ev^"";;
 
-(*let printTimeB t = match t with
-    Infinity -> " infinity "
-| TimeB n -> string_of_int n;
-
-let printBound  (e, d) =  
-         "("^(printRelEvent e)^","^(printTimeB d)^")";;*)
-
-(*let printTC (TimeConstraint ((e1, n), Event e, (e2, d))) =  
-        "("^(printRelEvent e1)^","^(string_of_int n)^"),"^e^
-        ", ("^(printRelEvent e2)^","^(printTimeB d)^")"
-;;*)

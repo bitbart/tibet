@@ -348,13 +348,39 @@ let firingEvent (Event e) (TimedEventStructure (events, enablings, conflicts))  
  
 (********************************************************)
 (*                                                      *)          
-(*The function "buildAutoma tes e " returns  automa for the event e. *)
+(*The function "buildAutoma p " returns the automa for the process p. *)
 (*The construction is bottom-up.                      ****)
-(**Every automa uses some global variables and global clocks . ***)
 (*                                                      *)
 (*                                                      *)
 (********************************************************)      
-let buildAutoma  (TimedEventStructure (events, enablings, conflicts))  (Event e)  =  
+let getGuard (a,b,c,d) = b;;
+let getSuffix (a,b,c, d) = d;;
+
+
+let buildAutoma  p  =  match p with 
+   Success -> [successAutoma]
+|   IntChoice l ->  let all_g = List.map getGuard l in
+                    let all_suffixes = List.map getSuffix l in
+                    let all_automata = buildAutomaList all_suffixes
+                    in 
+|   ExtChoice l ->  [successAutoma]
+;;
+
+let rec buildAutomaList l = match l with 
+      [] -> []
+|  hd::tl -> successAutoma::(buildAutomaList tl)
+;;
+
+let a = "s"::[];;
+let p =  [(Action "a", g, r , Success); 
+                   (Action "b", g, r , IntChoice[(Action "a", g, r, Success)])];;
+List.map getGuard p;;
+buildAutomaList (List.map getSuffix p);;
+buildAutoma (IntChoice p);;
+
+
+
+
     let locs =   [Loc "L0"] (*initial location*)
     and clocks =  [] 
     and gClocks =  (Clock "x") :: (List.map (fun (Event e) -> (Clock (e^"C")))  events) (*shared clocks linked to events*)
@@ -366,15 +392,9 @@ let buildAutoma  (TimedEventStructure (events, enablings, conflicts))  (Event e)
     in  firingEvent (Event e) (TimedEventStructure (events, enablings, conflicts))  (TimedAutoma (e, locs, Loc "L0",  labels,  [], emptyInv,  clocks, gClocks, committed, vars, globalVars, procs));;
 
 
-(*The function "getEnabledEvents" returns all the events for which there exists (at least) an enabling *)
-let rec getEnabledEvents  en = match en with 
-  [] -> []  
-| Enabling( evs, ev, tc, a,b)::tl->  addElSet ev (getEnabledEvents tl)  ;;
- 
-
-(*The function "mapping" return a network of automata since every enabled event is mapped into a single  automa*)
-let es_mapping (TimedEventStructure (events,  en, conflicts)) =   
-         List.map (buildAutoma  (TimedEventStructure (events, en, conflicts)))  ( getEnabledEvents en);;
+(*The function "mapping" return a network of  automata from the  processes p and q given*)
+let es_mapping p q =  [buildAutoma p ; buildAutoma q];;
+        (* List.map (buildAutoma  (TimedEventStructure (events, en, conflicts)))  ( getEnabledEvents en);;*)
 
      
 
