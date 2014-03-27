@@ -2,25 +2,17 @@
 
 
 (************Sets ********)
-let a = 5;;
 type 'a set = 'a list;;
 
-(************Timed c02*********************)
-type action = Action of string;;
-type clock = Clock of string;;
-type relation = Less | Great ;;
-type guard = Guard of (clock * relation * int) list;;
-type reset = Reset of clock list;;
+(************Timed co2*********************)
+type co2_action = CO2Action of string;;
+type co2_clock = CO2Clock of string;;
+type co2_relation = Less | Great ;;
+type co2_guard = CO2Guard of (co2_clock * co2_relation * int) list;;
+type co2_reset = CO2Reset of co2_clock list;;
 
-type co2 = Success | IntChoice of (action * guard * reset * co2) list | ExtChoice of (action * guard * reset * co2) list ;; 
+type co2 = Success | IntChoice of (co2_action * co2_guard * co2_reset * co2) list | ExtChoice of (co2_action *co2_guard * co2_reset * co2) list ;; 
 
-let t = Clock "t";;
-let g = Guard [(Clock "t", Less, 10); (Clock "t", Great, 1)];;
-let r = Reset [Clock "t"; Clock "x"];;
-(* \bar a, {g, r} \intsum \bar b, {g, r}. \bar a {g,r} *)
-let p = IntChoice [(Action "a", g, r , Success); 
-                   (Action "b", g, r , IntChoice[(Action "a", g, r, Success)])];;
-let p = ExtChoice [(Action "a", g, r , Success)];;
 
 (* (\************Timed Event structures**********************\) *)
 (* type event = Event of string;; *)
@@ -50,6 +42,8 @@ type automa =TimedAutoma of string * loc set * loc * label set * edge set * inva
 
 let successLoc = Loc "f";;
 (**************Getter for automa fields ********************)
+let getInit  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = init;; 
+
 let getLocations  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = locations;; 
 
 let getLabels  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = labels;; 
@@ -57,8 +51,10 @@ let getLabels  (TimedAutoma (name, locations, init, labels, edges, invariants, c
 let getEdges  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = edges;; 
 
 let getInvariants  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = invariants;; 
+(**************Setter for automa fields ********************)
+let setName   (TimedAutoma (n, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) name = (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures));; 
 
-
+let setClocks   (TimedAutoma (name, locations, init, labels, edges, invariants, c, globalClocks,  commited, variables, globalVariables,  procedures)) clocks = (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures));; 
 
 (************* Utilities to manage sets********************)
 
