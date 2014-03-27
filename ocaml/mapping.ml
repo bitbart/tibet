@@ -350,32 +350,49 @@ let firingEvent (Event e) (TimedEventStructure (events, enablings, conflicts))  
 (*                                                      *)          
 (*The function "buildAutoma p " returns the automa for the process p. *)
 (*The construction is bottom-up.                      ****)
-(*                                                      *)
+(*idx is used to find a new name for locations                                *)
 (*                                                      *)
 (********************************************************)      
+(*given a choice -external or internal- getGuard return the guard element of the tuple es:  [(Action "a", g, r , Success)*)
 let getGuard (a,b,c,d) = b;;
+(*given a choice -external or internal- getSuffix return the suffix element of the tuple es:  [(Action "a", g, r , Success)*)
 let getSuffix (a,b,c, d) = d;;
 
+(*Functions to collapse together all the fields  of all the automata in the  list*)
+let sumLocations_a ta_list = eliminateDuplicates(List.flatten (List.map getLocations  ta_list));;
+let sumLabels_a ta_list = eliminateDuplicates(List.flatten (List.map getLabels  ta_list));;
+let sumEdges_a ta_list = eliminateDuplicates(List.flatten (List.map getEdges  ta_list));;
+let sumInvariants_a ta_list = eliminateDuplicates(List.flatten (List.map getInvariants  ta_list));;(*le invarianti sono da sistemare e gestire con sets*)
 
-let buildAutoma  p  =  match p with 
-   Success -> [successAutoma]
-|   IntChoice l ->  let all_g = List.map getGuard l in
-                    let all_suffixes = List.map getSuffix l in
-                    let all_automata = buildAutomaList all_suffixes
-                    in 
-|   ExtChoice l ->  [successAutoma]
-;;
 
-let rec buildAutomaList l = match l with 
+
+
+let rec buildAutoma  p idx =  match p with 
+  Success -> successAutoma
+| IntChoice l ->  let all_g = List.map getGuard l in
+    let all_suffixes = List.map getSuffix l in
+    let all_automata = buildAutomaList all_suffixes idx in 
+    let c = string_of_int idx in (*counter to differenciate location name*)
+    let init  = Loc ("l0_"^c) in (*new initial location *)
+    let locs = ( addElSet init ( addElSet (Loc ("l1_"^c)) (addElSet (Loc ("l2_"^c)) 
+                            (sumLocations_a  all_automata))))  in 
+    let labels = sumLabels_a   all_automata  in 
+    let edges  = sumEdges_a  all_automata    
+    (*let inv    = sumInvariants_a   all_automata  *)
+    in (TimedAutoma ("", locs, Loc ("l0_"^c), labels, edges, emptyInv, [], [],  (fun x -> false) , [], [], []))
+|   ExtChoice l ->  successAutoma
+ and 
+  buildAutomaList l  idx = match l with 
       [] -> []
-|  hd::tl -> successAutoma::(buildAutomaList tl)
+|  hd::tl -> (buildAutoma hd (idx+1))::(buildAutomaList tl idx)
 ;;
 
 let a = "s"::[];;
 let p =  [(Action "a", g, r , Success); 
                    (Action "b", g, r , IntChoice[(Action "a", g, r, Success)])];;
 List.map getGuard p;;
-buildAutomaList (List.map getSuffix p);;
+let lista = buildAutomaList (List.map getSuffix p);;
+eliminateDuplicates(List.flatten (List.map getLocations lista));;
 buildAutoma (IntChoice p);;
 
 
