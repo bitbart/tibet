@@ -38,7 +38,7 @@ let rec write_clocks clocks = match clocks with
 
 let rec write_chans labels = match labels with 
 [] -> ""
-| (Label l)::tl -> "urgent broadcast chan  "^l^"; \n"^(write_chans tl)
+| (Label l)::tl -> "chan  "^l^"; \n"^(write_chans tl)
 ;;
 
 let rec write_procs procs = match procs with 
