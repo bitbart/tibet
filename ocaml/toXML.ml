@@ -38,7 +38,7 @@ let rec write_clocks clocks = match clocks with
 
 let rec write_chans labels = match labels with 
 [] -> ""
-| (Label l)::tl -> "chan  "^l^"; \n"^(write_chans tl)
+| (Label l)::tl -> "urgent chan  "^l^"; \n"^(write_chans tl)
 ;;
 
 let rec write_procs procs = match procs with 
@@ -86,10 +86,15 @@ let write_transitions (TimedAutoma (name, locs, initial, labels, edges,  inv,  c
 (*                                                      *)
 (********************************************************) 
 
+let rec getInv l id = match l with 
+[] -> ""
+| (name, inv)::tl -> if name = id then inv else (getInv tl id)
+;;
+
 let write_location id committed inv = 	
         "<location id=\"" ^ escape_id id ^  "\">" ^
 	"<name>" ^ escape_id id ^"</name>"^
-        (if (inv id)="" then "" else ("<label kind=\"invariant\">"^ escape (inv id) ^"</label>"   ))^ 
+        (if (getInv inv id)="" then "" else ("<label kind=\"invariant\">"^ escape (getInv inv id) ^"</label>"   ))^ 
         (if (committed (Loc id)) then "<committed/>" else "")  ^
         " </location>\n";;
 

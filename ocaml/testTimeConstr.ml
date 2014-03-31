@@ -49,8 +49,14 @@ writeToFile lta;;
 (*  ES2: internal choice                                *)
 (*                                                      *)
 (********************************************************) 
-let g2 = CO2Guard [(CO2Clock "t", Less, 10); (CO2Clock "t", Great, 1)];;
-let r2 = CO2Reset [CO2Clock "t"; CO2Clock "x"];;
+let ga = CO2Guard [(CO2Clock "t", Less, 10); (CO2Clock "t", Great, 1)];;
+let ra = CO2Reset [CO2Clock "t"; CO2Clock "x"];;
+
+let gb = CO2Guard [(CO2Clock "t", Less, 3)];;
+let rb = CO2Reset [CO2Clock "t"; CO2Clock "x"];;
+
+
+let p2 = IntChoice [ (CO2Action "a", ga, ra , Success);  (CO2Action "b", gb, rb , Success) ];;
 
 let p2 = IntChoice [ (CO2Action "a", g2, r2 , Success);
                      (CO2Action "b", g2, r2, 
@@ -65,19 +71,23 @@ let p2 = IntChoice [ (CO2Action "a", g2, r2 , Success);
 let lta = co2_mapping p2 p2;;
 writeToFile lta;
 
+getInvariants(List.nth lta 1);;
+
 (********************************************************)
 (*                                                      *)
 (*  ES2: dual                                           *)
 (*                                                      *)
 (********************************************************) 
-let g3 = CO2Guard [(CO2Clock "t", Less, 10); (CO2Clock "t", Great, 1)];;
-let r3 = CO2Reset [CO2Clock "t"; CO2Clock "x"];;
+let gP = CO2Guard [(CO2Clock "t", Less, 10); (CO2Clock "t", Great, 1)];;
 
-let p3 = IntChoice [ (CO2Action "a", g3, r3 , Success)];;
-let q3 = ExtChoice [ (CO2Action "a", g3, r3 , Success)];;
-let lta = co2_mapping p3 q3;;
+let gQ = CO2Guard [(CO2Clock "t", Less, 20)];;
+let r = CO2Reset [];;
+
+let p4 = IntChoice [ (CO2Action "a", gP, r , Success)];;
+let q4 = ExtChoice [ (CO2Action "a", gQ, r , Success)];;
+let lta = co2_mapping p4 q4;;
 writeToFile lta;
 
-
+getInvariants(List.nth lta 1);;
 
 

@@ -48,15 +48,23 @@ type loc = Loc of string;;
 type guard = string;;
 type reset = string;;
 type edge = Edge of loc * label * guard * reset * loc;;
-type invariant = string -> string;; (*le locazioni le lascio a stringhe??? o con LOC davanti*)
+type invariant = (string  * string) list;;
 type clock = Clock of string;;
 type automa =TimedAutoma of string * loc set * loc * label set * edge set * invariant * clock set * clock set * (loc -> bool) * string  set * string  set * (string * string) set;;
 
+(************ Utilities to manage committed locations  *********)
+(*let emptyInv = fun x -> "";;*)
+
+let bind f e v = fun x -> if x = e then v else f x;;
+
+let setCommitted f e = fun x -> if x = e then true else f x;;
+
 
 (**************Constructors ********************)
-let emptyAutoma = TimedAutoma ("",[],Loc "",[],[],emptyInv, [], [], (fun x -> false)  , [], [],  []);;
+let emptyAutoma = TimedAutoma ("",[],Loc "",[],[],[], [], [], (fun x -> false)  , [], [],  []);;
 
-let successAutoma = TimedAutoma ("",[successLoc], successLoc,[],[],emptyInv, [], [], (fun x -> false)  , [], [],  []);;
+let successLoc = Loc "f";;
+let successAutoma = TimedAutoma ("",[successLoc], successLoc,[],[],[], [], [], (fun x -> false)  , [], [],  []);;
 
 
 (**************Getter for automa fields ********************)
@@ -74,6 +82,7 @@ let getProcs  (TimedAutoma (name, locations, init, labels, edges, invariants, cl
 
 let getClocks  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = clocks;; 
 
+let getInvariants  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = invariants;; 
 
 (**************Setter for automa fields ********************)
 let setName   (TimedAutoma (n, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) name = (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures));; 
@@ -85,12 +94,7 @@ let setLocations   (TimedAutoma (name, l, init, labels, edges, invariants, clock
 let setLabels   (TimedAutoma (name, locs, init, l, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) labels = (TimedAutoma (name, locs, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures));; 
 
 
-(************ Utilities to manage committed locations *********)
-let emptyInv = fun x -> "";;
 
-let bind f e v = fun x -> if x = e then v else f x;;
-
-let setCommitted f e = fun x -> if x = e then true else f x;;
 
 
 (********************************************)
