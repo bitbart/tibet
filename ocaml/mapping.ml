@@ -247,11 +247,10 @@ let rec buildAutoma  p idx =  match p with
              in (ta::tal,  usedIdx, recList @ recList_a)
 ;;
 
-buildAutoma (IntChoice[(CO2Action "a", CO2Guard[], CO2Reset[] ,  (Call "x"))]) 1;;
 
 (****Packaging the final automata:  locations  are calcolated from edges*)
 let  extractLocations edges = 
-     List.fold_right (fun (Edge (src, a, b, c, tgt)) y ->  [src;tgt]@y) edges [successLoc];;
+     List.fold_right (fun (Edge (src, a, b, c, tgt)) y ->  [src;tgt]@y) edges [];;
 
 (*to convert the clocks*)
 let  toTAClocks l = List.map (fun  (CO2Clock c) -> Clock c) ;;
@@ -259,8 +258,9 @@ let  toTAClocks l = List.map (fun  (CO2Clock c) -> Clock c) ;;
 (*Uppaal automata need a name/ identifier*)
 let buildAutomaMain p name= let (tap, idxp, recList)  = buildAutoma p 0 in 
     if List.length recList <> 0 then failwith "BuildAutomaMain: not all the recursive call have been solved"
-    else
-      let locp = eliminateDuplicates(extractLocations(getEdges(tap))) 
+    else 
+      let locp = if (p = Success) then [successLoc] 
+                 else eliminateDuplicates(extractLocations(getEdges(tap))) 
       in setLocations(setName tap name)  locp 
 ;;
 
