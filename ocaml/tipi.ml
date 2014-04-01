@@ -29,7 +29,9 @@ type co2_reset = CO2Reset of co2_clock list;;
 
 type co2 = Success | 
            IntChoice of (co2_action * co2_guard * co2_reset * co2) list | 
-           ExtChoice of (co2_action *co2_guard * co2_reset * co2) list ;; 
+           ExtChoice of (co2_action *co2_guard * co2_reset * co2) list  |
+           Rec of string |
+           Call of string ;; 
 
 
 (**********************************************************)
