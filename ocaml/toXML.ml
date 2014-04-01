@@ -1,4 +1,6 @@
 
+open Printf;;
+
 #use "mapping.ml";;
 #load "str.cma";;(*serve solo se lo utilizzi nell'interprete*)
 
@@ -91,11 +93,16 @@ let rec getInv l id = match l with
 | (name, inv)::tl -> if name = id then inv else (getInv tl id)
 ;;
 
+let rec isCommitted  l id = match l with 
+[] -> false
+| name::tl -> if name = id then true  else (isCommitted tl id)
+;;
+
 let write_location id committed inv = 	
         "<location id=\"" ^ escape_id id ^  "\">" ^
 	"<name>" ^ escape_id id ^"</name>"^
         (if (getInv inv id)="" then "" else ("<label kind=\"invariant\">"^ escape (getInv inv id) ^"</label>"   ))^ 
-        (if (committed (Loc id)) then "<committed/>" else "")  ^
+        (if (isCommitted committed  id) then "<committed/>" else "")  ^
         " </location>\n";;
 
 let rec write_locations_rec locs committed inv= match locs with
@@ -169,15 +176,44 @@ let aut_toXML_out lta =
 (*                                                      *)
 (*                                                      *)
 (********************************************************) 
+let getLocName (Loc name) = name;;
+
 let rec write_queryRec lta = match lta with 
       []-> "" 
-    |  hd::tl ->  let t = (witeTemplateName(getTemplateName hd)) in 
-                      t^".L0 --> "^t^".Fired\n"^(write_queryRec (tl) );;
+    |  hd::tl ->  let t = (witeTemplateName(getTemplateName hd)) 
+                  in  t^"."^(getLocName (getInit hd))^" --> "^t^"."^(getLocName successLoc)^"\n"^(write_queryRec (tl) );;
 
 let query_toXML  lta = 
 	(write_queryRec lta);;
 
 
 
-(************************)
+(********************************************************************************************)
+(*                                                                                          *)
+(*                                     Writing to file                                      *)
+(*                                                                                          *)
+(***************************************************************************************** **)
 
+(* writeTA takes a list of timed automata and write them down in a file named  filename.xml*)
+let writeTA lta filename = 
+  let message = aut_toXML lta in
+  (* Write message to file *)
+  let oc = open_out (filename^".xml") in    (* create or truncate file, return channel *)
+  fprintf oc "%s\n" message;   (* write something *)   
+  close_out oc;                (* flush and close the channel *)
+;;
+
+(* writeTA generates the query for compliance  of a list of timed automata and write them down in a file named  filename.q*)
+let writeQuery lta filename = 
+   let messageQ = query_toXML lta in
+  (* Write message to file *)
+  let oc = open_out (filename^".q") in    (* create or truncate file, return channel *)
+  fprintf oc "%s\n" messageQ ;   (* write something *)   
+  close_out oc;                (* flush and close the channel *)
+;;
+
+(*alltogether*)
+let writeToFile lta filename = 
+     writeTA lta filename;   
+     writeQuery lta filename; 
+;;

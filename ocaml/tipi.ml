@@ -39,7 +39,7 @@ type co2 = Success |
 (* (as  in UPPAAL template)                               *)
 (* Fields: name, locations, initial loc, labels, edges,   *) 
 (*         invariants, clocks, globalClocks,              *)
-(*         commited locations,                            *)
+(*         committed locations,                            *)
 (*         variables, globalVariables,  procedures        *)
 (*                                                        *)
 (**********************************************************)
@@ -50,48 +50,54 @@ type reset = string;;
 type edge = Edge of loc * label * guard * reset * loc;;
 type invariant = (string  * string) list;;
 type clock = Clock of string;;
-type automa =TimedAutoma of string * loc set * loc * label set * edge set * invariant * clock set * clock set * (loc -> bool) * string  set * string  set * (string * string) set;;
-
-(************ Utilities to manage committed locations  *********)
-(*let emptyInv = fun x -> "";;*)
-
-let bind f e v = fun x -> if x = e then v else f x;;
-
-let setCommitted f e = fun x -> if x = e then true else f x;;
-
+type automa =TimedAutoma of 
+                string *      (*process name*)
+                loc set *     (*location list*)
+                loc *         (* initial location*)
+                label set *   (*label list*)
+                edge set *    (*edge list*)
+                invariant *   (*invariant list*)
+                clock set *   (*private clock list*)
+                clock set *   (*global clock list*)
+                string set *  (*committed location list*)
+                string  set * (*private variable list*)
+                string  set * (*global variable list*)
+                (string * string) set;; (*procedure list*)
 
 (**************Constructors ********************)
-let emptyAutoma = TimedAutoma ("",[],Loc "",[],[],[], [], [], (fun x -> false)  , [], [],  []);;
+let emptyAutoma = TimedAutoma ("",[],Loc "",[],[],[], [], [], [], [], [],  []);;
 
 let successLoc = Loc "f";;
-let successAutoma = TimedAutoma ("",[successLoc], successLoc,[],[],[], [], [], (fun x -> false)  , [], [],  []);;
+let successAutoma = TimedAutoma ("",[successLoc], successLoc,[],[],[], [], [], [], [], [],  []);;
 
 
 (**************Getter for automa fields ********************)
-let getInit  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = init;; 
+let getInit  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = init;; 
 
-let getLocations  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = locations;; 
+let getLocations  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = locations;; 
 
-let getLabels  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = labels;; 
+let getLabels  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = labels;; 
 
-let getEdges  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = edges;; 
+let getEdges  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = edges;; 
 
-let getInvariants  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = invariants;; 
+let getInvariants  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = invariants;; 
 
-let getProcs  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = procedures;; 
+let getProcs  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = procedures;; 
 
-let getClocks  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = clocks;; 
+let getClocks  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = clocks;; 
 
-let getInvariants  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) = invariants;; 
+let getInvariants  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = invariants;;
+ 
+let getCommitted  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = committed;; 
 
 (**************Setter for automa fields ********************)
-let setName   (TimedAutoma (n, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) name = (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures));; 
+let setName   (TimedAutoma (n, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) name = (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures));; 
 
-let setClocks   (TimedAutoma (name, locations, init, labels, edges, invariants, c, globalClocks,  commited, variables, globalVariables,  procedures)) clocks = (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures));; 
+let setClocks   (TimedAutoma (name, locations, init, labels, edges, invariants, c, globalClocks,  committed, variables, globalVariables,  procedures)) clocks = (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures));; 
 
-let setLocations   (TimedAutoma (name, l, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) locs = (TimedAutoma (name, locs, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures));; 
+let setLocations   (TimedAutoma (name, l, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) locs = (TimedAutoma (name, locs, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures));; 
 
-let setLabels   (TimedAutoma (name, locs, init, l, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures)) labels = (TimedAutoma (name, locs, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures));; 
+let setLabels   (TimedAutoma (name, locs, init, l, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) labels = (TimedAutoma (name, locs, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures));; 
 
 
 
@@ -104,22 +110,22 @@ let setLabels   (TimedAutoma (name, locs, init, l, edges, invariants, clocks, gl
 (********************************************)
 let rec print_vars la = match la with
      []-> []
-|  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures))::tl -> variables@(print_vars tl);; 
+|  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures))::tl -> variables@(print_vars tl);; 
 
 let rec print_global_vars la = match la with
      []-> []
-|  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures))::tl -> globalVariables@(print_global_vars tl);; 
+|  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures))::tl -> globalVariables@(print_global_vars tl);; 
 
 let rec print_labels la = match la with
      []-> []
-|   (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures))::tl -> labels@(print_labels tl);; 
+|   (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures))::tl -> labels@(print_labels tl);; 
 
 let rec print_clocks la = match la with
      []-> []
-|  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures))::tl -> clocks@(print_clocks tl);; 
+|  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures))::tl -> clocks@(print_clocks tl);; 
 
 let rec print_automataIds la = match la with
      []-> []
-|  (TimedAutoma (id, locations, init, labels, edges, invariants, clocks, globalClocks,  commited, variables, globalVariables,  procedures))::tl -> id::(print_automataIds tl);; 
+|  (TimedAutoma (id, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures))::tl -> id::(print_automataIds tl);; 
 
 

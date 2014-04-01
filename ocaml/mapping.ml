@@ -16,6 +16,7 @@ let sumEdges_a ta_list = eliminateDuplicates(List.flatten (List.map getEdges  ta
 let sumProcs_a ta_list = eliminateDuplicates(List.flatten (List.map getProcs  ta_list));;
 let sumClocks_a ta_list = eliminateDuplicates(List.flatten (List.map getClocks  ta_list));;
 let sumInvs_a ta_list = eliminateDuplicates(List.flatten (List.map getInvariants  ta_list));;
+let sumCom_a ta_list = eliminateDuplicates(List.flatten (List.map getCommitted  ta_list));;
 
 (*Used to compone the labels*)
 let bar = "bar_";;
@@ -43,7 +44,7 @@ let rec co2GuardToString gl = match gl with
 
 (****************************************************************************************************)
 (*                                                                                                  *)
-(*                    Edges                                                                         *)
+(*                    Edges and procedures for resets                                                                        *)
 (*                                                                                                  *)
 (*                                                                                                  *)
 (****************************************************************************************************)
@@ -54,36 +55,54 @@ let createResetProc  name  l =
    [(name,  List.fold_right (fun (CO2Clock c)  y -> c^"=0; "^y) l "" )],  
      List.map (fun (CO2Clock c)  -> Clock c) l;; (*the clock list*)
 
+(* let createResetProc  name  l = match l with  *)
+(*    [] -> ([],[]) *)
+(* | (CO2Clock c)::tl -> let  (procs, clocks) =  createResetProc *)
+(* ;; *)
+
+
 (* CreateIntEdges create the list of new edges for an internal choice.*)
 (* createIntEdges: given init initial location , l a list of  [(Action "a", g, r , Success);*)
 (* tadl is the list of  automata in the suffix, and an index *)
 (* it returns the list of new edges, last used index new, list of procedures and list of clocks*)
 let rec createIntEdges  init l  tadl idx  = match (l, tadl) with (*idx has already been used*)
-   [],[] -> ([], idx, [], [],  [])
-| (hd::tl, hd2::tl2) ->  let (edges_a, last_used_idx, proc_a, clockList_a, invariant_a) = createIntEdges init tl tl2 (idx) in
+   [],[] -> ([], idx, [], [],  [], [])
+| (hd::tl, hd2::tl2) ->  let (edges_a, last_used_idx, proc_a, clockList_a, invariant_a, committed_a) = createIntEdges init tl tl2 (idx) in
        let current = string_of_int (last_used_idx+1)  in
-       let procName = procHD^"l1_"^current^"()" in 
-       let (proc, clocksInReset) = createResetProc procName (getReset hd) in 
+       (* creating a reset procedure only if there is some clock to reset*)
+       let procName =if List.length(getReset hd)>0 then procHD^"l1_"^current^"()" else "" in 
+       let (proc, clocksInReset) = if List.length(getReset hd)>0 then createResetProc procName (getReset hd) else ([],[]) in 
        let clocksInGuards = getClocksListFromGuards (getGuard hd) in 
        let clocks  = clocksInGuards @ clocksInReset @ clockList_a in 
        let edges =  [ Edge (init, Label "", co2GuardToString(getGuard hd) ,"", Loc ("l1_"^current));
             Edge (Loc ("l1_"^current), Label (bar^(getAction hd)^bang), "", procName, Loc ("l2_"^current));
             Edge (Loc ("l2_"^current), Label ((getAction hd)^query), "","", getInit hd2)] @ edges_a in
-       let invariant = [] (*[("l1_"^current), "AAAAAAtizi<20"] *)
-       in (edges, (last_used_idx + 1), proc @ proc_a, clocks, invariant @ invariant_a )
+       let invariant = []  in
+       let committed = [] 
+       in (edges, (last_used_idx + 1), proc @ proc_a, clocks, invariant @ invariant_a, committed @ committed_a )
 | _ -> failwith "Error in createIntEdges"
 ;;
 
+
+(*CreateExtEdges create the list of new edges for an external choice.*)
+(* createIntEdges: given init initial location , l a list of  [(Action "a", g, r , Success);*)
+(* tadl is the list of  automata in the suffix, and an index *)
+(* it returns the list of new edges, last used index new, list of procedures and list of clocks*)
 let rec createExtEdges  init l  tadl idx  = match (l, tadl) with (*idx has already been used*)
-   [],[] -> ([], idx, [], [])
-| (hd::tl, hd2::tl2) ->  let (edges_a, last_used_idx, proc_a, clockList_a) = createExtEdges init tl tl2 (idx) in
+   [],[] -> ([], idx, [], [], [], [])
+| (hd::tl, hd2::tl2) ->  let (edges_a, last_used_idx, proc_a, clockList_a, invariant_a, committed_a) = createExtEdges init tl tl2 (idx) in
        let current = string_of_int (last_used_idx+1)  in
-       let procName = procHD^"l1_"^current^"()" in 
-       let (proc, clockList) = createResetProc procName (getReset hd) in 
+       (* creating a reset procedure only if there is some clock to reset*)
+       let procName =if List.length(getReset hd)>0 then procHD^"l1_"^current^"()" else "" in 
+       let (proc, clocksInReset) = if List.length(getReset hd)>0 then createResetProc procName (getReset hd) else ([],[]) in 
+       let clocksInGuards = getClocksListFromGuards (getGuard hd) in  
+       let clocks  = clocksInGuards @ clocksInReset @ clockList_a in
        let edges =  [ Edge (init, Label  (bar^(getAction hd)^query), "","", Loc ("l1_"^current));
-            Edge (Loc ("l1_"^current), Label "", "","", Loc ("l2_"^current));
-            Edge (Loc ("l2_"^current), Label ((getAction hd)^bang), "", procName, getInit hd2)] @ edges_a  
-       in (edges, (last_used_idx + 1), proc @ proc_a, clockList @ clockList_a)
+            Edge (Loc ("l1_"^current), Label "", co2GuardToString(getGuard hd),"", Loc ("l2_"^current));
+            Edge (Loc ("l2_"^current), Label ((getAction hd)^bang), "", procName, getInit hd2)] @ edges_a   in
+       let invariant = [] in
+       let committed = ["l1_"^current] 
+       in (edges, (last_used_idx + 1), proc @ proc_a, clocks,  invariant @ invariant_a, committed @ committed_a )
 | _ -> failwith "Error in createExtEdges"
 ;;
 
@@ -165,25 +184,36 @@ let rec createLabels l   =
 (*BuildAutoma actually builds the automa from the co2 process p*)
 let rec buildAutoma  p idx =  match p with 
   Success -> (successAutoma, idx)
-|IntChoice l ->  (*let all_g = List.map getGuard l in*)
+|IntChoice l -> 
+    (*Recursive step: creating automata for the suffixes*) 
     let (all_automata, used_idx) = buildAutomaList (List.map getSuffix l) idx in 
+    (*Creating new initial location for the internal choice*)
     let init  = Loc ("l0_"^(string_of_int (used_idx+1))) in (*new initial location *)
-    let (choice_edg, eidx, choice_procs, choice_clocks, choice_inv)  = createIntEdges init l  all_automata used_idx in (*solo a questo livello*)
+    (*creates edges for the internal choice but non recursively: only at this level*)
+    let (choice_edg, eidx, choice_procs, choice_clocks, choice_inv, choice_com)  = createIntEdges init l  all_automata used_idx in 
+    let edges  = choice_edg @(sumEdges_a  all_automata  )  in
+    let labels  = (createLabels l) @(sumLabels_a  all_automata  ) in
+    let procs = choice_procs @(sumProcs_a all_automata)   in
+    let clocks = eliminateDuplicates(choice_clocks @(sumClocks_a all_automata)) in 
+    let committed  = choice_com @(sumCom_a all_automata)   in
+    let inv =   ["l0_"^(string_of_int (used_idx+1)),  getMaxInv l  ] @ choice_inv @(sumInvs_a all_automata)
+    (*Gather together all the sets and returs*)
+    in ((TimedAutoma ("", [], init, labels, edges, inv, clocks, [],  committed , [], [], procs)), eidx)
+|ExtChoice l -> 
+    (*Recursive step: creating automata for the suffixes*) 
+    let (all_automata, used_idx) = buildAutomaList (List.map getSuffix l) idx in 
+    (*Creating new initial location for the external choice*)
+    let init  = Loc ("l0_"^(string_of_int (used_idx+1))) in 
+    (*Creates edges for the external choice but non recursively: only at this level*)
+    let (choice_edg, eidx, choice_procs, choice_clocks,  choice_inv, choice_com)  = createExtEdges init l  all_automata used_idx in 
     let edges  = choice_edg @(sumEdges_a  all_automata  )  in
     let labels  = (createLabels l) @(sumLabels_a  all_automata  ) in
     let procs = choice_procs @(sumProcs_a all_automata)   in
     let clocks = eliminateDuplicates(choice_clocks @(sumClocks_a all_automata)) in
-    let inv =   ["l0_"^(string_of_int (used_idx+1)),  getMaxInv l  ] @ choice_inv @(sumInvs_a all_automata)
-    in ((TimedAutoma ("", [], init, labels, edges, inv, clocks, [],  (fun x -> false) , [], [], procs)), eidx)
-|ExtChoice l ->  (*let all_g = List.map getGuard l in*)
-    let (all_automata, used_idx) = buildAutomaList (List.map getSuffix l) idx in 
-    let init  = Loc ("l0_"^(string_of_int (used_idx+1))) in (*new initial location *)
-    let (choice_edg, eidx, choice_procs, choice_clocks)  = createExtEdges init l  all_automata used_idx in (*solo a questo livello*)
-    let edges  = choice_edg @(sumEdges_a  all_automata  )  in
-    let labels  = (createLabels l) @(sumLabels_a  all_automata  ) in
-    let procs = choice_procs @(sumProcs_a all_automata)   in
-    let clocks = eliminateDuplicates(choice_clocks @(sumClocks_a all_automata))   
-    in ((TimedAutoma ("", [], init, labels, edges, [], clocks, [],  (fun x -> false) , [], [], procs)), eidx)
+    let committed  = choice_com @(sumCom_a all_automata)    in
+    let inv =  choice_inv @(sumInvs_a all_automata) 
+    (*Gather together all the sets and returs*)
+    in ((TimedAutoma ("", [], init, labels, edges, inv, clocks, [],  committed , [], [], procs)), eidx)
  and 
   buildAutomaList l  idx = match l with 
       [] -> ([],idx)
@@ -193,7 +223,7 @@ let rec buildAutoma  p idx =  match p with
 ;;
 
 
-(****Packaging the final automata: clocks, locations, labels are calcolated from edges*)
+(****Packaging the final automata:  locations  are calcolated from edges*)
 let  extractLocations edges = 
      List.fold_right (fun (Edge (src, a, b, c, tgt)) y ->  [src;tgt]@y) edges [successLoc];;
 
