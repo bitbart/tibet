@@ -105,6 +105,17 @@ let rec createExtEdges  init l  tadl idx  = match (l, tadl) with (*idx has alrea
        in (edges, (last_used_idx + 1), proc @ proc_a, clocks,  invariant @ invariant_a, committed @ committed_a )
 | _ -> failwith "Error in createExtEdges"
 ;;
+ 
+(*CreateRecEdges solves the mapping between name and procedure declaration by adding an edge*)
+(*takes name of the procedure and location base and list of locations*)
+(*it returns the list of edges and the updated list of rec_locations*)
+let rec createRecEdges  name loc list   = match list with (*idx has already been used*)
+   [] -> ([], [])
+| (currName, currLoc)::tl ->  let (edges_a, currList_a) =  createRecEdges name loc tl 
+                              in ((if currName = name then [Edge (currLoc , Label "", "","", loc)] else [])@edges_a , 
+                                       (if currName = name then [] else [(currName, currLoc)]) @ currList_a);;                          
+
+
 
 (****************************************************************************************************)
 (*                                                                                                  *)
@@ -182,15 +193,18 @@ let rec createLabels l   =
    List.fold_right (fun (CO2Action a, g, r, p) y -> [(Label (bar^a));(Label a)] @ y ) l [];;
 
 (*BuildAutoma actually builds the automa from the co2 process p*)
+(*given a co2 process and the last used index, return an automa and a new index*)
+(*index is a counter used to name locations in a unique way*)
+(*idx it represents the last used index, so that to use it, you must increase it*)
 let rec buildAutoma  p idx =  match p with 
-  Success -> (successAutoma, idx)
+  Success -> (successAutoma, idx, [])
 |IntChoice l -> 
     (*Recursive step: creating automata for the suffixes*) 
-    let (all_automata, used_idx) = buildAutomaList (List.map getSuffix l) idx in 
+    let (all_automata, used_idx, recList) = buildAutomaList (List.map getSuffix l) idx in 
     (*Creating new initial location for the internal choice*)
     let init  = Loc ("l0_"^(string_of_int (used_idx+1))) in (*new initial location *)
     (*creates edges for the internal choice but non recursively: only at this level*)
-    let (choice_edg, eidx, choice_procs, choice_clocks, choice_inv, choice_com)  = createIntEdges init l  all_automata used_idx in 
+    let (choice_edg, choice_idx, choice_procs, choice_clocks, choice_inv, choice_com)  = createIntEdges init l  all_automata used_idx in 
     let edges  = choice_edg @(sumEdges_a  all_automata  )  in
     let labels  = (createLabels l) @(sumLabels_a  all_automata  ) in
     let procs = choice_procs @(sumProcs_a all_automata)   in
@@ -198,14 +212,14 @@ let rec buildAutoma  p idx =  match p with
     let committed  = choice_com @(sumCom_a all_automata)   in
     let inv =   ["l0_"^(string_of_int (used_idx+1)),  getMaxInv l  ] @ choice_inv @(sumInvs_a all_automata)
     (*Gather together all the sets and returs*)
-    in ((TimedAutoma ("", [], init, labels, edges, inv, clocks, [],  committed , [], [], procs)), eidx)
+    in ((TimedAutoma ("", [], init, labels, edges, inv, clocks, [],  committed , [], [], procs)), choice_idx, recList)
 |ExtChoice l -> 
     (*Recursive step: creating automata for the suffixes*) 
-    let (all_automata, used_idx) = buildAutomaList (List.map getSuffix l) idx in 
+    let (all_automata, used_idx, recList) = buildAutomaList (List.map getSuffix l) idx in 
     (*Creating new initial location for the external choice*)
     let init  = Loc ("l0_"^(string_of_int (used_idx+1))) in 
     (*Creates edges for the external choice but non recursively: only at this level*)
-    let (choice_edg, eidx, choice_procs, choice_clocks,  choice_inv, choice_com)  = createExtEdges init l  all_automata used_idx in 
+    let (choice_edg, choice_idx, choice_procs, choice_clocks,  choice_inv, choice_com)  = createExtEdges init l  all_automata used_idx in 
     let edges  = choice_edg @(sumEdges_a  all_automata  )  in
     let labels  = (createLabels l) @(sumLabels_a  all_automata  ) in
     let procs = choice_procs @(sumProcs_a all_automata)   in
@@ -213,15 +227,27 @@ let rec buildAutoma  p idx =  match p with
     let committed  = choice_com @(sumCom_a all_automata)    in
     let inv =  choice_inv @(sumInvs_a all_automata) 
     (*Gather together all the sets and returs*)
-    in ((TimedAutoma ("", [], init, labels, edges, inv, clocks, [],  committed , [], [], procs)), eidx)
+    in ((TimedAutoma ("", [], init, labels, edges, inv, clocks, [],  committed , [], [], procs)), choice_idx, recList )
+| Rec (x,q) ->  (*Recursive step: creating automata for the suffixes*) 
+                let (automa, used_idx, recList) = buildAutoma q  idx in 
+                let (rec_edg, rec_recList)  = createRecEdges x (getInit(automa)) recList in 
+                let edges  = rec_edg  @(getEdges  automa  )
+                in (setEdges automa edges, idx, rec_recList)
+| Call x -> (*Creating an empty automa with new init commited location  and passing it up*)
+            let ea = emptyAutoma in 
+            let init  = Loc ("l_"^(string_of_int (idx+1))) in
+            let committed = ["l_"^(string_of_int (idx+1))] 
+            (*Adding (x, init) as a reference for recursion, to be solved when parsing Rec x*)   
+            in (setCommitted(setInit ea init) committed, idx+1, [(x,init)] )
  and 
   buildAutomaList l  idx = match l with 
-      [] -> ([],idx)
-|  hd::tl -> let (tal, usedIdx) = (buildAutomaList tl idx) in 
-             let (ta, usedIdx_2) = buildAutoma hd (usedIdx) 
-             in (ta::tal,  usedIdx_2)
+      [] -> ([],idx, [])
+|  hd::tl -> let (tal, usedIdx_a, recList_a) = (buildAutomaList tl idx) in 
+             let (ta, usedIdx, recList) = buildAutoma hd (usedIdx_a) 
+             in (ta::tal,  usedIdx, recList @ recList_a)
 ;;
 
+buildAutoma (IntChoice[(CO2Action "a", CO2Guard[], CO2Reset[] ,  (Call "x"))]) 1;;
 
 (****Packaging the final automata:  locations  are calcolated from edges*)
 let  extractLocations edges = 
@@ -231,9 +257,11 @@ let  extractLocations edges =
 let  toTAClocks l = List.map (fun  (CO2Clock c) -> Clock c) ;;
 
 (*Uppaal automata need a name/ identifier*)
-let buildAutomaMain p name= let (tap, idxp)  = buildAutoma p 0 in 
-    let locp = eliminateDuplicates(extractLocations(getEdges(tap))) in
-    setLocations(setName tap name)  locp 
+let buildAutomaMain p name= let (tap, idxp, recList)  = buildAutoma p 0 in 
+    if List.length recList <> 0 then failwith "BuildAutomaMain: not all the recursive call have been solved"
+    else
+      let locp = eliminateDuplicates(extractLocations(getEdges(tap))) 
+      in setLocations(setName tap name)  locp 
 ;;
 
 (*The function "mapping" return a network of two automata from the  processes p and q.*)

@@ -117,3 +117,23 @@ let q = ExtChoice [(CO2Action "a",  CO2Guard [(CO2Clock "t", Less, 20)], CO2Rese
                 
 let lta = co2_mapping   p q;;
 writeToFile lta "ex13";;
+
+
+(********************************************************)
+(*                                                      *)
+(*               Testing:                               *) 
+(*               Recursive examples                     *)
+(*                                                      *)
+(*                                                      *)
+(********************************************************)
+(*we say compliant if both valuation expression go green*)
+(*QTemp.l0_1 --> QTemp.f*)
+
+(*rec x.bar_a.x | rec x.a.x     :not compliant  *)
+let p = Rec ("x", ExtChoice [(CO2Action "a", CO2Guard[], CO2Reset[] , Call "x")]);;
+let q = Rec ("x", IntChoice [(CO2Action "a", CO2Guard[], CO2Reset[] , Call "x")]);;
+let lta = co2_mapping  p q;;
+writeToFile lta "ex20";;
+(*questa non e' compliant siccome non crea lo stato finale f*)
+(* bisogna cambiare l'espressione di valutazione: non deve parlare di f*)
+(*A[] not deadlock funziona*)
