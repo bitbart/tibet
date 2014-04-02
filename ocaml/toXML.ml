@@ -178,10 +178,12 @@ let aut_toXML_out lta =
 (********************************************************) 
 let getLocName (Loc name) = name;;
 
-let rec write_queryRec lta = match lta with 
-      []-> "" 
-    |  hd::tl ->  let t = (witeTemplateName(getTemplateName hd)) 
-                  in  t^"."^(getLocName (getInit hd))^" --> "^t^"."^(getLocName successLoc)^"\n"^(write_queryRec (tl) );;
+(* let rec write_queryRec lta = match lta with  *)
+(*       []-> ""  *)
+(*     |  hd::tl ->  let t = (witeTemplateName(getTemplateName hd))  *)
+(*                   in  t^"."^(getLocName (getInit hd))^" --> "^t^"."^(getLocName successLoc)^"\n"^(write_queryRec (tl) );; *)
+
+let  write_queryRec lta = "A[] not deadlock";;
 
 let query_toXML  lta = 
 	(write_queryRec lta);;

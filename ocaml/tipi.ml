@@ -69,9 +69,6 @@ type automa =TimedAutoma of
 (**************Constructors ********************)
 let emptyAutoma = TimedAutoma ("",[],Loc "",[],[],[], [], [], [], [], [],  []);;
 
-let successLoc = Loc "f";;
-let successAutoma = TimedAutoma ("",[successLoc], successLoc,[],[],[], [], [], [], [], [],  []);;
-
 
 (**************Getter for automa fields ********************)
 let getInit  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = init;; 

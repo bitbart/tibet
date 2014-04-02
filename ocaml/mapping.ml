@@ -41,10 +41,9 @@ let rec co2GuardToString gl = match gl with
 ;;
 
 
-
 (****************************************************************************************************)
 (*                                                                                                  *)
-(*                    Edges and procedures for resets                                                                        *)
+(*                    Edges and procedures for resets                                               *)
 (*                                                                                                  *)
 (*                                                                                                  *)
 (****************************************************************************************************)
@@ -182,6 +181,125 @@ let getMaxInv l =  if List.length l = 0 then ""
                    else  let c = getClock (getGuard (List.nth l 0))
                    in boundToInv(getBoundOfAllTheActions l (Until (c, 1)));;
 
+(****************************************************************************************************)
+(*                                                                                                  *)
+(*                    Success Automa                                                                *)
+(*                                                                                                  *)
+(****************************************************************************************************)
+(*The success state synchronize on a channel and then performe a self loop, to allow for the property not deadlock to be true*)
+let successLoc = Loc "f";;
+let successSync = "success";;
+let successAutoma = let edges =  [ Edge (successLoc, Label  (successSync^"?"), "","", Loc ("f_0"));
+                                   Edge (successLoc, Label  (successSync^"!"), "","", Loc ("f_0"));
+                                   Edge ( Loc ("f_0"), Label "", "","", Loc ("f_0"))]
+                    in TimedAutoma ("",[successLoc], successLoc,[Label successSync],edges,[], [], [], [], [], [],  []);;
+(****************************************************************************************************)
+(*                                                                                                  *)
+(*                    Normalizing guards                                                            *)
+(*                                                                                                  *)
+(*                                                                                                  *)
+(****************************************************************************************************)
+(*A single guard is composed by a list of clock constraints, which  may contains different clocks*)
+(*t<2 && t< 3 && t < 4 && t > 1 && t> 0 && y<2 ....*)
+(*We normalize the guard to contain  a time interval (if any) for any clock*) 
+(*Moreover, if the interval is empty (es t<20 && t >30) we convert it into t<0*)
+(*0<t && t<2*)
+(*For instance:*)
+(* let l =  [(CO2Clock "t", Great, 2);(CO2Clock "t", Great, 3);(CO2Clock "t", Less, 8); *)
+(*           (CO2Clock "x", Less, 10); (CO2Clock "x", Less, 5); (CO2Clock "x", Great, 4); *)
+(*           (CO2Clock "z", Less, 10)  ];;                   *)
+(* normalize l;;                  *)
+(* # - (co2_clock * co2_relation * int) list = *)
+(* [(CO2Clock "z", Less, 10); (CO2Clock "x", Great, 4); (CO2Clock "x", Less, 5); *)
+(*  (CO2Clock "t", Great, 3); (CO2Clock "t", Less, 8)] *)
+
+
+(*Get the clock list clocks from a set of clock constraints l*)
+let rec getClockList l clocks = match l with 
+      []-> clocks
+| (CO2Clock c, a, b)::tl -> getClockList tl (addElSet c clocks);; 
+
+(*Partition the constraint list in sets belonging to the same clock*)
+let rec partition clocks l = match clocks with 
+  [] -> []
+| hd::tl ->(hd,  List.filter (fun (CO2Clock c, a, b)-> if hd = c then true else false ) l):: (partition  tl l);;
+
+(*Creating a type for boundaries, to deal with min and max for intervals*)
+type boundary = None | MinBound | MaxBound | Bound of (co2_clock * co2_relation * int) ;;
+
+(*Extract the clock constraint from the bound*)
+let getConstraint b = match b with 
+          Bound g -> g
+|  _-> failwith "Error in getConstraint" ;;
+
+(*The tricky part with intervals is that they are the result of intersection*)
+(* so that, the minimum boundary is  max point (es t>2 && t> 3 && t>4 gives t>4*)
+(* and the maximum boundary is the min point*)
+let getMaxBound b1 b2 = match (b1,b2) with 
+    (MinBound, _) -> b2
+| ( _, MinBound) -> b1
+| (Bound (clock1, r1, d1), Bound(clock2,r2,d2))->     
+                   if r1<>r2 then failwith "getMaxBound: not the same relation"
+                   else if d1 < d2 then b2 else b1
+|  _ ->  failwith "Something went wrong with getMaxBound"
+;;
+
+let getMinBound b1 b2 = match (b1,b2) with 
+    (MaxBound, _) -> b2
+| ( _, MaxBound) -> b1
+| (Bound (clock1, r1, d1), Bound(clock2,r2,d2))->     
+                   if r1<>r2 then failwith "getMinBound: not the same relation"
+                   else if d1 < d2 then b1 else b2
+|  _ ->  failwith "Something went wrong with getMinBound"
+;;
+
+(*Converting the partitionned list into a list of intervals: takes the list of constraint for each clock*)
+(*minB is 2<t and maxB is t<10*)
+let rec  makeInterval part minB maxB = match part with 
+  []-> (minB, maxB)
+| (c, r, d)::tl-> makeInterval tl (if r = Great then getMaxBound (Bound(c,r,d)) minB else minB)
+                                  (if r = Less then getMinBound (Bound(c,r,d)) maxB else maxB)
+;;  
+
+(*Re-converting a bound list to a guardlist*)
+let rec constraint_of_bound bl = match bl with
+         []->[]
+| hd::tl -> if hd = None || hd = MinBound || hd = MaxBound then constraint_of_bound tl 
+                                              else (getConstraint(hd))::constraint_of_bound tl
+;;
+
+(*Checking if the interval is empty*)
+let isEmptyInterval (minB, maxB) = match   (minB, maxB) with 
+   (Bound (clock1, r1, d1), Bound(clock2,r2,d2)) -> if d1 < d2 then false else true  
+|  _ -> false;;
+ 
+(*knowing the clock name is enought*)
+let getEmptyConstraint  (minB, maxB) = match   (minB, maxB) with 
+   (Bound (CO2Clock c, r1, d1), Bound(clock2,r2,d2)) ->   (Bound (CO2Clock c, Less, 0), None) 
+|  _ -> failwith "Error in getEmptyConstraint";;  
+
+(*Normalizing a single guard: the list of constraints*)
+let normalize_guard l = let cl = getClockList l [] in
+                     let part = partition cl l in 
+                     (*making intervals on every sublist, then checking that the interval is non empty*)
+                     (*then de-coupling, then converting back to constraint. So:*)
+                     (*converting back to constraints list*)
+                     constraint_of_bound (
+                        (*decoupling*)
+                        List.fold_right (fun (a,b) y -> a::(b::y))
+                           (*checking the interval is not empty*)  
+                           (List.map (fun x -> if isEmptyInterval(x) then getEmptyConstraint(x)  else x)  
+                              (*making interval*)
+                              (List.map (fun x -> makeInterval (snd x) MinBound MaxBound) part))
+                           []
+                     )  ;; 
+
+
+(*Normalizing a list of actions*)
+let rec normalize l = match l with
+   [] -> [] 
+|    (a,CO2Guard g,r,o)::tl -> (a,CO2Guard(normalize_guard g), r, o)::(normalize tl);;
+
 
 (****************************************************************************************************)
 (*                                                                                                  *)
@@ -193,12 +311,12 @@ let rec createLabels l   =
    List.fold_right (fun (CO2Action a, g, r, p) y -> [(Label (bar^a));(Label a)] @ y ) l [];;
 
 (*BuildAutoma actually builds the automa from the co2 process p*)
-(*given a co2 process and the last used index, return an automa and a new index*)
+(*given a co2 process and the last used index, return an automa ,  a new index and a recursion list*)
 (*index is a counter used to name locations in a unique way*)
 (*idx it represents the last used index, so that to use it, you must increase it*)
 let rec buildAutoma  p idx =  match p with 
   Success -> (successAutoma, idx, [])
-|IntChoice l -> 
+|IntChoice l' -> let l = normalize l' in  
     (*Recursive step: creating automata for the suffixes*) 
     let (all_automata, used_idx, recList) = buildAutomaList (List.map getSuffix l) idx in 
     (*Creating new initial location for the internal choice*)
@@ -213,7 +331,7 @@ let rec buildAutoma  p idx =  match p with
     let inv =   ["l0_"^(string_of_int (used_idx+1)),  getMaxInv l  ] @ choice_inv @(sumInvs_a all_automata)
     (*Gather together all the sets and returs*)
     in ((TimedAutoma ("", [], init, labels, edges, inv, clocks, [],  committed , [], [], procs)), choice_idx, recList)
-|ExtChoice l -> 
+|ExtChoice l' ->  let l = normalize l' in  
     (*Recursive step: creating automata for the suffixes*) 
     let (all_automata, used_idx, recList) = buildAutomaList (List.map getSuffix l) idx in 
     (*Creating new initial location for the external choice*)
@@ -259,11 +377,22 @@ let  toTAClocks l = List.map (fun  (CO2Clock c) -> Clock c) ;;
 let buildAutomaMain p name= let (tap, idxp, recList)  = buildAutoma p 0 in 
     if List.length recList <> 0 then failwith "BuildAutomaMain: not all the recursive call have been solved"
     else 
-      let locp = if (p = Success) then [successLoc] 
-                 else eliminateDuplicates(extractLocations(getEdges(tap))) 
+      let locp = eliminateDuplicates(extractLocations(getEdges(tap))) 
       in setLocations(setName tap name)  locp 
 ;;
+
+
 
 (*The function "mapping" return a network of two automata from the  processes p and q.*)
 let co2_mapping p q  =  [ buildAutomaMain p "p" ; buildAutomaMain q "q"] ;;
         
+
+
+
+
+
+
+
+
+
+
