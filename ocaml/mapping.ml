@@ -366,14 +366,14 @@ let rec buildAutoma  p idx =  match p with
 ;;
 
 
-(****Packaging the final automata:  locations  are calcolated from edges*)
+(****Packaging the final automata:  locations  are calcolated from edges!*)
 let  extractLocations edges = 
      List.fold_right (fun (Edge (src, a, b, c, tgt)) y ->  [src;tgt]@y) edges [];;
 
-(*to convert the clocks*)
-let  toTAClocks l = List.map (fun  (TSBClock c) -> Clock c) ;;
 
-(*Uppaal automata need a name/ identifier*)
+(*************************************************************************************)
+(*buildAutomaMain is the main methode to convert a TSBprocess into an Uppaal automata*)
+(*it needs the process p and a name/identifier for it*)
 let buildAutomaMain p name= let (tap, idxp, recList)  = buildAutoma p 0 in 
     if List.length recList <> 0 then failwith "BuildAutomaMain: not all the recursive call have been solved"
     else 
@@ -381,9 +381,8 @@ let buildAutomaMain p name= let (tap, idxp, recList)  = buildAutoma p 0 in
       in setLocations(setName tap name)  locp 
 ;;
 
-
-
-(*The function "mapping" return a network of two automata from the  processes p and q.*)
+(*tsb_mapping performs the conversion of two TSBprocesses p and q into two Uppaal automata*)
+(*"p" and "q" are two simple names given: it is useful only in UPPAAL*) 
 let tsb_mapping p q  =  [ buildAutomaMain p "p" ; buildAutomaMain q "q"] ;;
         
 
