@@ -4,9 +4,9 @@
 
 
 (*getter functions for  [(Action "a", g, r , Success)*)
-let getAction (CO2Action a,b,c,d) = a;;
-let getGuard (a,CO2Guard b,c,d) = b;;
-let getReset (a,b,CO2Reset c,d) = c;;
+let getAction (TSBAction a,b,c,d) = a;;
+let getGuard (a,TSBGuard b,c,d) = b;;
+let getReset (a,b,TSBReset c,d) = c;;
 let getSuffix (a,b,c, d) = d;;
 
 (*Functions to collapse together all the fields  of all the automata in the  list*)
@@ -25,18 +25,18 @@ let query = "?";;
 let procHD = "res_";;
 
 
-(*Converter for guards: from   [(CO2Clock "t", Less, 10); (CO2Clock "t", Great, 1)] to "t<10 && t>1"*)
+(*Converter for guards: from   [(TSBClock "t", Less, 10); (TSBClock "t", Great, 1)] to "t<10 && t>1"*)
 let getRelation r = match r with 
   Less -> "<"
 | Great -> ">";;
 
-let getClockName (CO2Clock c) = c;;
+let getClockName (TSBClock c) = c;;
 
-let getClocksListFromGuards gl = List.fold_right (fun (CO2Clock c, b, d)  y -> (Clock c)::y) gl [];;
+let getClocksListFromGuards gl = List.fold_right (fun (TSBClock c, b, d)  y -> (Clock c)::y) gl [];;
 
-let rec co2GuardToString gl = match gl with 
+let rec tsbGuardToString gl = match gl with 
     [] -> ""
-| (c,r,d)::tl1::tl2-> getClockName(c)^getRelation(r)^(string_of_int d)^" && "^(co2GuardToString (tl1::tl2))
+| (c,r,d)::tl1::tl2-> getClockName(c)^getRelation(r)^(string_of_int d)^" && "^(tsbGuardToString (tl1::tl2))
 | (c,r,d)::tl1  ->   getClockName(c)^getRelation(r)^(string_of_int d)
 ;;
 
@@ -51,12 +51,12 @@ let rec co2GuardToString gl = match gl with
 (*Unfortunately UPPAAL doesnot allows for more resets on an edge, unless they are written in a procedure*)
 (*createResetProc create the reset procedure and returns also the clock list*)
 let createResetProc  name  l = 
-   [(name,  List.fold_right (fun (CO2Clock c)  y -> c^"=0; "^y) l "" )],  
-     List.map (fun (CO2Clock c)  -> Clock c) l;; (*the clock list*)
+   [(name,  List.fold_right (fun (TSBClock c)  y -> c^"=0; "^y) l "" )],  
+     List.map (fun (TSBClock c)  -> Clock c) l;; (*the clock list*)
 
 (* let createResetProc  name  l = match l with  *)
 (*    [] -> ([],[]) *)
-(* | (CO2Clock c)::tl -> let  (procs, clocks) =  createResetProc *)
+(* | (TSBClock c)::tl -> let  (procs, clocks) =  createResetProc *)
 (* ;; *)
 
 
@@ -73,7 +73,7 @@ let rec createIntEdges  init l  tadl idx  = match (l, tadl) with (*idx has alrea
        let (proc, clocksInReset) = if List.length(getReset hd)>0 then createResetProc procName (getReset hd) else ([],[]) in 
        let clocksInGuards = getClocksListFromGuards (getGuard hd) in 
        let clocks  = clocksInGuards @ clocksInReset @ clockList_a in 
-       let edges =  [ Edge (init, Label "", co2GuardToString(getGuard hd) ,"", Loc ("l1_"^current));
+       let edges =  [ Edge (init, Label "", tsbGuardToString(getGuard hd) ,"", Loc ("l1_"^current));
             Edge (Loc ("l1_"^current), Label (bar^(getAction hd)^bang), "", procName, Loc ("l2_"^current));
             Edge (Loc ("l2_"^current), Label ((getAction hd)^query), "","", getInit hd2)] @ edges_a in
        let invariant = []  in
@@ -97,7 +97,7 @@ let rec createExtEdges  init l  tadl idx  = match (l, tadl) with (*idx has alrea
        let clocksInGuards = getClocksListFromGuards (getGuard hd) in  
        let clocks  = clocksInGuards @ clocksInReset @ clockList_a in
        let edges =  [ Edge (init, Label  (bar^(getAction hd)^query), "","", Loc ("l1_"^current));
-            Edge (Loc ("l1_"^current), Label "", co2GuardToString(getGuard hd),"", Loc ("l2_"^current));
+            Edge (Loc ("l1_"^current), Label "", tsbGuardToString(getGuard hd),"", Loc ("l2_"^current));
             Edge (Loc ("l2_"^current), Label ((getAction hd)^bang), "", procName, getInit hd2)] @ edges_a   in
        let invariant = [] in
        let committed = ["l1_"^current] 
@@ -124,8 +124,8 @@ let rec createRecEdges  name loc list   = match list with (*idx has already been
 (****************************************************************************************************)
 (*supInvariants calculate the maximum moment you can wait before choosing a branch *)
 (*We assume they deal with the same clock*)
-(* l is:  [ (CO2Action "a", g2, r2 , Success), (CO2Action "a", g3, r2 , Success), (CO2Action "a", g4, r2 , Success) ];;*)
-(* g is :  CO2Guard [(CO2Clock "t", Less, 10); (CO2Clock "t", Great, 1)];;*)
+(* l is:  [ (TSBAction "a", g2, r2 , Success), (TSBAction "a", g3, r2 , Success), (TSBAction "a", g4, r2 , Success) ];;*)
+(* g is :  TSBGuard [(TSBClock "t", Less, 10); (TSBClock "t", Great, 1)];;*)
 (* in the case t<10 && t < 3 sup Invariant returs (t, 10)*)
 (* in the case t>10 sup Invariant returs (t, 0)*)
 
@@ -156,21 +156,21 @@ let maxBound b1 b2 = match (b1, b2) with
 (* and you returns the minimun bound since it is an INTERVALL and you take the intersection*)
 let rec getBoundOfASingleAction l =  match l with 
   [] -> Forever
-| (CO2Clock c, r, d)::tl -> let bound =  getBoundOfASingleAction tl in 
+| (TSBClock c, r, d)::tl -> let bound =  getBoundOfASingleAction tl in 
                             if r = Great then bound else minBound bound (Until (c,d))
 ;;
  
 
 let rec getBoundOfAllTheActions l b = match l with 
   [] -> b
-| (a, CO2Guard gl, r, e)::tl -> let b1 = getBoundOfASingleAction gl in 
+| (a, TSBGuard gl, r, e)::tl -> let b1 = getBoundOfASingleAction gl in 
                               let m = maxBound b1 b 
                               in  getBoundOfAllTheActions tl m
 ;;
 
 let getClock l = match l with 
    [] -> ""
-|   (CO2Clock c, r, d)::tl -> c;;
+|   (TSBClock c, r, d)::tl -> c;;
 
 let boundToInv b = match b with
   Forever -> ""
@@ -205,27 +205,27 @@ let successAutoma = let edges =  [ Edge (successLoc, Label  (successSync^"?"), "
 (*Moreover, if the interval is empty (es t<20 && t >30) we convert it into t<0*)
 (*0<t && t<2*)
 (*For instance:*)
-(* let l =  [(CO2Clock "t", Great, 2);(CO2Clock "t", Great, 3);(CO2Clock "t", Less, 8); *)
-(*           (CO2Clock "x", Less, 10); (CO2Clock "x", Less, 5); (CO2Clock "x", Great, 4); *)
-(*           (CO2Clock "z", Less, 10)  ];;                   *)
+(* let l =  [(TSBClock "t", Great, 2);(TSBClock "t", Great, 3);(TSBClock "t", Less, 8); *)
+(*           (TSBClock "x", Less, 10); (TSBClock "x", Less, 5); (TSBClock "x", Great, 4); *)
+(*           (TSBClock "z", Less, 10)  ];;                   *)
 (* normalize l;;                  *)
-(* # - (co2_clock * co2_relation * int) list = *)
-(* [(CO2Clock "z", Less, 10); (CO2Clock "x", Great, 4); (CO2Clock "x", Less, 5); *)
-(*  (CO2Clock "t", Great, 3); (CO2Clock "t", Less, 8)] *)
+(* # - (tsb_clock * tsb_relation * int) list = *)
+(* [(TSBClock "z", Less, 10); (TSBClock "x", Great, 4); (TSBClock "x", Less, 5); *)
+(*  (TSBClock "t", Great, 3); (TSBClock "t", Less, 8)] *)
 
 
 (*Get the clock list clocks from a set of clock constraints l*)
 let rec getClockList l clocks = match l with 
       []-> clocks
-| (CO2Clock c, a, b)::tl -> getClockList tl (addElSet c clocks);; 
+| (TSBClock c, a, b)::tl -> getClockList tl (addElSet c clocks);; 
 
 (*Partition the constraint list in sets belonging to the same clock*)
 let rec partition clocks l = match clocks with 
   [] -> []
-| hd::tl ->(hd,  List.filter (fun (CO2Clock c, a, b)-> if hd = c then true else false ) l):: (partition  tl l);;
+| hd::tl ->(hd,  List.filter (fun (TSBClock c, a, b)-> if hd = c then true else false ) l):: (partition  tl l);;
 
 (*Creating a type for boundaries, to deal with min and max for intervals*)
-type boundary = None | MinBound | MaxBound | Bound of (co2_clock * co2_relation * int) ;;
+type boundary = None | MinBound | MaxBound | Bound of (tsb_clock * tsb_relation * int) ;;
 
 (*Extract the clock constraint from the bound*)
 let getConstraint b = match b with 
@@ -275,7 +275,7 @@ let isEmptyInterval (minB, maxB) = match   (minB, maxB) with
  
 (*knowing the clock name is enought*)
 let getEmptyConstraint  (minB, maxB) = match   (minB, maxB) with 
-   (Bound (CO2Clock c, r1, d1), Bound(clock2,r2,d2)) ->   (Bound (CO2Clock c, Less, 0), None) 
+   (Bound (TSBClock c, r1, d1), Bound(clock2,r2,d2)) ->   (Bound (TSBClock c, Less, 0), None) 
 |  _ -> failwith "Error in getEmptyConstraint";;  
 
 (*Normalizing a single guard: the list of constraints*)
@@ -298,7 +298,7 @@ let normalize_guard l = let cl = getClockList l [] in
 (*Normalizing a list of actions*)
 let rec normalize l = match l with
    [] -> [] 
-|    (a,CO2Guard g,r,o)::tl -> (a,CO2Guard(normalize_guard g), r, o)::(normalize tl);;
+|    (a,TSBGuard g,r,o)::tl -> (a,TSBGuard(normalize_guard g), r, o)::(normalize tl);;
 
 
 (****************************************************************************************************)
@@ -306,12 +306,12 @@ let rec normalize l = match l with
 (*                    Build Automa                                                                  *)
 (*                                                                                                  *)
 (****************************************************************************************************)
-(*createLabels extracts labels from co2 actions*)
+(*createLabels extracts labels from tsb actions*)
 let rec createLabels l   =  
-   List.fold_right (fun (CO2Action a, g, r, p) y -> [(Label (bar^a));(Label a)] @ y ) l [];;
+   List.fold_right (fun (TSBAction a, g, r, p) y -> [(Label (bar^a));(Label a)] @ y ) l [];;
 
-(*BuildAutoma actually builds the automa from the co2 process p*)
-(*given a co2 process and the last used index, return an automa ,  a new index and a recursion list*)
+(*BuildAutoma actually builds the automa from the tsb process p*)
+(*given a tsb process and the last used index, return an automa ,  a new index and a recursion list*)
 (*index is a counter used to name locations in a unique way*)
 (*idx it represents the last used index, so that to use it, you must increase it*)
 let rec buildAutoma  p idx =  match p with 
@@ -371,7 +371,7 @@ let  extractLocations edges =
      List.fold_right (fun (Edge (src, a, b, c, tgt)) y ->  [src;tgt]@y) edges [];;
 
 (*to convert the clocks*)
-let  toTAClocks l = List.map (fun  (CO2Clock c) -> Clock c) ;;
+let  toTAClocks l = List.map (fun  (TSBClock c) -> Clock c) ;;
 
 (*Uppaal automata need a name/ identifier*)
 let buildAutomaMain p name= let (tap, idxp, recList)  = buildAutoma p 0 in 
@@ -384,7 +384,7 @@ let buildAutomaMain p name= let (tap, idxp, recList)  = buildAutoma p 0 in
 
 
 (*The function "mapping" return a network of two automata from the  processes p and q.*)
-let co2_mapping p q  =  [ buildAutomaMain p "p" ; buildAutomaMain q "q"] ;;
+let tsb_mapping p q  =  [ buildAutomaMain p "p" ; buildAutomaMain q "q"] ;;
         
 
 

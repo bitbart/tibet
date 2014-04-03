@@ -18,19 +18,19 @@ let addSetSet s1 s2 = eliminateDuplicates (s1@s2);;
 
 (*************************************)
 (*                                   *)
-(*         Timed CO2                 *)
+(*         Timed TSB                 *)
 (*                                   *)
 (*************************************)
-type co2_action = CO2Action of string;;
-type co2_clock = CO2Clock of string;;
-type co2_relation = Less | Great ;;
-type co2_guard = CO2Guard of (co2_clock * co2_relation * int) list;;
-type co2_reset = CO2Reset of co2_clock list;;
+type tsb_action = TSBAction of string;;
+type tsb_clock = TSBClock of string;;
+type tsb_relation = Less | Great ;;
+type tsb_guard = TSBGuard of (tsb_clock * tsb_relation * int) list;;
+type tsb_reset = TSBReset of tsb_clock list;;
 
-type co2 = Success | 
-           IntChoice of (co2_action * co2_guard * co2_reset * co2) list | 
-           ExtChoice of (co2_action *co2_guard * co2_reset * co2) list  |
-           Rec of string * co2 |
+type tsb = Success | 
+           IntChoice of (tsb_action * tsb_guard * tsb_reset * tsb) list | 
+           ExtChoice of (tsb_action *tsb_guard * tsb_reset * tsb) list  |
+           Rec of string * tsb |
            Call of string ;; 
 
 
