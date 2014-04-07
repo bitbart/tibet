@@ -1,5 +1,4 @@
 
-
 #use "toXML.ml";;
 
 
@@ -12,10 +11,8 @@
 (********************************************************)
 (*This is an example for understanding syntax*)
 
-(*!a{t<10&&t>1&&t<60,t,x,z}.(!b + !c) | ?a{y<4,y}.(!e + !f{z})   : not compliant*)
-let p = IntChoice [(TSBAction "a", TSBGuard [(TSBClock "t", Less, 10);
-                                             (TSBClock "t", Great, 1);
-                                             (TSBClock "t", Less, 60) ], TSBReset[TSBClock "t"; TSBClock "x"; TSBClock "z"] , 
+(*!a{t<10&&t>1&&t<60,t,x,z}.(!b + !c) | ?a{y<4,y}.(?e + ?f{z})   : not compliant*)
+let p = IntChoice [(TSBAction "a", TSBGuard g, TSBReset r ), 
                              IntChoice [(TSBAction "b", TSBGuard [], TSBReset[] , Success);
                                         (TSBAction "c", TSBGuard [], TSBReset[] , Success)] )];;
 
