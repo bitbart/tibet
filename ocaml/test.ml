@@ -1,7 +1,6 @@
 
 #use "toXML.ml";;
 
-
 (********************************************************)
 (*                                                      *)
 (*               Example for syntax                     *) 
@@ -11,14 +10,19 @@
 (********************************************************)
 (*This is an example for understanding syntax*)
 
-(*!a{t<10&&t>1&&t<60,t,x,z}.(!b + !c) | ?a{y<4,y}.(?e + ?f{z})   : not compliant*)
-let p = IntChoice [(TSBAction "a", TSBGuard g, TSBReset r ), 
+(*!a{t<10&&t>1&&t<60,t,x,z}.(!b + !c) | ?a{y<4,y}.(!e + !f{z})   : not compliant*)
+let p = IntChoice [(TSBAction "a", TSBGuard [(TSBClock "t", Less, 10);
+                                             (TSBClock "t", Great, 1);
+                                             (TSBClock "t", Less, 60) ], TSBReset[TSBClock "t"; TSBClock "x"; TSBClock "z"] , 
                              IntChoice [(TSBAction "b", TSBGuard [], TSBReset[] , Success);
                                         (TSBAction "c", TSBGuard [], TSBReset[] , Success)] )];;
 
 let q = ExtChoice [(TSBAction "a", TSBGuard [(TSBClock "y", Less, 4)], TSBReset[TSBClock "y"] , 
                              ExtChoice [(TSBAction "e", TSBGuard [], TSBReset[] , Success);
                                         (TSBAction "f", TSBGuard [], TSBReset[TSBClock "z"] , Success)] )];;
+
+let lta = tsb_mapping p q;;
+writeToFile lta "ex50";;
 
 let lta = tsb_mapping p q;;
 writeToFile lta "ex50";;
