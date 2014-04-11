@@ -1,0 +1,7 @@
+<contract id="c1">
+	<intaction id="a">
+		<guards>
+			<guard id="t" op="less" value="10"/>
+		</guards>
+	</intaction>
+</contract>

@@ -1,0 +1,20 @@
+<contract id="c1">
+	<sequence>
+		<intaction id="a">
+			<guards>
+				<guard id="t" op="less" value="10"/>
+				<guard id="t" op="great" value="1"/>
+				<guard id="t" op="less" value="60"/>
+			</guards>
+			<resets>
+				<reset id="t"/>
+				<reset id="x"/>
+				<reset id="z"/>
+			</resets>
+		</intaction>
+		<intchoice>
+			<intaction id="b"/>
+			<intaction id="c"/> 
+		</intchoice>
+	</sequence>
+</contract>

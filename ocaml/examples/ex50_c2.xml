@@ -1,0 +1,16 @@
+<contract id="c2">
+	<sequence>
+		<extaction id="a">
+			<guards>
+				<guard id="y" op="less" value="4"/>
+			</guards>
+			<resets>
+				<reset id="y"/>
+			</resets>
+		</extaction>
+		<extchoice>
+			<extaction id="e"/>
+			<extaction id="f"/> 
+		</extchoice>
+	</sequence>
+</contract>

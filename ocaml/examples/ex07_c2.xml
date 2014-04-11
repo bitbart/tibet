@@ -1,0 +1,14 @@
+<contract id="c2">
+	<extchoice>
+		<extaction id="a">
+			<guards>
+				<guard id="t" op="less" value="10"/>
+			</guards>
+		</extaction>
+		<extaction id="b">
+			<guards>
+				<guard id="t" op="less" value="10"/>
+			</guards>
+		</extaction>
+	</extchoice>
+</contract>

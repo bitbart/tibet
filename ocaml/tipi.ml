@@ -27,7 +27,7 @@ type tsb_relation = Less | Great ;;
 type tsb_guard = TSBGuard of (tsb_clock * tsb_relation * int) list;;
 type tsb_reset = TSBReset of tsb_clock list;;
 
-type tsb = Success | 
+type tsb = Success |
            IntChoice of (tsb_action * tsb_guard * tsb_reset * tsb) list | 
            ExtChoice of (tsb_action *tsb_guard * tsb_reset * tsb) list  |
            Rec of string * tsb |
