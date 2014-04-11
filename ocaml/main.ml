@@ -4,6 +4,10 @@
 (* It requires xml-light module - download it and exec 'make install' *)
 #load "xml-light.cma";;
 
+let rec fromIntChoiceToList (IntChoice l) = l;;
+
+let rec fromExtChoiceToList (ExtChoice l) = l;;
+
 let getOperator op =
 	match op with
 	| "less" -> Less
@@ -50,18 +54,18 @@ let rec getIntChoice ic =
 	| Xml.Element ("intaction", attrs, children)::ic' -> 
 		let id = List.assoc "id" attrs in
 		[(TSBAction id, getActionGuards children, getActionResets children, Success)] @ getIntChoice ic'
+	| Xml.Element ("sequence", attrs, children)::ic' ->
+		fromIntChoiceToList (getSequence children) @ getIntChoice ic'
 	| _ -> []
-;;
-
-let rec getExtChoice ic = 
-	match ic with
-	| Xml.Element ("extaction", attrs, children)::ic' -> 
+and getExtChoice ec = 
+	match ec with
+	| Xml.Element ("extaction", attrs, children)::ec' -> 
 		let id = List.assoc "id" attrs in
-		[(TSBAction id, getActionGuards children, getActionResets children, Success)] @ getExtChoice ic'
+		[(TSBAction id, getActionGuards children, getActionResets children, Success)] @ getExtChoice ec'
+	| Xml.Element ("sequence", attrs, children)::ec' -> 
+		fromExtChoiceToList (getSequence children) @ getExtChoice ec'
 	| _ -> []
-;;
-
-let rec getSequence s =
+and getSequence s =
 	match s with
 	| Xml.Element ("intaction", attrs, children)::s' -> 
 		let id = List.assoc "id" attrs in
@@ -73,6 +77,12 @@ let rec getSequence s =
 		IntChoice (getIntChoice children)
 	| Xml.Element ("extchoice", attrs, children)::s' -> 
 		ExtChoice (getExtChoice children)
+	| Xml.Element ("rec", attrs, children)::c' ->
+		let id = List.assoc "id" attrs in
+		Rec(id, getSequence children) 
+	| Xml.Element ("rec", attrs, children)::c' ->
+		let id = List.assoc "id" attrs in
+		Rec(id, getSequence children) 
 	| _ -> Success
 ;;
 
@@ -87,6 +97,9 @@ let getChildren c =
 	| Xml.Element ("extaction", attrs, children)::c' ->
 		let id = List.assoc "id" attrs in
 		ExtChoice[(TSBAction id, getActionGuards children, getActionResets children, Success)]
+	| Xml.Element ("rec", attrs, children)::c' ->
+		let id = List.assoc "id" attrs in
+		Rec(id, getSequence children)
 	| _ -> failwith "Invalid element found"
 ;;
 
@@ -97,5 +110,5 @@ let readXmlContract filename =
   | _ -> failwith "Not valid contract XML file"
 ;;
 
-let contractToAutomaton = readXmlContract "ex07_c1.xml";;
+let contractToAutomaton = readXmlContract "c2.xml";;
 let contractToAutomaton = readXmlContract "ex07_c2.xml";;
