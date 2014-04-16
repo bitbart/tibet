@@ -1,8 +1,13 @@
 (** This file will contain the code for the conversion from XML to abstract sintax **)
 (* Simple version, it doesn't support recursion and other complex contract trees *)
 
-(* It requires xml-light module - download it and exec 'make install' *)
+(* It requires xml-light module - download it and exec 'make install' 
 #load "xml-light.cma";;
+#use "toXML.ml";;*)
+
+open Tipi;;
+open Mapping;;
+open ToXML;;
 
 let rec fromIntChoiceToList (IntChoice l) = l;;
 
@@ -103,12 +108,51 @@ let getChildren c =
 	| _ -> failwith "Invalid element found"
 ;;
 
-let readXmlContract filename = 
-	let myfile = Xml.parse_file filename in
+let readXmlContract contr = 
+	let myfile = Xml.parse_string contr in
   match myfile with
   | Xml.Element ("contract", attrs, c) -> getChildren c
   | _ -> failwith "Not valid contract XML file"
 ;;
 
-let contractToAutomaton = readXmlContract "c2.xml";;
-let contractToAutomaton = readXmlContract "ex07_c2.xml";;
+let readXmlContract_fromFile f = 
+	let myfile = Xml.parse_file f in
+  match myfile with
+  | Xml.Element ("contract", attrs, c) -> getChildren c
+  | _ -> failwith "Not valid contract XML file"
+;;
+
+let contractsToAutomata_fromFile f f' =
+	let p = readXmlContract_fromFile f in
+	let q = readXmlContract_fromFile f' in
+	let lta = tsb_mapping p q in
+	writeTAstd lta
+;;
+
+let contractsToAutomata c c' =
+	let p = readXmlContract c in
+	let q = readXmlContract c' in
+	let lta = tsb_mapping p q in
+	writeTAstd lta
+;;
+
+let rec read_input s =
+	let s' = input_line stdin in
+	if (String.compare s' "<stop>") == 0 then [s] @ (read_input "")
+	else if (String.compare s' "<end>") == 0 then [s]
+	else read_input (s ^ s')
+;;
+
+(** MAIN **)
+(*  Riceve gli argomenti del programma da riga di comando ed esegue la cifratura *)
+let main = let argn = (Array.length Sys.argv) in
+	match argn with
+		| 1 -> 
+			let rc = read_input "" in
+			contractsToAutomata (List.hd rc) (List.hd (List.rev rc))
+		| 3 -> contractsToAutomata_fromFile (Sys.argv.(1)) (Sys.argv.(2))
+		| argn -> print_string ("Wrong input!\nPlease use: $ ctu [filename1 filename2]\n")
+;;
+
+
+		

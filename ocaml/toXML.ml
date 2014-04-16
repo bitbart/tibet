@@ -1,9 +1,10 @@
 
 open Printf;;
-
+open Tipi;;
+open Mapping;;
+(*
 #use "mapping.ml";;
-#load "str.cma";;(*serve solo se lo utilizzi nell'interprete*)
-
+#load "str.cma";;serve solo se lo utilizzi nell'interprete*)
 
 let escape g =
 	let ampregex = Str.regexp "&" in 
@@ -203,6 +204,12 @@ let writeTA lta filename =
   let oc = open_out (filename^".xml") in    (* create or truncate file, return channel *)
   fprintf oc "%s\n" message;   (* write something *)   
   close_out oc;                (* flush and close the channel *)
+;;
+
+let writeTAstd lta = 
+  let message = aut_toXML lta in
+  (* Write message to file *)
+  fprintf stdout "%s\n" message   (* write something *)   
 ;;
 
 (* writeTA generates the query for compliance  of a list of timed automata and write them down in a file named  filename.q*)

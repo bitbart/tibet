@@ -1,7 +1,8 @@
 
-#use "tipi.ml";;
-#load "str.cma";;
+(*#use "tipi.ml";;*)
+(*#load "str.cma";;*)
 
+open Tipi;;
 
 (*getter functions for  [(Action "a", g, r , Success)*)
 let getAction (TSBAction a,b,c,d) = a;;
