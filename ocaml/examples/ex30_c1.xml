@@ -1,0 +1,29 @@
+<contract id="c1">
+	<intchoice>
+		<intaction id="a">
+			<guards>
+				<guard id="t" op="less" value="10"/>
+				<guard id="t" op="less" value="4"/>
+				<guard id="t" op="less" value="5"/>
+				<guard id="t" op="great" value="2"/>
+			</guards>
+		</intaction>
+		<intaction id="b">
+			<guards>
+				<guard id="t" op="less" value="10"/>
+				<guard id="t" op="less" value="40"/>
+				<guard id="t" op="less" value="50"/>
+				<guard id="t" op="great" value="20"/>
+			</guards>
+		</intaction>
+		<intaction id="c">
+			<guards>
+				<guard id="t" op="less" value="20"/>
+				<guard id="t" op="less" value="14"/>
+				<guard id="t" op="less" value="15"/>
+				<guard id="t" op="great" value="8"/>
+			</guards>
+		</intaction>
+
+	</intchoice>
+</contract>

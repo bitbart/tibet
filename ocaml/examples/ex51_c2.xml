@@ -1,0 +1,15 @@
+<contract id="c2">
+	<rec name="x">
+		<sequence>
+			<intaction id="a">
+				<guards>
+					<guard id="z" op="less" value="8"/>
+				</guards>
+				<resets>
+					<reset id="z"/>
+				</resets>
+			</intaction>
+			<call name="x"/>
+		</sequence>
+	</rec>
+</contract>
