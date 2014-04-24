@@ -1,10 +1,13 @@
 
-open Printf;;
-open Tipi;;
-open Mapping;;
-(*
+open Printf;; 
+
+(*Inclusions to be used when compiling with Ocaml Interactive Environment*) 
 #use "mapping.ml";;
-#load "str.cma";;serve solo se lo utilizzi nell'interprete*)
+#load "str.cma";;
+
+(*Inclusions to be used when compiling with ocamlc/ocamplopt*)
+(* open Tipi;; *)
+(* open Mapping;; *)
 
 let escape g =
 	let ampregex = Str.regexp "&" in 

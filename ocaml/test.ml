@@ -10,13 +10,12 @@
 (********************************************************)
 (*This is an example for understanding syntax*)
 
-(*!a{t<10&&t>1&&t<60,t,x,z}.(!b + !c) | ?a{y<4,y}.(!e + !f{z})   : not compliant*)
-let p = IntChoice [(TSBAction "a", 
-										TSBGuard [(TSBClock "t", Less, 10); (TSBClock "t", Great, 1); (TSBClock "t", Less, 60)], 
-										TSBReset[TSBClock "t"; TSBClock "x"; TSBClock "z"], 
-                             
-														IntChoice [(TSBAction "b", TSBGuard [], TSBReset[] , Success);
-                                        (TSBAction "c", TSBGuard [], TSBReset[] , Success)] )];;
+(*!a{t<10&&t>1&&t<60,t,x,z}.(!b + !c) | ?a{y<4,y}.(!e + !f{z}) : not compliant*) 
+let p = IntChoice [(TSBAction "a", TSBGuard [(TSBClock
+"t", Less, 10); (TSBClock "t", Great, 1); (TSBClock "t", Less, 60)],
+TSBReset[TSBClock "t"; TSBClock "x"; TSBClock "z"], IntChoice
+[(TSBAction "b", TSBGuard [], TSBReset[] , Success); (TSBAction "c",
+TSBGuard [], TSBReset[] , Success)] )];;
 
 let q = ExtChoice [(TSBAction "a", TSBGuard [(TSBClock "y", Less, 4)], TSBReset[TSBClock "y"] , 
                              ExtChoice [(TSBAction "e", TSBGuard [], TSBReset[] , Success);
@@ -90,9 +89,9 @@ let q = ExtChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Success)];;
 let lta = tsb_mapping   p q;;
 writeToFile lta "ex04";;
 
-(*!a{t<10} | ?a  : compliant *)
-let p = IntChoice [(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 10)], TSBReset[] , Success)];;
-let q = ExtChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Success)];;
+(*!a{t<10, t} | ?a{t<20, t}  : compliant *)
+let p = IntChoice [(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 10)], TSBReset[TSBClock "t"] , Success)];;
+let q = ExtChoice [(TSBAction "a", TSBGuard[(TSBClock "t", Less, 20)], TSBReset[TSBClock "t"] , Success)];;
 let lta = tsb_mapping   p q;;
 writeToFile lta "ex05";;
 

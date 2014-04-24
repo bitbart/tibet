@@ -1,8 +1,10 @@
 
-(*#use "tipi.ml";;*)
-(*#load "str.cma";;*)
+(*Inclusions to be used when compiling with Ocaml Interactive Environment*) 
+#use "tipi.ml";;
+#load "str.cma";;
 
-open Tipi;;
+(*Inclusions to be used when compiling with ocamlc/ocamplopt*)
+(*open Tipi;;*)
 
 (*getter functions for  [(Action "a", g, r , Success)*)
 let getAction (TSBAction a,b,c,d) = a;;
@@ -49,16 +51,17 @@ let rec tsbGuardToString gl = match gl with
 (*                                                                                                  *)
 (****************************************************************************************************)
 
-(*Unfortunately UPPAAL doesnot allows for more resets on an edge, unless they are written in a procedure*)
-(*createResetProc create the reset procedure and returns also the clock list*)
+(*Unfortunately UPPAAL doesnot allows for more than a single  resets on an edge, unless they are written in a procedure*)
+(*so createResetProc create the reset procedure for more than one clock and returns also the clock list*)
 let createResetProc  name  l = 
    [(name,  List.fold_right (fun (TSBClock c)  y -> c^"=0; "^y) l "" )],  
      List.map (fun (TSBClock c)  -> Clock c) l;; (*the clock list*)
 
-(* let createResetProc  name  l = match l with  *)
-(*    [] -> ([],[]) *)
-(* | (TSBClock c)::tl -> let  (procs, clocks) =  createResetProc *)
-(* ;; *)
+(* Create ResetBody is used if only one clock is to be reset, and returns the string to be put on the edge*)
+let createResetBody  l = match l with  
+   [] -> ""
+| (TSBClock c)::tl -> c^"=0"
+;;
 
 
 (* CreateIntEdges create the list of new edges for an internal choice.*)
@@ -69,14 +72,17 @@ let rec createIntEdges  init l  tadl idx  = match (l, tadl) with (*idx has alrea
    [],[] -> ([], idx, [], [],  [], [])
 | (hd::tl, hd2::tl2) ->  let (edges_a, last_used_idx, proc_a, clockList_a, invariant_a, committed_a) = createIntEdges init tl tl2 (idx) in
        let current = string_of_int (last_used_idx+1)  in
-       (* creating a reset procedure only if there is some clock to reset*)
-       let procName =if List.length(getReset hd)>0 then procHD^"l1_"^current^"()" else "" in 
-       let (proc, clocksInReset) = if List.length(getReset hd)>0 then createResetProc procName (getReset hd) else ([],[]) in 
+       (* creating a reset procedure only if there is more than 1 clock to reset*)
+       (* if the reset is only one, we put it on the edge*)
+       let procName = if List.length(getReset hd)>1 then procHD^"s2_"^current^"()" 
+                      else if List.length(getReset hd)= 1 then createResetBody (getReset hd) else "" in  
+       let (proc, clocksInReset) = if List.length(getReset hd)>1 then createResetProc procName (getReset hd) 
+                                   else  (* if only one reset: we put it in the edge. If none, nothing done*)  ([],[]) in 
        let clocksInGuards = getClocksListFromGuards (getGuard hd) in 
        let clocks  = clocksInGuards @ clocksInReset @ clockList_a in 
-       let edges =  [ Edge (init, Label "", tsbGuardToString(getGuard hd) ,"", Loc ("l1_"^current));
-            Edge (Loc ("l1_"^current), Label (bar^(getAction hd)^bang), "", procName, Loc ("l2_"^current));
-            Edge (Loc ("l2_"^current), Label ((getAction hd)^query), "","", getInit hd2)] @ edges_a in
+       let edges =  [ Edge (init, Label "", tsbGuardToString(getGuard hd) ,"", Loc ("s1_"^current));
+            Edge (Loc ("s1_"^current), Label (bar^(getAction hd)^bang), "", procName, Loc ("s2_"^current));
+            Edge (Loc ("s2_"^current), Label ((getAction hd)^query), "","", getInit hd2)] @ edges_a in
        let invariant = []  in
        let committed = [] 
        in (edges, (last_used_idx + 1), proc @ proc_a, clocks, invariant @ invariant_a, committed @ committed_a )
@@ -92,16 +98,19 @@ let rec createExtEdges  init l  tadl idx  = match (l, tadl) with (*idx has alrea
    [],[] -> ([], idx, [], [], [], [])
 | (hd::tl, hd2::tl2) ->  let (edges_a, last_used_idx, proc_a, clockList_a, invariant_a, committed_a) = createExtEdges init tl tl2 (idx) in
        let current = string_of_int (last_used_idx+1)  in
-       (* creating a reset procedure only if there is some clock to reset*)
-       let procName =if List.length(getReset hd)>0 then procHD^"l1_"^current^"()" else "" in 
-       let (proc, clocksInReset) = if List.length(getReset hd)>0 then createResetProc procName (getReset hd) else ([],[]) in 
+       (* creating a reset procedure only if there is more than 1 clock to reset*)
+       (* if the reset is only one, we put it on the edge*)
+       let procName = if List.length(getReset hd)>1 then procHD^"s2_"^current^"()" 
+                      else if List.length(getReset hd)= 1 then createResetBody (getReset hd) else "" in  
+       let (proc, clocksInReset) = if List.length(getReset hd)>1 then createResetProc procName (getReset hd) 
+                                   else  (* if only one reset: we put it in the edge. If none, nothing done*)  ([],[]) in 
        let clocksInGuards = getClocksListFromGuards (getGuard hd) in  
        let clocks  = clocksInGuards @ clocksInReset @ clockList_a in
-       let edges =  [ Edge (init, Label  (bar^(getAction hd)^query), "","", Loc ("l1_"^current));
-            Edge (Loc ("l1_"^current), Label "", tsbGuardToString(getGuard hd),"", Loc ("l2_"^current));
-            Edge (Loc ("l2_"^current), Label ((getAction hd)^bang), "", procName, getInit hd2)] @ edges_a   in
+       let edges =  [ Edge (init, Label  (bar^(getAction hd)^query), "","", Loc ("s1_"^current));
+            Edge (Loc ("s1_"^current), Label "", tsbGuardToString(getGuard hd),"", Loc ("s2_"^current));
+            Edge (Loc ("s2_"^current), Label ((getAction hd)^bang), "", procName, getInit hd2)] @ edges_a   in
        let invariant = [] in
-       let committed = ["l1_"^current] 
+       let committed = ["s1_"^current] 
        in (edges, (last_used_idx + 1), proc @ proc_a, clocks,  invariant @ invariant_a, committed @ committed_a )
 | _ -> failwith "Error in createExtEdges"
 ;;
@@ -188,11 +197,11 @@ let getMaxInv l =  if List.length l = 0 then ""
 (*                                                                                                  *)
 (****************************************************************************************************)
 (*The success state synchronize on a channel and then performe a self loop, to allow for the property not deadlock to be true*)
-let successLoc = Loc "f";;
+let successLoc = Loc "sf";;
 let successSync = "success";;
-let successAutoma = let edges =  [ Edge (successLoc, Label  (successSync^"?"), "","", Loc ("f_0"));
-                                   Edge (successLoc, Label  (successSync^"!"), "","", Loc ("f_0"));
-                                   Edge ( Loc ("f_0"), Label "", "","", Loc ("f_0"))]
+let successAutoma = let edges =  [ Edge (successLoc, Label  (successSync^"?"), "","", Loc ("sf_0"));
+                                   Edge (successLoc, Label  (successSync^"!"), "","", Loc ("sf_0"));
+                                   Edge ( Loc ("sf_0"), Label "", "","", Loc ("sf_0"))]
                     in TimedAutoma ("",[successLoc], successLoc,[Label successSync],edges,[], [], [], [], [], [],  []);;
 (****************************************************************************************************)
 (*                                                                                                  *)
@@ -321,7 +330,7 @@ let rec buildAutoma  p idx =  match p with
     (*Recursive step: creating automata for the suffixes*) 
     let (all_automata, used_idx, recList) = buildAutomaList (List.map getSuffix l) idx in 
     (*Creating new initial location for the internal choice*)
-    let init  = Loc ("l0_"^(string_of_int (used_idx+1))) in (*new initial location *)
+    let init  = Loc ("s0_"^(string_of_int (used_idx+1))) in (*new initial location *)
     (*creates edges for the internal choice but non recursively: only at this level*)
     let (choice_edg, choice_idx, choice_procs, choice_clocks, choice_inv, choice_com)  = createIntEdges init l  all_automata used_idx in 
     let edges  = choice_edg @(sumEdges_a  all_automata  )  in
@@ -329,14 +338,14 @@ let rec buildAutoma  p idx =  match p with
     let procs = choice_procs @(sumProcs_a all_automata)   in
     let clocks = eliminateDuplicates(choice_clocks @(sumClocks_a all_automata)) in 
     let committed  = choice_com @(sumCom_a all_automata)   in
-    let inv =   ["l0_"^(string_of_int (used_idx+1)),  getMaxInv l  ] @ choice_inv @(sumInvs_a all_automata)
+    let inv =   ["s0_"^(string_of_int (used_idx+1)),  getMaxInv l  ] @ choice_inv @(sumInvs_a all_automata)
     (*Gather together all the sets and returs*)
     in ((TimedAutoma ("", [], init, labels, edges, inv, clocks, [],  committed , [], [], procs)), choice_idx, recList)
 |ExtChoice l' ->  let l = normalize l' in  
     (*Recursive step: creating automata for the suffixes*) 
     let (all_automata, used_idx, recList) = buildAutomaList (List.map getSuffix l) idx in 
     (*Creating new initial location for the external choice*)
-    let init  = Loc ("l0_"^(string_of_int (used_idx+1))) in 
+    let init  = Loc ("s0_"^(string_of_int (used_idx+1))) in 
     (*Creates edges for the external choice but non recursively: only at this level*)
     let (choice_edg, choice_idx, choice_procs, choice_clocks,  choice_inv, choice_com)  = createExtEdges init l  all_automata used_idx in 
     let edges  = choice_edg @(sumEdges_a  all_automata  )  in
