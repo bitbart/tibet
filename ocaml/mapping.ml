@@ -1,10 +1,10 @@
 
-(*Inclusions to be used when compiling with Ocaml Interactive Environment*) 
+(*Inclusions to be used when compiling with Ocaml Interactive Environment 
 #use "tipi.ml";;
-#load "str.cma";;
+#load "str.cma";; *)
 
 (*Inclusions to be used when compiling with ocamlc/ocamplopt*)
-(*open Tipi;;*)
+open Tipi;;
 
 (*getter functions for  [(Action "a", g, r , Success)*)
 let getAction (TSBAction a,b,c,d) = a;;

@@ -1,9 +1,9 @@
 (** This file will contain the code for the conversion from XML to abstract sintax **)
 (* Simple version, it doesn't support recursion and other complex contract trees *)
 
-(* It requires xml-light module - download it and exec 'make install' 
+(* It requires xml-light module - download it and exec 'make install'*) 
 #load "xml-light.cma";;
-#use "toXML.ml";;*)
+#use "toXML.ml";;
 
 open Tipi;;
 open Mapping;;
@@ -17,7 +17,7 @@ let getOperator op =
 	match op with
 	| "less" -> Less
 	| "great" -> Great
-	| _ -> failwith "Invalid operator in automaton guard"
+	| _ -> failwith "ERR02: Invalid operator in automaton guard!"
 ;;
 
 let rec getSingleGuards g =
@@ -61,6 +61,10 @@ let rec getIntChoice ic =
 		[(TSBAction id, getActionGuards children, getActionResets children, Success)] @ getIntChoice ic'
 	| Xml.Element ("sequence", attrs, children)::ic' ->
 		fromIntChoiceToList (getSequence children) @ getIntChoice ic'
+	| Xml.Element ("rec", attrs, children)::ec' -> 
+		fromExtChoiceToList (getSequence children) @ getExtChoice ec'
+	| Xml.Element ("call", attrs, children)::ec' -> 
+		fromExtChoiceToList (getSequence children) @ getExtChoice ec'
 	| _ -> []
 and getExtChoice ec = 
 	match ec with
@@ -68,6 +72,10 @@ and getExtChoice ec =
 		let id = List.assoc "id" attrs in
 		[(TSBAction id, getActionGuards children, getActionResets children, Success)] @ getExtChoice ec'
 	| Xml.Element ("sequence", attrs, children)::ec' -> 
+		fromExtChoiceToList (getSequence children) @ getExtChoice ec'
+	| Xml.Element ("rec", attrs, children)::ec' -> 
+		fromExtChoiceToList (getSequence children) @ getExtChoice ec'
+	| Xml.Element ("call", attrs, children)::ec' -> 
 		fromExtChoiceToList (getSequence children) @ getExtChoice ec'
 	| _ -> []
 and getSequence s =
@@ -85,9 +93,9 @@ and getSequence s =
 	| Xml.Element ("rec", attrs, children)::c' ->
 		let id = List.assoc "id" attrs in
 		Rec(id, getSequence children) 
-	| Xml.Element ("rec", attrs, children)::c' ->
+	| Xml.Element ("call", attrs, children)::c' ->
 		let id = List.assoc "id" attrs in
-		Rec(id, getSequence children) 
+		Call id 
 	| _ -> Success
 ;;
 
@@ -105,21 +113,21 @@ let getChildren c =
 	| Xml.Element ("rec", attrs, children)::c' ->
 		let id = List.assoc "id" attrs in
 		Rec(id, getSequence children)
-	| _ -> failwith "Invalid element found"
+	| _ -> failwith "ERR01: Invalid element found in XML!"
 ;;
 
 let readXmlContract contr = 
-	let myfile = Xml.parse_string contr in
+	let myfile = Xml.parse_string (Xml.to_string_fmt (Xml.parse_string contr)) in
   match myfile with
   | Xml.Element ("contract", attrs, c) -> getChildren c
-  | _ -> failwith "Not valid contract XML file"
+  | _ -> failwith "ERR00: Not valid contract XML file!"
 ;;
 
 let readXmlContract_fromFile f = 
-	let myfile = Xml.parse_file f in
+	let myfile = Xml.parse_string (Xml.to_string_fmt (Xml.parse_file f)) in
   match myfile with
   | Xml.Element ("contract", attrs, c) -> getChildren c
-  | _ -> failwith "Not valid contract XML file"
+  | _ -> failwith "ERR00: Not a valid contract XML file!"
 ;;
 
 let contractsToAutomata_fromFile f f' =
@@ -136,19 +144,33 @@ let contractsToAutomata c c' =
 	writeTAstd lta
 ;;
 
+(** READ_INPUT **)
+(*  Legge dallo standard input un contenuto xml e lo trasforma in lista di stringhe/righe *)
+let rec read_input' s c =
+	let s' = input_line stdin in
+	if ((String.compare s' "</contract>") == 0 && c == 0) then [s] @ (read_input' "" 1)
+	else if (String.compare s' "</contract>") == 0 then [s]
+	else read_input' (s ^ s') c
+;;
+
+let read_input = read_input' "" 0;;
+
+(*
 let rec read_input s =
 	let s' = input_line stdin in
 	if (String.compare s' "<stop>") == 0 then [s] @ (read_input "")
 	else if (String.compare s' "<end>") == 0 then [s]
 	else read_input (s ^ s')
 ;;
+*)
 
 (** MAIN **)
-(*  Riceve gli argomenti del programma da riga di comando ed esegue la cifratura *)
+(*  It encodes two contract xml files, passed as parameters or from stdin *)
+(*  IMPORTANT: if you use stdin, the two contracts must be entered in sequence *)
 let main = let argn = (Array.length Sys.argv) in
 	match argn with
 		| 1 -> 
-			let rc = read_input "" in
+			let rc = read_input in
 			contractsToAutomata (List.hd rc) (List.hd (List.rev rc))
 		| 3 -> contractsToAutomata_fromFile (Sys.argv.(1)) (Sys.argv.(2))
 		| argn -> print_string ("Wrong input!\nPlease use: $ ctu [filename1 filename2]\n")
