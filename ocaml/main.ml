@@ -1,9 +1,9 @@
 (** This file will contain the code for the conversion from XML to abstract sintax **)
 (* Simple version, it doesn't support recursion and other complex contract trees *)
 
-(* It requires xml-light module - download it and exec 'make install'*) 
+(* It requires xml-light module - download it and exec 'make install'
 #load "xml-light.cma";;
-#use "toXML.ml";;
+#use "toXML.ml";;*)
 
 open Tipi;;
 open Mapping;;
@@ -117,14 +117,14 @@ let getChildren c =
 ;;
 
 let readXmlContract contr = 
-	let myfile = Xml.parse_string (Xml.to_string_fmt (Xml.parse_string contr)) in
+	let myfile = (* Xml.parse_string (Xml.to_string_fmt *) (Xml.parse_string contr) (*)*) in
   match myfile with
   | Xml.Element ("contract", attrs, c) -> getChildren c
   | _ -> failwith "ERR00: Not valid contract XML file!"
 ;;
 
 let readXmlContract_fromFile f = 
-	let myfile = Xml.parse_string (Xml.to_string_fmt (Xml.parse_file f)) in
+	let myfile = (*Xml.parse_string (Xml.to_string_fmt*) (Xml.parse_file f) (*)*) in
   match myfile with
   | Xml.Element ("contract", attrs, c) -> getChildren c
   | _ -> failwith "ERR00: Not a valid contract XML file!"
@@ -148,8 +148,9 @@ let contractsToAutomata c c' =
 (*  Legge dallo standard input un contenuto xml e lo trasforma in lista di stringhe/righe *)
 let rec read_input' s c =
 	let s' = input_line stdin in
-	if ((String.compare s' "</contract>") == 0 && c == 0) then [s] @ (read_input' "" 1)
-	else if (String.compare s' "</contract>") == 0 then [s]
+	if ((String.compare s' "") == 0) then read_input' s c
+	else if ((String.compare s' "</contract>") == 0 && c == 0) then [s^s'] @ (read_input' "" 1)
+	else if (String.compare s' "</contract>") == 0 then [s^s']
 	else read_input' (s ^ s') c
 ;;
 
