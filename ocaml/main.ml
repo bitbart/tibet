@@ -1,9 +1,9 @@
 (** This file will contain the code for the conversion from XML to abstract sintax **)
 (* Simple version, it doesn't support recursion and other complex contract trees *)
 
-(* It requires xml-light module - download it and exec 'make install'
+(* It requires xml-light module - download it and exec 'make install'*)
 #load "xml-light.cma";;
-#use "toXML.ml";;*)
+#use "toXML.ml";;
 
 open Tipi;;
 open Mapping;;
@@ -176,6 +176,5 @@ let main = let argn = (Array.length Sys.argv) in
 		| 3 -> contractsToAutomata_fromFile (Sys.argv.(1)) (Sys.argv.(2))
 		| argn -> print_string ("Wrong input!\nPlease use: $ ctu [filename1 filename2]\n")
 ;;
-
 
 		
