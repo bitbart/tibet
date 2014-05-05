@@ -1,0 +1,6 @@
+=========================
+SINTAX GUIDELINES FOR CTU
+=========================
+
+Ctu (Contract's sintax To Uppaal's syntax converter) can accept different
+input types. It can 

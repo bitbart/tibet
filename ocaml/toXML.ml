@@ -2,8 +2,9 @@
 open Printf;; 
 
 (*Inclusions to be used when compiling with Ocaml Interactive Environment 
-#use "mapping.ml";;*)
+#use "mapping.ml";; 
 #load "str.cma";; 
+*)
 
 (*Inclusions to be used when compiling with ocamlc/ocamplopt*)
 open Tipi;;
