@@ -28,7 +28,7 @@ let main =
 		| 2 ->
 			(
 			match (Sys.argv.(1)) with
-			| "-t" -> print_string (parse_contract (input_line stdin))
+			| "-s" -> print_string (parse_contract (input_line stdin))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
 		| 4 -> 
@@ -37,7 +37,7 @@ let main =
 			| "-ff" -> contractsToAutomata_fromFile (Sys.argv.(1)) (Sys.argv.(2))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
-		| _ -> print_string ("Wrong input!\nYou can use:\n\n\t'$ ctu' and insert xml contracts from stdin:\n\t-u")
+		| _ -> print_string ("Wrong input!\nYou can use:\n\n\t'$ ctu' and insert two xml contracts from stdin\n\t'$ ctu -s' and insert a string contract from stdin")
 ;;
 
 		
