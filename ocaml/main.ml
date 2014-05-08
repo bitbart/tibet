@@ -1,11 +1,22 @@
+(** 
+ ********************************************************************************
+ **																																						 **
+ **				MAIN (6): contains a simple interface to run CTU converter           **
+ **																																						 **
+ ********************************************************************************
+ **)
+
+(* Inclusions to be used when compiling with makefile - DO NOT COMPILE THIS FILE IN OCAML TOPLEVEL! *)
 open Tipi;;
 open Mapping;;
 open ToXML;;
 open FromXML;;
 open Cparser;;
 
+
+
 (** READ_INPUT **)
-(*  Legge dallo standard input un contenuto xml e lo trasforma in lista di stringhe/righe *)
+(*  Reads from standard input and convert it to a string list *)
 let rec read_input' s c chan =
 	let s' = input_line chan in
 	if ((String.compare s' "") == 0) then read_input' s c chan
@@ -16,9 +27,10 @@ let rec read_input' s c chan =
 
 let read_input chan = read_input' "" 0 chan;;
 
+
+
 (** MAIN **)
-(*  It encodes two contract xml files, passed as parameters or from stdin *)
-(*  IMPORTANT: if you use stdin, the two contracts must be entered in sequence *)
+(*  An interface for using CTU converter from Unix command-line *)
 let main = 
 	let argn = (Array.length Sys.argv) in
 	match argn with
@@ -28,7 +40,7 @@ let main =
 		| 2 ->
 			(
 			match (Sys.argv.(1)) with
-			| "-s" -> print_string (parse_contract (input_line stdin))
+			| "-s" -> print_string (parse_multiple_contracts (input_line stdin))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
 		| 4 -> 
@@ -37,7 +49,7 @@ let main =
 			| "-ff" -> contractsToAutomata_fromFile (Sys.argv.(1)) (Sys.argv.(2))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
-		| _ -> print_string ("Wrong input!\nYou can use:\n\n\t'$ ctu' and insert two xml contracts from stdin\n\t'$ ctu -s' and insert a string contract from stdin")
+		| _ -> print_string ("Wrong input!\n\nPlease use:\n\n\t'$ ./ctu -ff file1.txt file2.txt' to convert two xml contracts in Uppaal's xml\n\t'$ ./ctu -s < file.txt' to convert a string contract in a XML contract")
 ;;
 
 		

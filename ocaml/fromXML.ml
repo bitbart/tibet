@@ -1,13 +1,25 @@
-(** This file will contain the code for the conversion from XML to abstract sintax **)
-(* Simple version, it doesn't support recursion and other complex contract trees *)
+(** 
+ ********************************************************************************
+ **																																						 **
+ **				FROMXML (4): offers functions for reading xml contracts              **
+ **																																						 **
+ ********************************************************************************
+ **)
 
-(* It requires xml-light module - download it and exec 'make install'
+(* It requires xml-light module - download it and exec 'make install' *)
+
+(* Inclusions to be used when compiling with Ocaml Interactive Environment *)
+(* *)
 #load "xml-light.cma";;
-#use "toXML.ml";;*)
+#use "toXML.ml";;
+(* *)
 
+(* Inclusions to be used when compiling with makefile *)
+(* *)
 open Tipi;;
 open Mapping;;
 open ToXML;;
+(* *)
 
 let rec fromIntChoiceToList (IntChoice l) = l;;
 
@@ -91,10 +103,10 @@ and getSequence s =
 	| Xml.Element ("extchoice", attrs, children)::s' -> 
 		ExtChoice (getExtChoice children)
 	| Xml.Element ("rec", attrs, children)::c' ->
-		let id = List.assoc "id" attrs in
+		let id = List.assoc "name" attrs in
 		Rec(id, getSequence children) 
 	| Xml.Element ("call", attrs, children)::c' ->
-		let id = List.assoc "id" attrs in
+		let id = List.assoc "name" attrs in
 		Call id 
 	| _ -> Success
 ;;
@@ -111,7 +123,7 @@ let getChildren c =
 		let id = List.assoc "id" attrs in
 		ExtChoice[(TSBAction id, getActionGuards children, getActionResets children, Success)]
 	| Xml.Element ("rec", attrs, children)::c' ->
-		let id = List.assoc "id" attrs in
+		let id = List.assoc "name" attrs in
 		Rec(id, getSequence children)
 	| _ -> failwith "ERR01: Invalid element found in XML!"
 ;;
@@ -143,4 +155,3 @@ let contractsToAutomata c c' =
 	let lta = tsb_mapping p q in
 	writeTAstd lta
 ;;
-		

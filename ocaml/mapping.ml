@@ -1,10 +1,21 @@
+(** 
+ ********************************************************************************
+ **																																						 **
+ **				MAPPING (2): offers functions which map contracts into automata      **
+ **																																						 **
+ ********************************************************************************
+ **)
 
-(*Inclusions to be used when compiling with Ocaml Interactive Environment 
+(*Inclusions to be used when compiling with Ocaml Interactive Environment*)
+(* *)
 #use "tipi.ml";;
-#load "str.cma";; *)
+#load "str.cma";; 
+(* *)
 
-(*Inclusions to be used when compiling with ocamlc/ocamplopt*)
+(*Inclusions to be used when compiling with makefile*)
+(* *)
 open Tipi;;
+(* *)
 
 (*getter functions for  [(Action "a", g, r , Success)*)
 let getAction (TSBAction a,b,c,d) = a;;

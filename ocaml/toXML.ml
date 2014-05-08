@@ -1,14 +1,25 @@
+(** 
+ ********************************************************************************
+ **																																						 **
+ **				TOXML (3): offers functions which generate xml uppaal templates      **
+ **																																						 **
+ ********************************************************************************
+ **)
 
-open Printf;; 
-
-(*Inclusions to be used when compiling with Ocaml Interactive Environment 
+(* Inclusions to be used when compiling with Ocaml Interactive Environment *)
+(* *)
 #use "mapping.ml";; 
-#load "str.cma";; 
-*)
+#load "str.cma";;
+(* *)
 
-(*Inclusions to be used when compiling with ocamlc/ocamplopt*)
+(* Inclusions to be used when compiling with makefile *)
+(* *)
 open Tipi;;
 open Mapping;;
+
+open Printf;; 
+(* *)
+
 
 let escape g =
 	let ampregex = Str.regexp "&" in 

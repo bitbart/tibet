@@ -1,5 +1,18 @@
-(*#load "dynlink.cma";;
-#load "camlp4o.cma";;*)
+(** 
+ ********************************************************************************
+ **																																						 **
+ **				CPARSER (5): contains a converter from string contracts to XML ones  **
+ **																																						 **
+ ********************************************************************************
+ **)
+
+(* When compiling with makefile, use ocamlopt -c -pp camlp4o cparser.ml to activate Camlp4 Preprocessing *)
+
+(* Inclusions to be used when compiling with Ocaml Interactive Environment *)
+(* *)
+#load "dynlink.cma";;
+#load "camlp4o.cma";;
+(* *)
 
 let rec sts p =
 	try
@@ -13,7 +26,7 @@ let rec parse_resets =
 		parser
 		[< '',' ; x = parse_resets ?? "Missing a valid clock id after symbol ',' in at least one reset field" >] -> "\" />\n<reset id=\"" ^ x
 	| [< ''}' >] -> "\" />\n</resets>"
-	| [< 'x; y = parse_resets >] -> Char.escaped x ^ y
+	| [< 'x; y = parse_resets ?? "Missing '}' or ',' in at least one reset field" >] -> Char.escaped x ^ y
 and parse_guardValue =
 	parser
 	  [< '',' ; x = parse_guardType ?? "Missing a valid guard after symbol ',' in at least one guard field" >] -> "\" />\n<guard id=\"" ^ x
@@ -22,9 +35,13 @@ and parse_guardValue =
 	| [< 'x; y = parse_guardValue ?? "Missing '}' or ';' after a guard" >] -> Char.escaped x ^ y
 and parse_guardType =
 	parser
-	  [< ''<' ; x = parse_guardValue ?? "3" >] -> "\" op=\"less\" value=\"" ^ x
-	| [< ''>' ; x = parse_guardValue ?? "4" >] -> "\" op=\"great\" value=\"" ^ x
-	| [< 'x; y = parse_guardType ?? "5" >] -> Char.escaped x ^ y
+	  [< ''<' ; x = parse_guardValue  >] -> 
+			if ((String.compare "\"" (String.sub x 0 1)) == 0) then failwith "Missing a valid clock value after symbol '<' in at least one guard field" 
+			else "\" op=\"less\" value=\"" ^ x
+	| [< ''>' ; x = parse_guardValue >] -> 
+			if ((String.compare "\"" (String.sub x 0 1)) == 0) then failwith "Missing a valid clock value after symbol '>' in at least one guard field" 
+			else "\" op=\"great\" value=\"" ^ x
+	| [< 'x; y = parse_guardType ?? "Missing a valid guard in at least one guard field" >] -> Char.escaped x ^ y
 and parse_guards' =
 	parser
 		[< '',' >] -> failwith "Missing a valid clock id after symbol ';' in at least one reset field"
@@ -33,12 +50,14 @@ and parse_guards' =
 and parse_guards =
 	parser
 	  [< ''}' >] -> "\n</guards>\n<resets />"
-	| [< '';' ; x = parse_guards' >] -> x
+	| [< '';' ; x = parse_guards' ?? "Missing a valid reset in at least one reset field" >] -> x
 	| [< x = parse_guardType >] -> "\n<guard id=\"" ^ x 
 and parse_contract' =
 	parser
-    [< ''?'; x = parse_contract' >] -> "\n<extaction id=\"" ^ x ^ "\n</extaction>"
-	| [< ''!'; x = parse_contract' >] -> "\n<intaction id=\"" ^ x ^ "\n</intaction>"
+    [< ''?'; x = parse_contract' ?? "Missing a valid action name after symbol '?'" >] -> "\n<extaction id=\"" ^ x ^ "\n</extaction>"
+	| [< ''!'; x = parse_contract' ?? "Missing a valid action name after symbol '!'" >] -> "\n<intaction id=\"" ^ x ^ "\n</intaction>"
+	| [< ''R'; ''E'; ''C'; ''['; x = parse_contract' ?? "Missing variable name in REC" >] -> "\n<rec name=\"" ^ x ^ "\n</rec>"
+	| [< '']'; x = parse_contract' ?? "Missing a valid action after REC[] operator" >] -> "\">" ^ x
 	| [< ''{'; g = parse_guards >] -> "\">\n<guards>" ^ g
 	| [< ''#'; x = parse_contract'; y = parse_contract' >] -> "\n<intchoice>" ^ x ^ y ^ "\n</intchoice>"
 	| [< ''+'; x = parse_contract'; y = parse_contract' >] -> "\n<extchoice>" ^ x ^ y ^ "\n</extchoice>"
@@ -116,6 +135,7 @@ let rec remove_empties' l =
 	| s :: s' :: l' -> 
 			if (String.compare s "<guards>" == 0 && String.compare s' "</guards>" == 0) then remove_empties' l' 
 			else if (String.compare s "<resets />" == 0 || String.compare s "<resets/>" == 0) then remove_empties' (s'::l')
+			else if (String.compare s' "<guards>" == 0) then s ^ "\n" ^ remove_empties' (s'::l') 
 			else s ^ "\n" ^ s' ^ "\n" ^ remove_empties' l'
 	| s :: [] -> s
 	| [] -> ""
@@ -125,10 +145,10 @@ let rec remove_empties s = remove_empties' (Str.split (Str.regexp "[\n]+") s);;
 
 let parse_contract c = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix c)) ^ "\n</contract>");;
 
+let rec parse_multiple_contracts' l =
+	match l with
+	| c::l' -> (parse_contract c) ^ "\n" ^ parse_multiple_contracts' l' 
+	| [] -> ""
+;;
 
-(**** TEST_MODE ****)
-let s = "(!pay{x<5,x<4} . ?send{} . !pay{y<4})";;
-let c = parse_contract s;;
-
-
-
+let parse_multiple_contracts c = parse_multiple_contracts' (Str.split (Str.regexp "[|]+") c);;
