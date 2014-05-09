@@ -9,17 +9,12 @@
 (* It requires xml-light module - download it and exec 'make install' *)
 
 (* Inclusions to be used when compiling with Ocaml Interactive Environment *)
-(* *)
-#load "xml-light.cma";;
-#use "toXML.ml";;
-(* *)
+(* #use "toXML.ml";; *)
 
 (* Inclusions to be used when compiling with makefile *)
-(* *)
 open Tipi;;
 open Mapping;;
 open ToXML;;
-(* *)
 
 let rec fromIntChoiceToList (IntChoice l) = l;;
 
@@ -128,15 +123,19 @@ let getChildren c =
 	| _ -> failwith "ERR01: Invalid element found in XML!"
 ;;
 
+let preprocess_contract s = 
+	Str.global_replace (Str.regexp "\\(\\<\\)") "\n\\1" s
+;;
+
 let readXmlContract contr = 
-	let myfile = (* Xml.parse_string (Xml.to_string_fmt *) (Xml.parse_string contr) (*)*) in
+	let myfile = Xml.parse_string contr in
   match myfile with
   | Xml.Element ("contract", attrs, c) -> getChildren c
   | _ -> failwith "ERR00: Not valid contract XML file!"
 ;;
 
 let readXmlContract_fromFile f = 
-	let myfile = (*Xml.parse_string (Xml.to_string_fmt*) (Xml.parse_file f) (*)*) in
+	let myfile = Xml.parse_file f in
   match myfile with
   | Xml.Element ("contract", attrs, c) -> getChildren c
   | _ -> failwith "ERR00: Not a valid contract XML file!"

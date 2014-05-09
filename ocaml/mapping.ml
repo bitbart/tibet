@@ -7,15 +7,15 @@
  **)
 
 (*Inclusions to be used when compiling with Ocaml Interactive Environment*)
-(* *)
-#use "tipi.ml";;
-#load "str.cma";; 
-(* *)
+(*
+#load "str.cma";;
+#load "xml-light.cma";;
+*)
+
+(* #use "tipi.ml";; *)
 
 (*Inclusions to be used when compiling with makefile*)
-(* *)
 open Tipi;;
-(* *)
 
 (*getter functions for  [(Action "a", g, r , Success)*)
 let getAction (TSBAction a,b,c,d) = a;;

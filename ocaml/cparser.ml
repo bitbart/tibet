@@ -9,10 +9,10 @@
 (* When compiling with makefile, use ocamlopt -c -pp camlp4o cparser.ml to activate Camlp4 Preprocessing *)
 
 (* Inclusions to be used when compiling with Ocaml Interactive Environment *)
-(* *)
+(* 
 #load "dynlink.cma";;
 #load "camlp4o.cma";;
-(* *)
+ *)
 
 let printc c =
 	let s = Char.escaped c in 

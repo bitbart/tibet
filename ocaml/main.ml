@@ -13,15 +13,18 @@ open ToXML;;
 open FromXML;;
 open Cparser;;
 
-
+let find_termination s = 
+	if (Str.string_match (Str.regexp "[a-z0-9\\\"\\/\\<\\>= ]*\\<\\/contract\\>[a-z0-9\\\"\\/\\<\\>= ]+") s 0)
+	then failwith "Wrong input! Please start a new line after each </contract> tag" 
+	else Str.string_match (Str.regexp "[a-z0-9\\\"\\/\\<\\>= ]*\\<\\/contract\\>") s 0;; 
 
 (** READ_INPUT **)
 (*  Reads from standard input and convert it to a string list *)
 let rec read_input' s c chan =
 	let s' = input_line chan in
 	if ((String.compare s' "") == 0) then read_input' s c chan
-	else if ((String.compare s' "</contract>") == 0 && c == 0) then [s^s'] @ (read_input' "" 1 chan)
-	else if (String.compare s' "</contract>") == 0 then [s^s']
+	else if (find_termination s' && c == 0) then [s^s'] @ (read_input' "" 1 chan)
+	else if (find_termination s') then [s^s']
 	else read_input' (s ^ s') c chan
 ;;
 

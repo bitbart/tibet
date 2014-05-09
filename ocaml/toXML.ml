@@ -7,18 +7,15 @@
  **)
 
 (* Inclusions to be used when compiling with Ocaml Interactive Environment *)
-(* *)
-#use "mapping.ml";; 
-#load "str.cma";;
-(* *)
+(* 
+#use "mapping.ml";;
+ *)
 
 (* Inclusions to be used when compiling with makefile *)
-(* *)
 open Tipi;;
 open Mapping;;
 
-open Printf;; 
-(* *)
+open Printf;;
 
 
 let escape g =
