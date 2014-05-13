@@ -200,6 +200,8 @@ let p = Rec ("x", IntChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Call "x");
                              (TSBAction "b", TSBGuard[], TSBReset[] , Success)]);;
 let q = Rec ("x", ExtChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Call "x");
                              (TSBAction "b", TSBGuard[], TSBReset[] , Success)]);;
+
+(* CHIEDERE A TIZIANA PARTE SULLA RICORSIONE *)
 let lta = tsb_mapping  p q;;
 writeToFile lta "ex21";;
 

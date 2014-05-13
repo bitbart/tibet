@@ -103,6 +103,8 @@ and getSequence s =
 	| Xml.Element ("call", attrs, children)::c' ->
 		let id = List.assoc "name" attrs in
 		Call id 
+	| Xml.Element ("sequence", attrs, children)::c' ->
+		getSequence children 
 	| _ -> Success
 ;;
 
