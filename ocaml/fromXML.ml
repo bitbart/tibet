@@ -143,16 +143,47 @@ let readXmlContract_fromFile f =
   | _ -> failwith "ERR00: Not a valid contract XML file!"
 ;;
 
+(* Checks if a variable x (called from CALL) is declared in the recursive variables list (updated from REC). *)
+let rec removeVariableFromList x l = 
+	match l with
+	| [] -> false
+	| h::t -> 
+			if((compare h x) == 0) 
+				then true
+				else removeVariableFromList x t
+;;
+
+(* Checks variable binding (between REC and CALL) in a contract. *)
+let checkRecursion contractInput =
+	let rec checkRecursion2 contractInput listVariables = 
+		match contractInput with
+		| Success -> true
+		| IntChoice([a, g, r, t]) -> checkRecursion2 t listVariables
+	 	| ExtChoice([a, g, r, t]) -> checkRecursion2 t listVariables
+		| Rec(x, y) -> 
+			let listUpdated = x::listVariables in checkRecursion2 y listUpdated
+		| Call(x) -> removeVariableFromList x listVariables in
+	checkRecursion2 contractInput []
+;;
+
 let contractsToAutomata_fromFile f f' =
 	let p = readXmlContract_fromFile f in
 	let q = readXmlContract_fromFile f' in
-	let lta = tsb_mapping p q in
-	writeTAstd lta
+	if((checkRecursion p == false) || (checkRecursion q == false)) 
+		then 
+	  	failwith _ERR_025
+		else
+			let lta = tsb_mapping p q in
+			writeTAstd lta
 ;;
 
 let contractsToAutomata c c' =
 	let p = readXmlContract c in
 	let q = readXmlContract c' in
-	let lta = tsb_mapping p q in
-	writeTAstd lta
+	if((checkRecursion p == false) || (checkRecursion q == false)) 
+		then 
+	  	failwith _ERR_025
+		else
+			let lta = tsb_mapping p q in
+			writeTAstd lta
 ;;
