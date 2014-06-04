@@ -174,7 +174,15 @@ let preprocess_rec s =
 
 let rec remove_empties s = remove_empties' (Str.split (Str.regexp "[\n]+") s);;
 
-let parse_contract c = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (preprocess_rec c))) ^ "\n</contract>");;
+
+let parse_contract c = 
+	let contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (preprocess_rec c))) ^ "\n</contract>") in
+	let correct = checkRecursion (readXmlContract contract) in
+		if(correct == true) 
+		then
+			contract
+		else
+			failwith _ERR_025;;
 
 let rec parse_multiple_contracts' l =
 	match l with
