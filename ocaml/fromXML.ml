@@ -15,6 +15,7 @@
 open Tipi;;
 open Mapping;;
 open ToXML;;
+open Errors;;
 
 let rec fromIntChoiceToList (IntChoice l) = l;;
 
