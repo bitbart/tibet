@@ -49,7 +49,7 @@ let main =
 		| 4 -> 
 			(
 			match (Sys.argv.(1)) with
-			| "-ff" -> contractsToAutomata_fromFile (Sys.argv.(1)) (Sys.argv.(2))
+			| "-ff" -> contractsToAutomata_fromFile (Sys.argv.(2)) (Sys.argv.(3))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
 		| _ -> print_string ("Wrong input!\n\nPlease use:\n\n\t'$ ./ctu -ff file1.txt file2.txt' to convert two xml contracts in Uppaal's xml\n\t'$ ./ctu -s < file.txt' to convert a string contract in a XML contract")

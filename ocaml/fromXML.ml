@@ -163,7 +163,8 @@ let checkRecursion contractInput =
 	 	| ExtChoice([a, g, r, t]) -> checkRecursion2 t listVariables
 		| Rec(x, y) -> 
 			let listUpdated = x::listVariables in checkRecursion2 y listUpdated
-		| Call(x) -> removeVariableFromList x listVariables in
+		| Call(x) -> removeVariableFromList x listVariables 
+		| _ -> true in
 	checkRecursion2 contractInput []
 ;;
 
