@@ -164,7 +164,7 @@ let checkRecursion contractInput =
 		| Rec(x, y) -> 
 			let listUpdated = x::listVariables in checkRecursion2 y listUpdated
 		| Call(x) -> removeVariableFromList x listVariables 
-		| _ -> true in
+		| _-> true in
 	checkRecursion2 contractInput []
 ;;
 
