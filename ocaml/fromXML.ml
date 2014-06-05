@@ -171,21 +171,13 @@ let checkRecursion contractInput =
 let contractsToAutomata_fromFile f f' =
 	let p = readXmlContract_fromFile f in
 	let q = readXmlContract_fromFile f' in
-	if((checkRecursion p == false) || (checkRecursion q == false)) 
-		then 
-	  	failwith _ERR_025
-		else
-			let lta = tsb_mapping p q in
-			writeTAstd lta
+	let lta = tsb_mapping p q in
+	writeTAstd lta
 ;;
 
 let contractsToAutomata c c' =
 	let p = readXmlContract c in
 	let q = readXmlContract c' in
-	if((checkRecursion p == false) || (checkRecursion q == false)) 
-		then 
-	  	failwith _ERR_025
-		else
-			let lta = tsb_mapping p q in
-			writeTAstd lta
+	let lta = tsb_mapping p q in
+	writeTAstd lta
 ;;

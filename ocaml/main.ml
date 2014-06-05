@@ -44,6 +44,7 @@ let main =
 			(
 			match (Sys.argv.(1)) with
 			| "-s" -> print_string (parse_multiple_contracts (input_line stdin))
+			| "-v" -> print_string (checkRecursion (readXmlContract (input_line stdin)))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
 		| 4 -> 
