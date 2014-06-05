@@ -44,7 +44,12 @@ let main =
 			(
 			match (Sys.argv.(1)) with
 			| "-s" -> print_string (parse_multiple_contracts (input_line stdin))
-			| "-v" -> print_string (checkRecursion (readXmlContract (input_line stdin)))
+			| "-v" -> 
+				if (checkRecursion (readXmlContract (input_line stdin)))
+				then
+					print_string ("Contract is valid")
+				else
+					print_string ("Contract is not valid")
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
 		| 4 -> 
