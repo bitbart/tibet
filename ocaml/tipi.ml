@@ -48,7 +48,7 @@ type tsb = Success |
 (* (as  in UPPAAL template)                               *)
 (* Fields: name, locations, initial loc, labels, edges,   *) 
 (*         invariants, clocks, globalClocks,              *)
-(*         committed locations,                            *)
+(*         committed locations,                           *)
 (*         variables, globalVariables,  procedures        *)
 (*                                                        *)
 (**********************************************************)
