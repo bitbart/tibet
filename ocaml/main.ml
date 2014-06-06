@@ -30,6 +30,14 @@ let rec read_input' s c chan =
 
 let read_input chan = read_input' "" 0 chan;;
 
+let rec read_one_contract' s chan =
+	let s' = input_line chan in
+	if ((String.compare s' "") == 0) then read_one_contract' s chan
+	else if (find_termination s') then s^s'
+	else read_one_contract' (s ^ s') chan
+;;
+
+let read_one_contract chan = read_one_contract' "" chan;;
 
 
 (** MAIN **)
@@ -45,7 +53,8 @@ let main =
 			match (Sys.argv.(1)) with
 			| "-s" -> print_string (parse_multiple_contracts (input_line stdin))
 			| "-v" -> 
-				if (checkRecursion (readXmlContract (input_line stdin)))
+				let rc = read_one_contract stdin in
+				if (checkRecursion (readXmlContract rc))
 				then
 					print_string ("Contract is valid")
 				else
