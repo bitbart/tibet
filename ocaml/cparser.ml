@@ -161,8 +161,8 @@ let infix_to_prefix s = reverse(infix_to_prefix' (reverse (remove_spaces (s))) [
 let rec remove_empties' l =
 	match l with
 	| s :: s' :: l' -> 
-			if (String.compare s "<guards>" == 0 && String.compare s' "</guards>" == 0) then remove_empties' l' 
-			else if (String.compare s "<resets />" == 0 || String.compare s "<resets/>" == 0) then remove_empties' (s'::l')
+			if ((String.compare s "<guards>" == 0 && String.compare s' "</guards>" == 0)) then remove_empties' l' 
+			else if (String.compare s "<resets />" == 0 || String.compare s "<resets/>" == 0 || String.compare s "<guards></guards>" == 0) then remove_empties' (s'::l')
 			else if (String.compare s' "<guards>" == 0) then s ^ "\n" ^ remove_empties' (s'::l') 
 			else s ^ "\n" ^ s' ^ "\n" ^ remove_empties' l'
 	| s :: [] -> s
