@@ -70,12 +70,9 @@ let rec getIntChoice ic =
 	| Xml.Element ("sequence", attrs, children)::ic' ->
 		fromIntChoiceToList (getSequence children) @ getIntChoice ic'
 	| Xml.Element ("intchoice", attrs, children)::ic' ->
-		fromIntChoiceToList (getSequence children) @ getIntChoice ic'
-	| Xml.Element ("rec", attrs, children)::ic' -> 
-		fromIntChoiceToList (getSequence children) @ getIntChoice ic'
-	| Xml.Element ("call", attrs, children)::ic' -> 
-		fromIntChoiceToList (getSequence children) @ getIntChoice ic'
-	| _ -> []
+		getIntChoice children @ getIntChoice ic'
+	| [] -> []
+	| _ -> failwith "ERR401: Invalid element found in intchoice!"
 and getExtChoice ec = 
 	match ec with
 	| Xml.Element ("extaction", attrs, children)::ec' -> 
@@ -84,12 +81,9 @@ and getExtChoice ec =
 	| Xml.Element ("sequence", attrs, children)::ec' -> 
 		fromExtChoiceToList (getSequence children) @ getExtChoice ec'
 	| Xml.Element ("extchoice", attrs, children)::ec' ->
-		fromExtChoiceToList (getSequence children) @ getExtChoice ec'
-	| Xml.Element ("rec", attrs, children)::ec' -> 
-		fromExtChoiceToList (getSequence children) @ getExtChoice ec'
-	| Xml.Element ("call", attrs, children)::ec' -> 
-		fromExtChoiceToList (getSequence children) @ getExtChoice ec'
-	| _ -> []
+		getExtChoice children @ getExtChoice ec'
+	| [] -> []
+	| _ -> failwith "ERR402: Invalid element found in extchoice!"
 and getSequence s =
 	match s with
 	| Xml.Element ("intaction", attrs, children)::s' -> 
@@ -191,4 +185,83 @@ let contractsToAutomata c c' =
 	let q = readXmlContract c' in
 	let lta = tsb_mapping p q in
 	writeTAstd lta
+;;
+
+let rec print_intchoice ic = 
+	match ic with
+	| Xml.Element ("intaction", attrs, children)::ic' -> 
+		Xml.to_string (Xml.Element ("intaction", attrs, children)) ^ print_intchoice ic'
+	| Xml.Element ("sequence", attrs, children)::ic' -> 
+		"<sequence>" ^ print_sequence children ^ "</sequence>" ^ print_intchoice ic'
+	| Xml.Element ("intchoice", attrs, children)::ic' ->
+		print_intchoice children ^ print_intchoice ic'
+	| [] -> ""
+	| _ -> failwith "ERR12: Invalid element found in XML (in remove_nested intchoice)!"
+and print_extchoice ec = 
+	match ec with
+	| Xml.Element ("extaction", attrs, children)::ec' -> 
+		Xml.to_string (Xml.Element ("extaction", attrs, children)) ^ print_extchoice ec'
+	| Xml.Element ("sequence", attrs, children)::ec' -> 
+		"<sequence>" ^ print_sequence children ^ "</sequence>" ^ print_extchoice ec'
+	| Xml.Element ("extchoice", attrs, children)::ec' ->
+		print_extchoice children ^ print_extchoice ec'
+	| [] -> ""
+	| _ -> failwith "ERR11: Invalid element found in XML (in remove_nested extchoice)!"
+and print_sequence s =
+	match s with
+	| Xml.Element ("intaction", attrs, children)::s' -> 
+		Xml.to_string (Xml.Element ("intaction", attrs, children)) ^ print_sequence s'
+	| Xml.Element ("extaction", attrs, children)::s' -> 
+		Xml.to_string (Xml.Element ("extaction", attrs, children)) ^ print_sequence s'
+	| Xml.Element ("intchoice", attrs, children)::s' -> 
+		"<intchoice>" ^ print_intchoice children ^ "</intchoice>" ^ print_sequence s'
+	| Xml.Element ("extchoice", attrs, children)::s' -> 
+		"<extchoice>" ^ print_extchoice children ^ "</extchoice>" ^ print_sequence s'
+	| Xml.Element ("rec", attrs, children)::s' ->
+		let n = List.assoc "name" attrs in
+		"<rec name=\"" ^ n ^ "\">" ^ print_rec children ^ "</rec>" ^ print_sequence s'
+	| Xml.Element ("call", attrs, children)::s' ->
+		Xml.to_string (Xml.Element ("call", attrs, children)) ^ print_sequence s'
+	| Xml.Element ("sequence", attrs, children)::s' ->
+		print_sequence children ^ print_sequence s'
+	| [] -> ""
+	| _ -> failwith "ERR11: Invalid element found in XML (in remove_nested sequence)!"
+and print_rec r =
+		match r with
+	| Xml.Element ("intaction", attrs, children)::s' -> 
+		Xml.to_string (Xml.Element ("intaction", attrs, children)) ^ print_rec s'
+	| Xml.Element ("extaction", attrs, children)::s' -> 
+		Xml.to_string (Xml.Element ("extaction", attrs, children)) ^ print_rec s'
+	| Xml.Element ("intchoice", attrs, children)::s' -> 
+		"<intchoice>" ^ print_intchoice children ^ "</intchoice>" ^ print_rec s'
+	| Xml.Element ("extchoice", attrs, children)::s' -> 
+		"<extchoice>" ^ print_extchoice children ^ "</extchoice>" ^ print_rec s'
+	| Xml.Element ("rec", attrs, children)::s' ->
+		let n = List.assoc "name" attrs in
+		"<rec name=\"" ^ n ^ "\">" ^ print_rec children ^ "</rec>" ^ print_rec s'
+	| Xml.Element ("call", attrs, children)::s' ->
+		Xml.to_string (Xml.Element ("call", attrs, children)) ^ print_rec s'
+	| Xml.Element ("sequence", attrs, children)::s' ->
+		print_sequence children ^ print_rec s'
+	| [] -> ""
+	| _ -> failwith "ERR11: Invalid element found in XML (in remove_nested rec)!"
+;;
+
+let removeNestedTag' c =
+	match c with
+	| Xml.Element ("sequence", attrs, children)::c' -> "<sequence>\n" ^ print_sequence children ^ "</sequence>"
+	| Xml.Element ("intchoice", attrs, children)::c' -> "<intchoice>" ^ print_intchoice children ^ "</intchoice>"
+	| Xml.Element ("extchoice", attrs, children)::c' ->	"<extchoice>" ^ print_extchoice children ^ "</extchoice>"
+	| Xml.Element ("intaction", attrs, children)::c' -> Xml.to_string (Xml.Element ("intaction", attrs, children))
+	| Xml.Element ("extaction", attrs, children)::c' -> Xml.to_string (Xml.Element ("extaction", attrs, children))
+	| Xml.Element ("rec", attrs, children)::c' ->
+		let name = List.assoc "name" attrs in "<rec name=\"" ^ name ^ "\">" ^ print_rec children ^ "</rec>"
+	| _ -> failwith "ERR10: Invalid element found in XML (in remove_nested)!"
+;;
+
+let removeNestedTag xml = 
+	let input = Xml.parse_string xml in
+  match input with
+  | Xml.Element ("contract", attrs, c) -> "<contract>" ^ removeNestedTag' c ^ "</contract>"
+  | _ -> failwith "ERR00: Not valid contract XML file (in remove_nested)!"
 ;;
