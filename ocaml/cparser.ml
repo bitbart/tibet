@@ -87,8 +87,8 @@ and parse_contract' =
 			if ((String.compare "\n<guard id=\"\"" (String.sub g 0 13)) == 0) then raise (Stream.Error _ERR_024) 
 			else "\">\n<guards>" ^ g
 	| [< ''"'; x = parse_call >] -> "\n<call name=\"" ^ x
-	| [< ''#'; x = parse_contract' ?? "1"; y = parse_contract' ?? "7" >] -> "\n<intchoice>" ^ x ^ y ^ "\n</intchoice>"
-	| [< ''+'; x = parse_contract' ?? "2"; y = parse_contract' ?? "6" >] -> "\n<extchoice>" ^ x ^ y ^ "\n</extchoice>"
+	| [< ''+'; x = parse_contract' ?? "1"; y = parse_contract' ?? "7" >] -> "\n<intchoice>" ^ x ^ y ^ "\n</intchoice>"
+	| [< ''&'; x = parse_contract' ?? "2"; y = parse_contract' ?? "6" >] -> "\n<extchoice>" ^ x ^ y ^ "\n</extchoice>"
 	| [< ''.'; x = parse_contract' ?? "3"; y = parse_contract' ?? "5" >] -> "\n<sequence>" ^ x ^ y ^ "\n</sequence>"
 	| [< 'x; y = parse_contract' ?? "4" >] -> (printc x) ^ y
 ;;
@@ -107,7 +107,7 @@ let remove_spaces s = remove_spaces' (Stream.of_string (s^"*"));;
 let getOp_prio op =
 	match op with
 	| '+' -> 5
-	| '#' -> 5
+	| '&' -> 5
 	| '.' -> 6
 	| ')' -> 2
 	| '(' -> 2
@@ -145,9 +145,9 @@ let rec infix_to_prefix' s stack =
 		| '+' ->
 			let (output, new_stack) = update_stack ("", stack) (getOp_prio '+') in
 			output ^ infix_to_prefix' s' ('+'::new_stack)
-		| '#' ->
-			let (output, new_stack) = update_stack ("", stack) (getOp_prio '#') in
-			output ^ infix_to_prefix' s' ('#'::new_stack)
+		| '&' ->
+			let (output, new_stack) = update_stack ("", stack) (getOp_prio '&') in
+			output ^ infix_to_prefix' s' ('&'::new_stack)
 	  | '.' ->
 			let (output, new_stack) = update_stack ("", stack) (getOp_prio '.') in
 			output ^ infix_to_prefix' s' ('.'::new_stack)
