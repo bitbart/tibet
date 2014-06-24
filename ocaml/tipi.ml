@@ -25,21 +25,55 @@ let addSetSet s1 s2 = eliminateDuplicates (s1@s2);;
 
 (*************************************)
 (*                                   *)
-(*         Timed TSB                 *)
+(*         Timed TSB --static        *)
 (*                                   *)
 (*************************************)
-type tsb_action = TSBAction of string;;
+type tsb_action = TSBAction of string | Empty;;
 type tsb_clock = TSBClock of string;;
 type tsb_relation = Less | Great ;;
 type tsb_guard = TSBGuard of (tsb_clock * tsb_relation * int) list;;
 type tsb_reset = TSBReset of tsb_clock list;;
 
-type tsb = Success |
+type tsb = Nil | Success |
            IntChoice of (tsb_action * tsb_guard * tsb_reset * tsb) list | 
            ExtChoice of (tsb_action *tsb_guard * tsb_reset * tsb) list  |
            Rec of string * tsb |
            Call of string ;; 
 
+(*************************************)
+(*                                    *)
+(*         Timed TSB --monitor        *)
+(*                                    *)
+(*************************************)
+
+
+type performedAction = Int of tsb_action | Ext of tsb_action;;
+
+type process_name = string;;
+
+type tsb_step = Delay of float | Fire of (process_name * performedAction);;(*process name*)
+
+type tsb_time = Time of (tsb_clock-> float );;
+
+let startTime = Time (fun x -> 0.0);;
+
+let applyTime (Time nu) t = nu t ;;
+
+let resetTime (Time nu) l  = Time (fun y -> if (List.mem y l) then 0.0 else nu y);;
+
+let incrTime  (Time nu) d  = Time (fun y ->  nu y +.d);;
+
+type tsb_buffer = process_name * tsb_action;;
+
+type tsb_network = Network of ((process_name*tsb) * (process_name*tsb) * tsb_buffer * tsb_time);;
+
+(* applyTime  startTime  (TSBClock "s");; *)
+(* let p_1 = incrTime  startTime 7.;; *)
+(* applyTime  p_1  (TSBClock "s");; *)
+(* let p_2 = incrTime  p_1 7.;; *)
+(* applyTime  p_2  (TSBClock "s");; *)
+(* let p_3 = resetTime p_2 [TSBClock "s";TSBClock "q" ];; *)
+(* applyTime  p_3  (TSBClock "q");; *)
 
 (**********************************************************)
 (*                                                        *)

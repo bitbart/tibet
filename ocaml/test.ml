@@ -1,6 +1,26 @@
 
 #use "toXML.ml";;
 
+(*example*)
+let p = ExtChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Success)];;
+let lta = tsb_mapping   p p;;
+writeToFile lta "ex_prova";;
+
+
+(*example*) (* !a{x > 2,x<1} # !b{x < 2,x > 1} *) (*?b*)
+let p = IntChoice [(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 1); (TSBClock "t", Great, 2)], TSBReset[] , Success);
+                   (TSBAction "b",  TSBGuard [(TSBClock "t", Less, 2); (TSBClock "t", Great, 1)], TSBReset[] , Success)];;
+let q = ExtChoice [(TSBAction "b", TSBGuard[], TSBReset[] , Success)];;
+let lta = tsb_mapping   p q;;
+writeToFile lta "ex_111";;
+
+(*counter example*)
+(*!a{} | rec x.?a{}.x     :not compliant  *)
+let p =  IntChoice [(TSBAction "a", TSBGuard[],  TSBReset[] , Success)];;
+let q = Rec ("x", ExtChoice [(TSBAction "a", TSBGuard[],  TSBReset[] , Call "x")]);;
+let lta = tsb_mapping  p q;;
+writeToFile lta "exContoresempio";;
+
 (********************************************************)
 (*                                                      *)
 (*               Example for syntax                     *) 
@@ -200,8 +220,6 @@ let p = Rec ("x", IntChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Call "x");
                              (TSBAction "b", TSBGuard[], TSBReset[] , Success)]);;
 let q = Rec ("x", ExtChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Call "x");
                              (TSBAction "b", TSBGuard[], TSBReset[] , Success)]);;
-
-(* CHIEDERE A TIZIANA PARTE SULLA RICORSIONE *)
 let lta = tsb_mapping  p q;;
 writeToFile lta "ex21";;
 

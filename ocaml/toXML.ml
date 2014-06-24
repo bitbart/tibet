@@ -1,21 +1,18 @@
-(** 
- ********************************************************************************
- **																																						 **
- **				TOXML (3): offers functions which generate xml uppaal templates      **
- **																																						 **
- ********************************************************************************
- **)
-
-(* Inclusions to be used when compiling with Ocaml Interactive Environment *)
-(* 
-#use "mapping.ml";;
- *)
-
-(* Inclusions to be used when compiling with makefile *)
-open Tipi;;
-open Mapping;;
+(*******************************************************************************)
+(**                                                                          **)
+(**  	TOXML (3): offers functions which generate xml uppaal templates      **)
+(**									     **)
+(******************************************************************************)
 
 open Printf;;
+(* Inclusions to be used when compiling with Ocaml Interactive Environment *)
+#use "mapping.ml";;
+
+
+(* Inclusions to be used when compiling with makefile *)
+(*open Tipi;;*)
+(*open Mapping;;*)
+(*open Printf;;*)
 
 
 let escape g =

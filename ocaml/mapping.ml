@@ -7,15 +7,12 @@
  **)
 
 (*Inclusions to be used when compiling with Ocaml Interactive Environment*)
-(*
 #load "str.cma";;
-#load "xml-light.cma";;
-*)
-
-(* #use "tipi.ml";; *)
+#use "tipi.ml";; 
 
 (*Inclusions to be used when compiling with makefile*)
-open Tipi;;
+(*open Tipi;;()*)
+(*#load "xml-light.cma";;*)
 
 (*getter functions for  [(Action "a", g, r , Success)*)
 let getAction (TSBAction a,b,c,d) = a;;
@@ -49,10 +46,9 @@ let getClockName (TSBClock c) = c;;
 let getClocksListFromGuards gl = List.fold_right (fun (TSBClock c, b, d)  y -> (Clock c)::y) gl [];;
 
 let rec tsbGuardToString gl = match gl with 
-    [] -> ""
+  [] -> ""
 | (c,r,d)::tl1::tl2-> getClockName(c)^getRelation(r)^(string_of_int d)^" && "^(tsbGuardToString (tl1::tl2))
-| (c,r,d)::tl1  ->   getClockName(c)^getRelation(r)^(string_of_int d)
-;;
+| (c,r,d)::tl1  ->   getClockName(c)^getRelation(r)^(string_of_int d);;
 
 
 (****************************************************************************************************)
@@ -65,8 +61,8 @@ let rec tsbGuardToString gl = match gl with
 (*Unfortunately UPPAAL doesnot allows for more than a single  resets on an edge, unless they are written in a procedure*)
 (*so createResetProc create the reset procedure for more than one clock and returns also the clock list*)
 let createResetProc  name  l = 
-   [(name,  List.fold_right (fun (TSBClock c)  y -> c^"=0; "^y) l "" )],  
-     List.map (fun (TSBClock c)  -> Clock c) l;; (*the clock list*)
+  [(name,  List.fold_right (fun (TSBClock c)  y -> c^"=0; "^y) l "" )],  
+  List.map (fun (TSBClock c)  -> Clock c) l;; (*the clock list*)
 
 (* Create ResetBody is used if only one clock is to be reset, and returns the string to be put on the edge*)
 let createResetBody  l = match l with  
