@@ -6,9 +6,9 @@
  ********************************************************************************
  **)
 
-(*Inclusions to be used when compiling with Ocaml Interactive Environment*)
+(*Inclusions to be used when compiling with Ocaml Interactive Environment
 #load "str.cma";;
-#use "tipi.ml";; 
+#use "tipi.ml";;*) 
 
 (*Inclusions to be used when compiling with makefile*)
 (*open Tipi;;()*)
