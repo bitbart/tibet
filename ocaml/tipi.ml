@@ -67,13 +67,9 @@ type tsb_buffer = EmptyBuffer | Buffer of process_name * tsb_action;;
 
 type tsb_network = Network of ((process_name*tsb) * (process_name*tsb) * tsb_buffer * tsb_time);;
 
-(* applyTime  startTime  (TSBClock "s");; *)
-(* let p_1 = incrTime  startTime 7.;; *)
-(* applyTime  p_1  (TSBClock "s");; *)
-(* let p_2 = incrTime  p_1 7.;; *)
-(* applyTime  p_2  (TSBClock "s");; *)
-(* let p_3 = resetTime p_2 [TSBClock "s";TSBClock "q" ];; *)
-(* applyTime  p_3  (TSBClock "q");; *)
+
+
+
 
 (**********************************************************)
 (*                                                        *)
@@ -170,3 +166,7 @@ let rec print_automataIds la = match la with
 |  (TimedAutoma (id, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures))::tl -> id::(print_automataIds tl);; 
 
 
+(*********Debugging utilities*****)
+let rec toString_guard (TSBGuard la)  = match la with
+     []-> ""
+|  (c,r,d)::tl ->  (string_of_int d)^toString_guard (TSBGuard tl);; 
