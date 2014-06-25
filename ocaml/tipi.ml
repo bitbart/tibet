@@ -28,7 +28,7 @@ let addSetSet s1 s2 = eliminateDuplicates (s1@s2);;
 (*         Timed TSB --static        *)
 (*                                   *)
 (*************************************)
-type tsb_action = TSBAction of string | Empty;;
+type tsb_action = TSBAction of string;;
 type tsb_clock = TSBClock of string;;
 type tsb_relation = Less | Great ;;
 type tsb_guard = TSBGuard of (tsb_clock * tsb_relation * int) list;;
@@ -63,7 +63,7 @@ let resetTime (Time nu) l  = Time (fun y -> if (List.mem y l) then 0.0 else nu y
 
 let incrTime  (Time nu) d  = Time (fun y ->  nu y +.d);;
 
-type tsb_buffer = process_name * tsb_action;;
+type tsb_buffer = EmptyBuffer | Buffer of process_name * tsb_action;;
 
 type tsb_network = Network of ((process_name*tsb) * (process_name*tsb) * tsb_buffer * tsb_time);;
 
