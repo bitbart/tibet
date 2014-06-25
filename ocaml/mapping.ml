@@ -11,7 +11,7 @@
 #use "tipi.ml";;*) 
 
 (*Inclusions to be used when compiling with makefile*)
-(*open Tipi;;()*)
+open Tipi;;
 (*#load "xml-light.cma";;*)
 
 (*getter functions for  [(Action "a", g, r , Success)*)

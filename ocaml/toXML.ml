@@ -10,9 +10,9 @@ open Printf;;
 
 
 (* Inclusions to be used when compiling with makefile *)
-(*open Tipi;;*)
-(*open Mapping;;*)
-(*open Printf;;*)
+open Tipi;;
+open Mapping;;
+open Printf;;
 
 
 let escape g =
