@@ -78,7 +78,9 @@ let m_step (Network (p,q,b, time)) s = match s with
 let m_culpable (Network (p,q,b, time)) = [p];; 
 
 (***Function "m_onDuty" gets a network and returns the onDuty process******)
-let m_onDuty (Network (p,q,b, time)) = p;; 
+let m_onDuty (Network (p,q,b, time)) = p;;
+
+let m_culpable (Network (p,q,b,time)) = [p];; 
 
 
 
@@ -103,19 +105,3 @@ m_step net1  (Fire ("B", Ext (TSBAction "a" )));;
 
 m_step net2  (Fire ("B", Ext (TSBAction "b" )));;
 
-m_onDuty net1;;
-# - : process_name * tsb =
-("A",
- IntChoice
-  [(TSBAction "a", TSBGuard [(TSBClock "t", Less, 1)], TSBReset [], Success);
-   (TSBAction "b", TSBGuard [(TSBClock "t", Less, 2)], TSBReset [], Success)])
-# 
-
-;;
-m_culpable net2;;
-# - : process_name * tsb =
-("A",
- IntChoice
-  [(TSBAction "a", TSBGuard [(TSBClock "t", Less, 1)], TSBReset [], Success);
-   (TSBAction "b", TSBGuard [(TSBClock "t", Less, 2)], TSBReset [], Success)])
-# 
