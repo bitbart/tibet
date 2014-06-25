@@ -93,6 +93,18 @@ and parse_contract' =
 	| [< 'x; y = parse_contract' ?? "4" >] -> (printc x) ^ y
 ;;
 
+let check_tails s' = 
+	let s = s' ^ "*" in
+	let first = try let res = Str.search_forward (Str.regexp "\\}[^\\.\\+\\&\\*]") s 0 in true with Not_found -> false in
+	let second = try let res = Str.search_forward (Str.regexp "\\][^\\+\\&\\*\\)\\*]") s 0 in true with Not_found -> false in
+	let third = try let res = Str.search_forward (Str.regexp "\\![a-z]+[^\\.\\+\\&\\{\\*]") s 0 in true with Not_found -> false in
+	let fourth = try let res = Str.search_forward (Str.regexp "\\?[a-z]+[^\\.\\+\\&\\{\\*]") s 0 in true with Not_found -> false in
+	first || second || third || fourth;;
+
+let add_empty_par s' = 
+	let s = s' ^ "*" in
+	let res = Str.global_replace (Str.regexp "\\([\\!\\?][a-z]+\\)\\([\\.\\+\\&\\)\\*]+\\)") "\\1{}\\2" s in String.sub res 0 (String.length res - 1);;
+
 (** REMOVE_SPACES **)
 let rec remove_spaces' =
 	parser
@@ -176,7 +188,9 @@ let preprocess_rec s =
 	Str.global_replace (Str.regexp "\\]") ")]" s';;
 
 let parse_contract c = 
-	let contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (preprocess_rec c))) ^ "\n</contract>") in
+	if check_tails (remove_spaces c) then failwith "You have an error in your syntax: maybe you missed a . or + or & in your contract!"
+	else
+	let contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (add_empty_par (preprocess_rec (remove_spaces c))))) ^ "\n</contract>") in
 	let correct = checkRecursion (readXmlContract contract) in
 		if(correct == true) 
 		then
