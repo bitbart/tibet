@@ -5,8 +5,8 @@
 (******************************************************************************)
 
 open Printf;;
-(* Inclusions to be used when compiling with Ocaml Interactive Environment *)
-#use "mapping.ml";;
+(* Inclusions to be used when compiling with Ocaml Interactive Environment
+#use "mapping.ml";;*)
 
 
 (* Inclusions to be used when compiling with makefile *)
