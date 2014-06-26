@@ -9,7 +9,8 @@
 (* It requires xml-light module - download it and exec 'make install' *)
 
 (* Inclusions to be used when compiling with Ocaml Interactive Environment
-#use "toXML.ml";;*)
+#use "toXML.ml";;
+*)
 
 (* Inclusions to be used when compiling with makefile *)
 open Tipi;;

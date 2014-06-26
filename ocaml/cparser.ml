@@ -6,13 +6,11 @@
  ********************************************************************************
  **)
 
-(* When compiling with makefile, use ocamlopt -c -pp camlp4o cparser.ml to activate Camlp4 Preprocessing *)
-
 (* Inclusions to be used when compiling with Ocaml Interactive Environment *)
 (* 
 #load "dynlink.cma";;
 #load "camlp4o.cma";;
- *)
+*)
 
 open Errors;;
 open FromXML;;
@@ -93,14 +91,16 @@ and parse_contract' =
 	| [< 'x; y = parse_contract' ?? "4" >] -> (printc x) ^ y
 ;;
 
+(* Checks if a string contract contains "tailing tokens", eg: !a{}ciao (the "tail" will be ignored by the parser) *)
 let check_tails s' = 
 	let s = s' ^ "*" in
 	let first = try let res = Str.search_forward (Str.regexp "\\}[^\\.\\+\\&\\*]") s 0 in true with Not_found -> false in
 	let second = try let res = Str.search_forward (Str.regexp "\\][^\\+\\&\\*\\)\\*]") s 0 in true with Not_found -> false in
-	let third = try let res = Str.search_forward (Str.regexp "\\![a-z]+[^\\.\\+\\&\\{\\*]") s 0 in true with Not_found -> false in
-	let fourth = try let res = Str.search_forward (Str.regexp "\\?[a-z]+[^\\.\\+\\&\\{\\*]") s 0 in true with Not_found -> false in
+	let third = try let res = Str.search_forward (Str.regexp "\\![a-z]+[^\\.\\+\\&\\{\\)\\*]") s 0 in true with Not_found -> false in
+	let fourth = try let res = Str.search_forward (Str.regexp "\\?[a-z]+[^\\.\\+\\&\\{\\)\\*]") s 0 in true with Not_found -> false in
 	first || second || third || fourth;;
 
+(* Add empty braces to action names which haven't got them *)
 let add_empty_par s' = 
 	let s = s' ^ "*" in
 	let res = Str.global_replace (Str.regexp "\\([\\!\\?][a-z]+\\)\\([\\.\\+\\&\\)\\*]+\\)") "\\1{}\\2" s in String.sub res 0 (String.length res - 1);;
@@ -135,6 +135,8 @@ let rec reverse s =
 		(Char.escaped (String.get s new_len)) ^ (reverse (String.sub s 0 new_len))
 ;;
 
+(** UPDATE_STACK & INFIX_TO_PREFIX **)
+(* Algorithm for conversion from infix to prefix notation *)
 let rec update_stack res pr =
 	let (s, l) = res in
 		match l with
@@ -170,6 +172,8 @@ let rec infix_to_prefix' s stack =
 
 let infix_to_prefix s = reverse(infix_to_prefix' (reverse (remove_spaces (s))) []);;
 
+(** REMOVE_EMPTIES **)
+(* Parsing post-processing: removes empty tags, not allowed in contract XML syntax *)
 let rec remove_empties' l =
 	match l with
 	| s :: s' :: l' -> 
@@ -183,14 +187,19 @@ let rec remove_empties' l =
 
 let rec remove_empties s = remove_empties' (Str.split (Str.regexp "[\n]+") s);;
 
+(** PREPROCESS_REC **)
+(* Parsing pre-processing: force parentheses in REC content to avoid an unwanted behavior in infix_to_prefix conversion *)
 let preprocess_rec s = 
 	let s' = Str.global_replace (Str.regexp "\\[") "[(" s in
 	Str.global_replace (Str.regexp "\\]") ")]" s';;
 
-let parse_contract c = 
-	if check_tails (remove_spaces c) then failwith "You have an error in your syntax: maybe you missed a . or + or & in your contract!"
+(** PARSE_CONTRACT **)
+(* Performs all previous functions in the correct order *)
+let parse_contract c' = 
+	let c = (preprocess_rec (remove_spaces c')) in
+	if check_tails c then failwith "You have an error in your syntax: maybe you missed a . or + or & in your contract!"
 	else
-	let contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (add_empty_par (preprocess_rec (remove_spaces c))))) ^ "\n</contract>") in
+	let contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (add_empty_par c))) ^ "\n</contract>") in
 	let correct = checkRecursion (readXmlContract contract) in
 		if(correct == true) 
 		then
