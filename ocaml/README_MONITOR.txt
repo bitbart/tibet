@@ -8,11 +8,10 @@ val m_start : tsb -> tsb -> tsb_network = <fun>
 Function m_start takes two TSB processes and
 returns a network. A network is defined in file tipi.ml:
 
-type tsb_network = Network of ((process_name*tsb) * (process_name*tsb) * tsb_buffer * tsb_time);;
+type tsb_network = Network of ((process_name*tsb*tsb_env) * (process_name*tsb) * tsb_buffer * tsb_time);;
  
-contains two couples process name and TSB process, a buffer and a function which evaluates time.
+contains  processname, tsb process and environment for each of the two processes, a buffer and a function which evaluates time.
 Processes are given a standard name: the first is "A" and the second is "B"
-
 
 
 2) m_step
@@ -30,13 +29,13 @@ type performedAction = Int of tsb_action | Ext of tsb_action;;
 
 3) m_onDuty
    val m_onDuty : tsb_network -> process_name * tsb = <fun>
-Function m_onDuty takes a network and return name and process of the participant which is on duty.
+Function m_onDuty takes a network and return a list with the names  of the participant which are on duty.
 
 
 
 4) m_culpable # val m_onDuty : tsb_network -> process_name * tsb = <fun>
  val m_culpable : tsb_network -> (process_name * tsb) list = <fun>
-Function m_culpable a network and return a list of name and process of the participants  which are culpable.
+Function m_culpable a network and return a list with the  names of the participants  which are culpable.
 
 
 (********************************************************************)

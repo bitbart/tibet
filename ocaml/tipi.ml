@@ -45,27 +45,31 @@ type tsb = Nil | Success |
 (*         Timed TSB --monitor        *)
 (*                                    *)
 (*************************************)
+(*Environment*)
+type tsb_env = Env of ( string -> tsb);;
+let emptyEnv = Env  (fun x -> Nil);;
+let applyEnv (Env rho) id = rho id;;
+let  bindEnv   (Env rho) id p = Env ( fun y -> if y = id then p else rho id);;
 
 
+
+(*Time*)
+type tsb_time = Time of (tsb_clock-> float );;
+let startTime = Time (fun x -> 0.0);;
+let applyTime (Time nu) t = nu t ;;
+let resetTime (Time nu) l  = Time (fun y -> if (List.mem y l) then 0.0 else nu y);;
+let incrTime  (Time nu) d  = Time (fun y ->  nu y +.d);;
+
+(*Network*)
 type performedAction = Int of tsb_action | Ext of tsb_action;;
 
 type process_name = string;;
 
 type tsb_step = Delay of float | Fire of (process_name * performedAction);;(*process name*)
 
-type tsb_time = Time of (tsb_clock-> float );;
-
-let startTime = Time (fun x -> 0.0);;
-
-let applyTime (Time nu) t = nu t ;;
-
-let resetTime (Time nu) l  = Time (fun y -> if (List.mem y l) then 0.0 else nu y);;
-
-let incrTime  (Time nu) d  = Time (fun y ->  nu y +.d);;
-
 type tsb_buffer = EmptyBuffer | Buffer of process_name * tsb_action;;
 
-type tsb_network = Network of ((process_name*tsb) * (process_name*tsb) * tsb_buffer * tsb_time);;
+type tsb_network = Network of ((process_name* tsb * tsb_env) * (process_name* tsb * tsb_env) * tsb_buffer  * tsb_time);;
 
 
 
