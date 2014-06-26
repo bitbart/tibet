@@ -94,7 +94,7 @@ and parse_contract' =
 (* Checks if a string contract contains "tailing tokens", eg: !a{}ciao (the "tail" will be ignored by the parser) *)
 let check_tails s' = 
 	let s = s' ^ "*" in
-	let first = try let res = Str.search_forward (Str.regexp "\\}[^\\.\\+\\&\\*]") s 0 in true with Not_found -> false in
+	let first = try let res = Str.search_forward (Str.regexp "\\}[^\\.\\+\\&\\*\\)]") s 0 in true with Not_found -> false in
 	let second = try let res = Str.search_forward (Str.regexp "\\][^\\+\\&\\*\\)\\*]") s 0 in true with Not_found -> false in
 	let third = try let res = Str.search_forward (Str.regexp "\\![a-z]+[^\\.\\+\\&\\{\\)\\*]") s 0 in true with Not_found -> false in
 	let fourth = try let res = Str.search_forward (Str.regexp "\\?[a-z]+[^\\.\\+\\&\\{\\)\\*]") s 0 in true with Not_found -> false in
