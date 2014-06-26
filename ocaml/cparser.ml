@@ -92,13 +92,26 @@ and parse_contract' =
 ;;
 
 (* Checks if a string contract contains "tailing tokens", eg: !a{}ciao (the "tail" will be ignored by the parser) *)
+let rec find_tail' l =
+    match l with
+    | s::l' -> 
+        (try 
+            let tmp = Str.search_forward (Str.regexp "^[a-z]+[\\.\\+\\&\\{\\)\\*]") s 0 in (false || find_tail' l') 
+        with Not_found -> true)
+    | [] -> false
+;;
+
+let find_tail c s = 
+    if (String.compare (String.sub s 0 1) c == 0) then find_tail' (Str.split (Str.regexp ("\\" ^ c)) (s ^ "*"))
+    else find_tail' (List.tl (Str.split (Str.regexp ("\\" ^ c)) (s ^ "*")));;
+
 let check_tails s' = 
-	let s = s' ^ "*" in
-	let first = try let res = Str.search_forward (Str.regexp "\\}[^\\.\\+\\&\\*\\)]") s 0 in true with Not_found -> false in
-	let second = try let res = Str.search_forward (Str.regexp "\\][^\\+\\&\\*\\)\\*]") s 0 in true with Not_found -> false in
-	let third = try let res = Str.search_forward (Str.regexp "\\![a-z]+[^\\.\\+\\&\\{\\)\\*]") s 0 in true with Not_found -> false in
-	let fourth = try let res = Str.search_forward (Str.regexp "\\?[a-z]+[^\\.\\+\\&\\{\\)\\*]") s 0 in true with Not_found -> false in
-	first || second || third || fourth;;
+    let s = s' ^ "*" in
+    let c1 = try let res = Str.search_forward (Str.regexp "\\}[^\\.\\+\\&\\*\\)]") s 0 in true with Not_found -> false in
+    let c2 = try let res = Str.search_forward (Str.regexp "\\][^\\+\\&\\*\\)\\*]") s 0 in true with Not_found -> false in
+    let c3 = find_tail "?" s in
+    let c4 = find_tail "!" s in 
+    c1 || c2 || c3 || c4;;
 
 (* Add empty braces to action names which haven't got them *)
 let add_empty_par s' = 
