@@ -45,20 +45,54 @@ type tsb = Nil | Success |
 (*         Timed TSB --monitor        *)
 (*                                    *)
 (*************************************)
-(*Environment*)
-type tsb_env = Env of ( string -> tsb);;
-let emptyEnv = Env  (fun x -> Nil);;
-let applyEnv (Env rho) id = rho id;;
-let  bindEnv   (Env rho) id p = Env ( fun y -> if y = id then p else rho id);;
+(*Environment as a function*)
+(*type tsb_env = Env of ( string -> tsb);;*)
+(*let emptyEnv = Env  (fun x -> Nil);;*)
+(*let applyEnv (Env rho) id = rho id;;*)
+(*let  bindEnv   (Env rho) id p = Env ( fun y -> if y = id then p else rho id);;*)
 
+(*Environment as a list of couples*)
+type tsb_env = Env of ( string *tsb ) list;;
+let emptyEnv = Env [];;
 
+let rec getEnv l id = match l with
+  (pid, p):: tl-> if id = pid then p else getEnv tl id
+| []-> Nil;;
 
-(*Time*)
-type tsb_time = Time of (tsb_clock-> float );;
-let startTime = Time (fun x -> 0.0);;
-let applyTime (Time nu) t = nu t ;;
-let resetTime (Time nu) l  = Time (fun y -> if (List.mem y l) then 0.0 else nu y);;
-let incrTime  (Time nu) d  = Time (fun y ->  nu y +.d);;
+let applyEnv (Env rho) id =  getEnv rho id;; 
+
+let rec remove l id = match l with
+  (pid, p):: tl-> if id = pid then p else getEnv tl id
+| []-> Nil;;
+
+let bindEnv (Env rho) id p = Env ((id,p)::(List.filter (fun (a,b) -> if a = id then false else true) rho));;
+
+(*Time as a function*)
+(*type tsb_time = Time of (tsb_clock-> float );;*)
+(*let startTime = Time (fun x -> 0.0);;*)
+(*let applyTime (Time nu) t = nu t ;;*)
+(*let resetTime (Time nu) l  = Time (fun y -> if (List.mem y l) then 0.0 else nu y);;*)
+(*let incrTime  (Time nu) d  = Time (fun y ->  nu y +.d);;*)
+
+(*Time as a list of couples*)
+(*Time has an absolute value then for each clock, the time it  has been reset*)
+type tsb_time = Time of (float * (tsb_clock * float ) list);;
+let startTime = Time (0., []);;
+
+let rec getTime l id = match l with
+  (c, d):: tl-> if id = c then d else getTime tl id
+| []-> 0.;;
+
+(*to calculate the clock time, we subtract  reset time from time*)
+let applyTime (Time (curr, nu)) t = curr -. (getTime nu t) ;;
+
+(*to reset the time for all the clock in l, we prior eliminate these clocks from nu, and then we reinsert them*)
+let resetTime (Time (curr, nu)) l  =  
+        Time (curr, (List.map (fun x -> (x,curr)) l)
+               @(List.filter(fun (y,f) -> if (List.mem y l) then false  else true) nu ));;
+
+let incrTime  (Time (curr, nu)) d  = Time( curr  +. d, nu);;
+
 
 (*Network*)
 type performedAction = Int of tsb_action | Ext of tsb_action;;
@@ -70,9 +104,9 @@ type tsb_step = Delay of float | Fire of (process_name * performedAction);;(*pro
 type tsb_buffer = EmptyBuffer | Buffer of process_name * tsb_action;;
 
 type tsb_network = Network of ((process_name* tsb * tsb_env) * (process_name* tsb * tsb_env) * tsb_buffer  * tsb_time);;
-
-
-
+let getProcessName (pid, p, env) = pid;;
+let getTSBProcess (pid, p, env) = p;;
+let getEnvProcess (pid, p, env) = env;;
 
 
 (**********************************************************)

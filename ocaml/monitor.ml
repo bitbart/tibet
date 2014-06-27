@@ -6,6 +6,8 @@
 #load "str.cma";;
 #use "tipi.ml";; 
 
+(*given a process, returns its name*)
+let getProcessName (pid, p, env) = pid;;
 
 (*Evaluating a single guard: (a guard is a list of single constraints)*)
 let evaluate' time (c,op,d) base  = 
@@ -57,8 +59,13 @@ let dequeue (Network ((p_id,p,rhop),(q_id,q,rhoq),b, time)) pid  act =
   else  if pid = q_id then let (q',b', rho', time') =  dequeue' q b rhoq time q_id act  in  Network ((p_id,p, rhop),(q_id,q',rho'),b',time')
   else failwith "Wrong pid";;  
 
-(*delaying*)
-let delay  (Network (p,q,b, time))  d = (Network (p,q,b, incrTime time d ));;
+(*delaying: if the buffer contains something, then the other participant is gone Nil*)
+
+
+let delay  (Network (p,q,b, time))  d = match b with 
+    Buffer (currBpid, currBact) -> if  getProcessName p = currBpid then (Network (p,  ((getProcessName q), Nil, (getEnvProcess q)) ,b, incrTime time d )) 
+                                                                   else (Network ( ((getProcessName p), Nil, (getEnvProcess p)),q,b, incrTime time d )) 
+| EmptyBuffer -> (Network (p,q,b, incrTime time d ));;
 
 let m_start p q = 
        Network (("A",p,emptyEnv),("B",q,emptyEnv), EmptyBuffer,  startTime);;
@@ -67,6 +74,8 @@ let m_step (Network (p,q,b, time)) s = match s with
   Delay d ->  delay (Network (p,q,b, time)) d
 | Fire (pid, Int act) ->   enqueue (Network(p,q,b, time)) pid  act 
 | Fire (pid, Ext act) ->   dequeue (Network(p,q,b, time)) pid  act;;
+
+
 
 (*************************************************************************************************)
 (*Culpability and onDuty*)
@@ -86,8 +95,7 @@ let isCulpable p  time = match (unfold  p) with
 | IntChoice l -> if not (actionIsPossible l time) then true else false 
 | _ -> false;;
 
-let getId (a,b,c) = a;;
-let m_culpable (Network (p, q, b, time)) =  (if isCulpable p  time then [getId p] else []) @  (if isCulpable  q   time then [getId q] else []);; 
+let m_culpable (Network (p, q, b, time)) =  (if isCulpable p  time then [getProcessName p] else []) @  (if isCulpable  q   time then [getProcessName q] else []);; 
 
 let m_onDuty (Network (p,q,b,  time)) = match ( (unfold p), (unfold q),b) with 
     ( p', q', Buffer(idb, actb)) -> if not (isCulpable p  time ) &&  (getId p) != idb then [getId p]
@@ -160,3 +168,29 @@ m_onDuty net6;;
 let net7 = m_step net6  (Fire ("B", Ext (TSBAction "b" )));;
 m_onDuty net7;;
 
+(********************************************************************)
+(*                 Testing     Time                            *)
+(********************************************************************)
+let p =  IntChoice[(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 1)], TSBReset[] , Success);
+                   (TSBAction "b",  TSBGuard [(TSBClock "t", Less, 2)], TSBReset[] , Success)];;
+let q =  ExtChoice[(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 1)], TSBReset[] , Success);
+                   (TSBAction "b",  TSBGuard [(TSBClock "t", Less, 2)], TSBReset[] , Success)];;
+
+(*correct interaction*)
+let net1 = m_start p q;;
+
+let net2 = m_step net1  (Fire ("A", Int (TSBAction "a" )));;
+let net3 = m_step net2  (Delay 4.);;
+m_culpable net3;;
+m_onDuty net2;;
+let net3 = m_step net2  (Fire ("B", Ext (TSBAction "a" )));;
+m_culpable net3;;
+m_onDuty net3;;
+let net4 = m_step net3  (Fire ("A", Ext (TSBAction "a" )));;
+
+let t0 = startTime;;
+let t1 = incrTime t0 4.;;
+applyTime t1 (TSBClock "x");;
+let t2 = resetTime t1 [TSBClock "x";TSBClock "y" ];;
+let t3 = incrTime t2 1.;;
+applyTime t3 (TSBClock "x");;
