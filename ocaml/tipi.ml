@@ -75,7 +75,7 @@ let bindEnv (Env rho) id p = Env ((id,p)::(List.filter (fun (a,b) -> if a = id t
 (*let incrTime  (Time nu) d  = Time (fun y ->  nu y +.d);;*)
 
 (*Time as a list of couples*)
-(*Time has an absolute value then for each clock, the time it  has been reset*)
+(*Time has an absolute value then a list which contains for each clock, the time in which it  has been reset-- if needed*)
 type tsb_time = Time of (float * (tsb_clock * float ) list);;
 let startTime = Time (0., []);;
 
