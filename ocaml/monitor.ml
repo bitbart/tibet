@@ -97,6 +97,7 @@ let isCulpable p  time = match (unfold  p) with
 
 let m_culpable (Network (p, q, b, time)) =  (if isCulpable p  time then [getProcessName p] else []) @  (if isCulpable  q   time then [getProcessName q] else []);; 
 
+let getId (a,b,c) = a;;
 let m_onDuty (Network (p,q,b,  time)) = match ( (unfold p), (unfold q),b) with 
     ( p', q', Buffer(idb, actb)) -> if not (isCulpable p  time ) &&  (getId p) != idb then [getId p]
                                     else if not (isCulpable q  time ) &&  (getId q) != idb then [getId q] else []
