@@ -12,10 +12,12 @@
 
 				#load "str.cma";;
         #use "tipi.ml";;
+				#use "fromXML.ml";;
   ----------------------------------------------------
 *)
 
 open Tipi;;
+open FromXML;;
 
 
 
