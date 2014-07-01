@@ -6,14 +6,13 @@
  ********************************************************************************
  **)
 
-(* Inclusions to be used when compiling with Ocaml Interactive Environment *)
-(* 
-#load "dynlink.cma";;
-#load "camlp4o.cma";;
-*)
-
+(* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
 open Errors;;
 open FromXML;;
+
+
+
+
 
 (** PRINTC **)
 (* Checks if symbols for action names, clocks etc are in (a-z) range, else raises an exception *)

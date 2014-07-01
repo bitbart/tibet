@@ -1,7 +1,7 @@
 (** 
  ********************************************************************************
  **																																						 **
- **				MAIN (6): contains a simple interface to run CTU converter           **
+ **				MAIN (7): contains a simple interface to run CTU converter           **
  **																																						 **
  ********************************************************************************
  **)
@@ -12,6 +12,10 @@ open Mapping;;
 open ToXML;;
 open FromXML;;
 open Cparser;;
+open Monitor;;
+
+
+
 
 let find_termination s = 
 	if (Str.string_match (Str.regexp "[a-z0-9\\\"\\/\\<\\>= ]*\\<\\/contract\\>[a-z0-9\\\"\\/\\<\\>= ]+") s 0)

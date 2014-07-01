@@ -6,14 +6,28 @@
  ********************************************************************************
  **)
 
-(*Inclusions to be used when compiling with Ocaml Interactive Environment
-#load "str.cma";;
-#load "xml-light.cma";;
-#use "tipi.ml";;
+(*-------------------------------------------------- 
+   OCAML TOPLEVEL IMPORTS (for Eclipse and Emacs)
+
+		#load "str.cma";;
+		#load "xml-light.cma";;
+		#load "dynlink.cma";;
+		#load "camlp4o.cma";;
+
+----------------------------------------------------
+	 OCAML TOPLEVEL IMPORTS (for Emacs only)
+
+		#use "tipi.ml";;
+----------------------------------------------------
 *) 
 
-(*Inclusions to be used when compiling with makefile*)
+(*Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE*)
 open Tipi;;
+
+
+
+
+
 
 (*getter functions for  [(Action "a", g, r , Success)*)
 let getAction (TSBAction a,b,c,d) = a;;

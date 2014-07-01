@@ -4,15 +4,24 @@
 (**									     																										   **)
 (** ************************************************************************** **)
 
-(* Inclusions to be used when compiling with Ocaml Interactive Environment
-#use "mapping.ml";;
+(* 
+  ----------------------------------------------------
+   OCAML TOPLEVEL IMPORTS (for Emacs only)
+
+		#use "mapping.ml";;
+  ----------------------------------------------------
 *)
 
-(* Inclusions to be used when compiling with makefile *)
+(* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
 open Printf;;
 open Tipi;;
 open Mapping;;
 open Printf;;
+
+
+
+
+
 
 
 let escape g =

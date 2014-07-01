@@ -6,17 +6,20 @@
  ********************************************************************************
  **)
 
-(* It requires xml-light module - download it and exec 'make install' *)
+(* Requires xml-light module - download it and exec 'make install' *)
 
-(* Inclusions to be used when compiling with Ocaml Interactive Environment
-#use "toXML.ml";;
-*)
-
-(* Inclusions to be used when compiling with makefile *)
+(* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
 open Tipi;;
 open Mapping;;
 open ToXML;;
 open Errors;;
+
+
+
+
+
+
+
 
 let rec fromIntChoiceToList (IntChoice l) = l;;
 

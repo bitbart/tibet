@@ -1,10 +1,24 @@
-(******************************************************************************)
-(*         MAPPING (2): offers functions which map contracts into automata    *)
-(******************************************************************************)
+(** 
+ ********************************************************************************
+ **                                                                            **
+ **             MONITOR (6): contains monitoring functions						         **
+ **                                                                            **
+ ********************************************************************************
+ **)
   
-(*Inclusions to be used when compiling with Ocaml Interactive Environment*)
-#load "str.cma";;
-#use "tipi.ml";; 
+(* 
+  ----------------------------------------------------
+   OCAML TOPLEVEL IMPORTS (for Emacs only)
+
+				#load "str.cma";;
+        #use "tipi.ml";;
+  ----------------------------------------------------
+*)
+
+open Tipi;;
+
+
+
 
 (*given a process, returns its name*)
 let getProcessName (pid, p, env) = pid;;
@@ -107,7 +121,58 @@ let m_onDuty (Network (p,q,b,  time)) = match ( (unfold p), (unfold q),b) with
 |  ( p',  IntChoice l, EmptyBuffer)-> if not (isCulpable q   time ) then [getId q] else [] 
 |  _ ->  []  ;;
 
+(*************************************************)
+(*                SERIALIZATION                  *)
+(*************************************************)
+let serialize_net n f =
+	let chan1 = open_out_bin f in
+	output_value chan1 n; flush chan1
+;;
 
+let deserialize_net f =
+	let chan1 = open_in_bin f in
+	let net = input_value chan1 in
+	net
+;;
+
+let start_mon p q filename = 
+	let net1 = m_start (readXmlContract p) (readXmlContract q) in
+	serialize_net net1 filename
+;;
+
+let fire_act pn act d fn fn' =
+	let net1 = deserialize_net fn in
+	let proc = if (pn == 0) then "A" else "B" in
+	let proc' = if (pn == 0) then "B" else "A" in
+	let net2 = m_step net1 (Delay d) in
+	let net3 = m_step net2 (Fire (proc, Int (TSBAction act))) in
+	let net4 = m_step net3 (Fire (proc', Ext (TSBAction act))) in
+	serialize_net net4 fn'
+;;
+
+let rec isCulpable' p l =
+	match l with
+	| a::l' -> if (a == p) then true else isCulpable' p l'
+	| [] -> false
+;;
+
+let isCulpable p fn =
+	let proc = if (p==0) then "A" else "B" in
+	let net = deserialize_net fn in
+	if (isCulpable' proc (m_culpable net)) then "yes" else "no"
+;;
+
+let rec isOnDuty' p l =
+    match l with
+    | a::l' -> if (a == p) then true else isOnDuty' p l'
+    | [] -> false
+;;
+
+let isOnDuty p fn =
+    let proc = if (p==0) then "A" else "B" in
+    let net = deserialize_net fn in
+    if (isOnDuty' proc (m_onDuty net)) then "yes" else "no"
+;;
 
 (********************************************************************)
 (*                          Testing                                 *)
@@ -172,22 +237,35 @@ m_onDuty net7;;
 (********************************************************************)
 (*                 Testing     Time                            *)
 (********************************************************************)
-let p =  IntChoice[(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 1)], TSBReset[] , Success);
-                   (TSBAction "b",  TSBGuard [(TSBClock "t", Less, 2)], TSBReset[] , Success)];;
-let q =  ExtChoice[(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 1)], TSBReset[] , Success);
-                   (TSBAction "b",  TSBGuard [(TSBClock "t", Less, 2)], TSBReset[] , Success)];;
+let p =  IntChoice[(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 3)], TSBReset[TSBClock "t"] , 
+										IntChoice[(TSBAction "b",  TSBGuard [(TSBClock "t", Less, 5)], TSBReset[TSBClock "t"] , Success)])];;
+let q =  ExtChoice[(TSBAction "a",  TSBGuard [(TSBClock "tt", Less, 3)], TSBReset[] , 
+                    ExtChoice[(TSBAction "b",  TSBGuard [(TSBClock "tt", Less, 8)], TSBReset[TSBClock "tt"] , Success)])];;
 
-(*correct interaction*)
+(* test interaction (updated) *)
 let net1 = m_start p q;;
+m_culpable net1;;
+m_onDuty net1;;
 
-let net2 = m_step net1  (Fire ("A", Int (TSBAction "a" )));;
-let net3 = m_step net2  (Delay 4.);;
-m_culpable net3;;
+let net2 = m_step net1 (Delay 2.);;
+m_culpable net2;;
 m_onDuty net2;;
-let net3 = m_step net2  (Fire ("B", Ext (TSBAction "a" )));;
+
+let net3 = m_step net2  (Fire ("A", Int (TSBAction "a" )));;
 m_culpable net3;;
 m_onDuty net3;;
-let net4 = m_step net3  (Fire ("A", Ext (TSBAction "a" )));;
+
+
+let net4 = m_step net3  (Fire ("B", Ext (TSBAction "a" )));;
+m_culpable net4;;
+m_onDuty net4;;
+
+let net5 = m_step net4 (Delay 4.);;
+m_culpable net5;;
+m_onDuty net5;;
+
+
+let net6 = m_step net5  (Fire ("A", Ext (TSBAction "a" )));;
 
 let t0 = startTime;;
 let t1 = incrTime t0 4.;;
