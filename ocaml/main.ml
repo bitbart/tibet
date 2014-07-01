@@ -68,9 +68,23 @@ let main =
 		| 4 -> 
 			(
 			match (Sys.argv.(1)) with
+			| "-ic" -> print_string (isCulpable (int_of_string (Sys.argv.(2))) (Sys.argv.(3)))
+      | "-id" -> print_string (isOnDuty (int_of_string (Sys.argv.(2))) (Sys.argv.(3)))
 			| "-ff" -> contractsToAutomata_fromFile (Sys.argv.(2)) (Sys.argv.(3))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
+		| 5 -> 
+      (
+      match (Sys.argv.(1)) with
+      | "-start" -> start_mon (Sys.argv.(2)) (Sys.argv.(3)) (Sys.argv.(4))
+      | _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
+      )
+    | 7 -> 
+      (
+      match (Sys.argv.(1)) with
+      | "-step" -> fire_act (int_of_string (Sys.argv.(2))) (Sys.argv.(3)) (float_of_string (Sys.argv.(4))) (Sys.argv.(5)) (Sys.argv.(6))
+      | _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
+      )
 		| _ -> print_string ("Wrong input!\n\nPlease use:\n\n\t'$ ./ctu -ff file1.txt file2.txt' to convert two xml contracts in Uppaal's xml\n\t'$ ./ctu -s < file.txt' to convert a string contract in a XML contract")
 ;;
 

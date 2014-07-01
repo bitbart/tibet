@@ -152,7 +152,7 @@ let fire_act pn act d fn fn' =
 
 let rec isCulpable' p l =
 	match l with
-	| a::l' -> if (a == p) then true else isCulpable' p l'
+	| a::l' -> if (String.compare a p == 0) then true else isCulpable' p l'
 	| [] -> false
 ;;
 
