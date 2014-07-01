@@ -16,7 +16,10 @@
   ----------------------------------------------------
 *)
 
+open Errors;;
 open Tipi;;
+open Mapping;;
+open ToXML;;
 open FromXML;;
 
 
