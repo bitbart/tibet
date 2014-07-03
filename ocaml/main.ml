@@ -65,6 +65,14 @@ let main =
 					print_string ("Contract is not valid")
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
+    | 3 -> 
+      (
+      match (Sys.argv.(1)) with
+      | "-start" -> 
+						let rc = read_input stdin in
+            start_mon (List.hd rc) (List.hd (List.rev rc)) (Sys.argv.(2))
+      | _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
+      )
 		| 4 -> 
 			(
 			match (Sys.argv.(1)) with
@@ -73,12 +81,6 @@ let main =
 			| "-ff" -> contractsToAutomata_fromFile (Sys.argv.(2)) (Sys.argv.(3))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
-		| 5 -> 
-      (
-      match (Sys.argv.(1)) with
-      | "-start" -> start_mon (Sys.argv.(2)) (Sys.argv.(3)) (Sys.argv.(4))
-      | _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
-      )
     | 7 -> 
       (
       match (Sys.argv.(1)) with
