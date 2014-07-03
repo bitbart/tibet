@@ -179,8 +179,6 @@ let isOnDuty p fn =
     if (isOnDuty' proc (m_onDuty net)) then "yes" else "no"
 ;;
 
-start_mon "<contract><intaction id=\"a\" /></contract>" "<contract><extaction id=\"a\" /></contract>" "pippo2.txt";;
-
 (********************************************************************)
 (*                          Testing                                 *)
 (********************************************************************)

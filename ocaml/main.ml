@@ -70,7 +70,7 @@ let main =
       match (Sys.argv.(1)) with
       | "-start" -> 
 						let rc = read_input stdin in
-            print_string ("-------------\n" ^ (List.hd rc) ^ "\n--------------\n" ^ (List.hd (List.rev rc)) ^ "\n-------------\n") (*(Sys.argv.(2))*)
+            start_mon (List.hd rc) (List.hd (List.rev rc)) (Sys.argv.(2))
       | _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
       )
 		| 4 -> 
