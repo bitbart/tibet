@@ -164,7 +164,7 @@ let rec isCulpab' p l =
 let isCulpab p fn =
 	let proc = if (p==0) then "A" else "B" in
 	let net = deserialize_net fn in
-	if (isCulpable' proc (m_culpable net)) then "yes" else "no"
+	if (isCulpab' proc (m_culpable net)) then "yes" else "no"
 ;;
 
 let rec isOnDuty' p l =
