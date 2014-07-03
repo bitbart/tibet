@@ -155,13 +155,13 @@ let fire_act pn act d fn fn' =
 	serialize_net net4 fn'
 ;;
 
-let rec isCulpable' p l =
+let rec isCulpab' p l =
 	match l with
-	| a::l' -> if (String.compare a p == 0) then true else isCulpable' p l'
+	| a::l' -> if (String.compare a p == 0) then true else isCulpab' p l'
 	| [] -> false
 ;;
 
-let isCulpable p fn =
+let isCulpab p fn =
 	let proc = if (p==0) then "A" else "B" in
 	let net = deserialize_net fn in
 	if (isCulpable' proc (m_culpable net)) then "yes" else "no"
@@ -169,7 +169,7 @@ let isCulpable p fn =
 
 let rec isOnDuty' p l =
     match l with
-    | a::l' -> if (a == p) then true else isOnDuty' p l'
+    | a::l' -> if (String.compare a p == 0) then true else isOnDuty' p l'
     | [] -> false
 ;;
 
@@ -179,20 +179,20 @@ let isOnDuty p fn =
     if (isOnDuty' proc (m_onDuty net)) then "yes" else "no"
 ;;
 
+start_mon "<contract><intaction id=\"a\" /></contract>" "<contract><extaction id=\"a\" /></contract>" "pippo2.txt";;
+
 (********************************************************************)
 (*                          Testing                                 *)
 (********************************************************************)
-let p =  IntChoice[(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 1)], TSBReset[] , Success);
-                   (TSBAction "b",  TSBGuard [(TSBClock "t", Less, 2)], TSBReset[] , Success)];;
-let q =  ExtChoice[(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 1)], TSBReset[] , Success);
-                   (TSBAction "b",  TSBGuard [(TSBClock "t", Less, 2)], TSBReset[] , Success)];;
+let p =  IntChoice[(TSBAction "a",  TSBGuard [], TSBReset[] , Success)];;
+let q =  ExtChoice[(TSBAction "a",  TSBGuard [], TSBReset[] , Success)];;
 
 (*correct interaction*)
 let net1 = m_start p q;;
 
 let net2 = m_step net1  (Fire ("A", Int (TSBAction "a" )));;
 m_culpable net2;;
-m_onDuty net2;;
+m_onDuty net1;;
 let net3 = m_step net2  (Fire ("B", Ext (TSBAction "a" )));;
 m_culpable net3;;
 m_onDuty net3;;

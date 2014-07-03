@@ -70,13 +70,13 @@ let main =
       match (Sys.argv.(1)) with
       | "-start" -> 
 						let rc = read_input stdin in
-            start_mon (List.hd rc) (List.hd (List.rev rc)) (Sys.argv.(2))
+            print_string ("-------------\n" ^ (List.hd rc) ^ "\n--------------\n" ^ (List.hd (List.rev rc)) ^ "\n-------------\n") (*(Sys.argv.(2))*)
       | _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
       )
 		| 4 -> 
 			(
 			match (Sys.argv.(1)) with
-			| "-ic" -> print_string (isCulpable (int_of_string (Sys.argv.(2))) (Sys.argv.(3)))
+			| "-ic" -> print_string (isCulpab (int_of_string (Sys.argv.(2))) (Sys.argv.(3)))
       | "-id" -> print_string (isOnDuty (int_of_string (Sys.argv.(2))) (Sys.argv.(3)))
 			| "-ff" -> contractsToAutomata_fromFile (Sys.argv.(2)) (Sys.argv.(3))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
