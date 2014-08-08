@@ -86,7 +86,7 @@ let main =
     | 8 -> 
       (
       match (Sys.argv.(1)) with
-      | "-step" -> fire_act (int_of_string (Sys.argv.(2))) (Sys.argv.(3)) (float_of_string (Sys.argv.(4))) (Sys.argv.(5)) (Sys.argv.(6)) (int_of_string (Sys.argv.(7)))
+      | "-step" -> if (int_of_string (Sys.argv.(7))) == 0 then 1 else 0 (* fire_act (int_of_string (Sys.argv.(2))) (Sys.argv.(3)) (float_of_string (Sys.argv.(4))) (Sys.argv.(5)) (Sys.argv.(6)) (int_of_string (Sys.argv.(7))) *)
       | _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
       )
 		| _ -> print_string ("Wrong input!\n\nPlease use:\n\n\t'$ ./ctu -ff file1.txt file2.txt' to convert two xml contracts in Uppaal's xml\n\t'$ ./ctu -s < file.txt' to convert a string contract in a XML contract")

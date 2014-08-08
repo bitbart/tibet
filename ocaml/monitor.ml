@@ -182,6 +182,9 @@ let isOnDuty p fn =
 let isEnded fn = (String.compare (isOnDuty 0 fn) "no" == 0) && (String.compare (isOnDuty 1 fn) "no" == 0) 
 								&& (String.compare (isCulpab 0 fn) "no" == 0) && (String.compare (isCulpab 1 fn) "no" == 0);;
 
+let p = "<contract><sequence><intaction id=\"a\" /><extaction id=\"b\" /></sequence></contract>";;
+let q = "<contract><sequence><extaction id=\"a\" /><intaction id=\"b\" /></sequence></contract>";;
+
 (********************************************************************)
 (*                          Testing                                 *)
 (********************************************************************)
