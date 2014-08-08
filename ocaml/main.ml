@@ -72,7 +72,7 @@ let main =
 						let rc = read_input stdin in
             start_mon (List.hd rc) (List.hd (List.rev rc)) (Sys.argv.(2))
 			| "-ie" ->
-						isEnded (Sys.argv.(2))
+						if (isEnded (Sys.argv.(2))) then print_string("yes") else print_string("no")
       | _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
       )
 		| 4 -> 
