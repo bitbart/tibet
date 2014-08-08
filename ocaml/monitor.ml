@@ -145,14 +145,14 @@ let start_mon p q filename =
 	serialize_net net1 filename
 ;;
 
-let fire_act pn act d fn fn' =
+let fire_act pn act d fn fn' check =
 	let net1 = deserialize_net fn in
 	let proc = if (pn == 0) then "A" else "B" in
 	let proc' = if (pn == 0) then "B" else "A" in
 	let net2 = m_step net1 (Delay d) in
 	let net3 = m_step net2 (Fire (proc, Int (TSBAction act))) in
 	let net4 = m_step net3 (Fire (proc', Ext (TSBAction act))) in
-	serialize_net net4 fn'
+	if (check == 0) then serialize_net net4 fn' else serialize_net net3 fn'
 ;;
 
 let rec isCulpab' p l =
@@ -178,6 +178,9 @@ let isOnDuty p fn =
     let net = deserialize_net fn in
     if (isOnDuty' proc (m_onDuty net)) then "yes" else "no"
 ;;
+
+let isEnded fn = (String.compare (isOnDuty 0 fn) "no" == 0) && (String.compare (isOnDuty 1 fn) "no" == 0) 
+								&& (String.compare (isCulpab 0 fn) "no" == 0) && (String.compare (isCulpab 1 fn) "no" == 0);;
 
 (********************************************************************)
 (*                          Testing                                 *)
