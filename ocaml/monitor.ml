@@ -182,6 +182,15 @@ let isOnDuty p fn =
 let isEnded fn = (String.compare (isOnDuty 0 fn) "no" == 0) && (String.compare (isOnDuty 1 fn) "no" == 0) 
 								&& (String.compare (isCulpab 0 fn) "no" == 0) && (String.compare (isCulpab 1 fn) "no" == 0);;
 
+let delay_net d fn fn' =
+    let net1 = deserialize_net fn in
+    let net2 = m_step net1 (Delay d) in
+		serialize_net net2 fn'
+;;
+
+let p = "<contract><intaction id=\"a\"><guards><guard id=\"x\" op=\"less\" value=\"5\"/></guards></intaction><extaction id=\"b\"/></contract>";;
+let q = "<contract><extaction id=\"a\" /><inttaction id=\"b\"/></contract>";;
+
 (********************************************************************)
 (*                          Testing                                 *)
 (********************************************************************)

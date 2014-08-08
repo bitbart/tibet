@@ -83,6 +83,12 @@ let main =
 			| "-ff" -> contractsToAutomata_fromFile (Sys.argv.(2)) (Sys.argv.(3))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
+		| 5 -> 
+      (
+      match (Sys.argv.(1)) with
+      | "-delay" -> delay_net (float_of_string (Sys.argv.(2))) (Sys.argv.(2)) (Sys.argv.(3))
+      | _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
+      )	
     | 8 -> 
       (
       match (Sys.argv.(1)) with
