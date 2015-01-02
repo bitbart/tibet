@@ -7,7 +7,7 @@
  **)
 
 (*-------------------------------------------------- 
-   OCAML TOPLEVEL IMPORTS (for Eclipse and Emacs)
+   OCAML TOPLEVEL IMPORTS (for Eclipse )
 
 		#load "str.cma";;
 		#load "xml-light.cma";;
@@ -15,18 +15,15 @@
 		#load "camlp4o.cma";;
 
 ----------------------------------------------------
-	 OCAML TOPLEVEL IMPORTS (for Emacs only)
-
+	 OCAML TOPLEVEL IMPORTS (for Emacs)
+ 
+	        #load "str.cma";;
 		#use "tipi.ml";;
 ----------------------------------------------------
 *) 
 
 (*Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE*)
 open Tipi;;
-
-
-
-
 
 
 (*getter functions for  [(Action "a", g, r , Success)*)
@@ -59,6 +56,7 @@ let getRelation r = match r with
 let getClockName (TSBClock c) = c;;
 
 let getClocksListFromGuards gl = List.fold_right (fun (TSBClock c, b, d)  y -> (Clock c)::y) gl [];;
+let getClocksListFromReset  rl = List.map (fun (TSBClock c)  -> Clock c) rl;;
 
 let rec tsbGuardToString gl = match gl with 
   [] -> ""
@@ -74,10 +72,9 @@ let rec tsbGuardToString gl = match gl with
 (****************************************************************************************************)
 
 (*Unfortunately UPPAAL doesnot allows for more than a single  resets on an edge, unless they are written in a procedure*)
-(*so createResetProc create the reset procedure for more than one clock and returns also the clock list*)
+(*so createResetProc create the reset procedure for more than one clock *)
 let createResetProc  name  l = 
-  [(name,  List.fold_right (fun (TSBClock c)  y -> c^"=0; "^y) l "" )],  
-  List.map (fun (TSBClock c)  -> Clock c) l;; (*the clock list*)
+  [(name,  List.fold_right (fun (TSBClock c)  y -> c^"=0; "^y) l "" )];; 
 
 (* Create ResetBody is used if only one clock is to be reset, and returns the string to be put on the edge*)
 let createResetBody  l = match l with  
@@ -98,9 +95,10 @@ let rec createIntEdges  init l  tadl idx  = match (l, tadl) with (*idx has alrea
        (* if the reset is only one, we put it on the edge*)
        let procName = if List.length(getReset hd)>1 then procHD^"s2_"^current^"()" 
                       else if List.length(getReset hd)= 1 then createResetBody (getReset hd) else "" in  
-       let (proc, clocksInReset) = if List.length(getReset hd)>1 then createResetProc procName (getReset hd) 
-                                   else  (* if only one reset: we put it in the edge. If none, nothing done*)  ([],[]) in 
-       let clocksInGuards = getClocksListFromGuards (getGuard hd) in 
+       let proc  = if List.length(getReset hd)>1 then createResetProc procName (getReset hd)                               
+                                   else [] in (* if only one reset: we put it in the edge. If none, nothing done*) 
+       let clocksInGuards = getClocksListFromGuards (getGuard hd) in                                                          
+       let clocksInReset = getClocksListFromReset (getReset hd) in                                                             
        let clocks  = clocksInGuards @ clocksInReset @ clockList_a in 
        let edges =  [ Edge (init, Label "", tsbGuardToString(getGuard hd) ,"", Loc ("s1_"^current));
             Edge (Loc ("s1_"^current), Label (bar^(getAction hd)^bang), "", procName, Loc ("s2_"^current));
@@ -124,9 +122,10 @@ let rec createExtEdges  init l  tadl idx  = match (l, tadl) with (*idx has alrea
        (* if the reset is only one, we put it on the edge*)
        let procName = if List.length(getReset hd)>1 then procHD^"s2_"^current^"()" 
                       else if List.length(getReset hd)= 1 then createResetBody (getReset hd) else "" in  
-       let (proc, clocksInReset) = if List.length(getReset hd)>1 then createResetProc procName (getReset hd) 
-                                   else  (* if only one reset: we put it in the edge. If none, nothing done*)  ([],[]) in 
-       let clocksInGuards = getClocksListFromGuards (getGuard hd) in  
+       let proc = if List.length(getReset hd)>1 then createResetProc procName (getReset hd) 
+                                   else [] in (* if only one reset: we put it in the edge. If none, nothing done*) 
+       let clocksInGuards = getClocksListFromGuards (getGuard hd) in   
+       let clocksInReset = getClocksListFromReset (getReset hd) in    
        let clocks  = clocksInGuards @ clocksInReset @ clockList_a in
        let edges =  [ Edge (init, Label  (bar^(getAction hd)^query), "","", Loc ("s1_"^current));
             Edge (Loc ("s1_"^current), Label "", tsbGuardToString(getGuard hd),"", Loc ("s2_"^current));
@@ -389,6 +388,7 @@ let rec buildAutoma  p idx =  match p with
             let committed = ["l_"^(string_of_int (idx+1))] 
             (*Adding (x, init) as a reference for recursion, to be solved when parsing Rec x*)   
             in (setCommitted(setInit ea init) committed, idx+1, [(x,init)] )
+| Nil ->  (idleAutoma, idx, [])
  and 
   buildAutomaList l  idx = match l with 
       [] -> ([],idx, [])

@@ -144,6 +144,7 @@ type automa =TimedAutoma of
 (**************Constructors ********************)
 let emptyAutoma = TimedAutoma ("",[],Loc "",[],[],[], [], [], [], [], [],  []);;
 
+let idleAutoma = TimedAutoma ("",[Loc "l"],Loc "l",[],[],[], [], [], [], [], [],  []);;
 
 (**************Getter for automa fields ********************)
 let getInit  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = init;; 

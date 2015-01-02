@@ -8,7 +8,8 @@
   ----------------------------------------------------
    OCAML TOPLEVEL IMPORTS (for Emacs only)
 
-		#use "mapping.ml";;
+		#use "mapping.ml";; 
+                open Printf;;
   ----------------------------------------------------
 *)
 
@@ -17,12 +18,6 @@ open Printf;;
 open Tipi;;
 open Mapping;;
 open Printf;;
-
-
-
-
-
-
 
 let escape g =
 	let ampregex = Str.regexp "&" in 

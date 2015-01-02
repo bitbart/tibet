@@ -16,11 +16,6 @@ open Errors;;
 
 
 
-
-
-
-
-
 let rec fromIntChoiceToList (IntChoice l) = l;;
 
 let rec fromExtChoiceToList (ExtChoice l) = l;;
