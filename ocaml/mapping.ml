@@ -51,7 +51,9 @@ let procHD = "res_";;
 (*Converter for guards: from   [(TSBClock "t", Less, 10); (TSBClock "t", Great, 1)] to "t<10 && t>1"*)
 let getRelation r = match r with 
   Less -> "<"
-| Great -> ">";;
+| Great -> ">"
+| LessEq -> "<"
+| GreatEq -> ">";;
 
 let getClockName (TSBClock c) = c;;
 
@@ -155,7 +157,7 @@ let rec createRecEdges  name loc list   = match list with (*idx has already been
 (****************************************************************************************************)
 (*supInvariants calculate the maximum moment you can wait before choosing a branch *)
 (*We assume they deal with the same clock*)
-(* l is:  [ (TSBAction "a", g2, r2 , Success), (TSBAction "a", g3, r2 , Success), (TSBAction "a", g4, r2 , Success) ];;*)
+(* l is:  [ (TSBAction "a", g2, r2 , Success), (TSBAction "b", g3, r2 , Success), (TSBAction "c", g4, r2 , Success) ];;*)
 (* g is :  TSBGuard [(TSBClock "t", Less, 10); (TSBClock "t", Great, 1)];;*)
 (* in the case t<10 && t < 3 sup Invariant returs (t, 10)*)
 (* in the case t>10 sup Invariant returs (t, 0)*)
@@ -170,7 +172,7 @@ let minBound b1 b2 = match (b1, b2) with
      (Forever, b2)  -> b2
 |    (b1, Forever)  -> b1 
 |    (Until (t,d), Until (r,c)) -> 
-               if t <> r then failwith ("MinBound: "^t^" "^r^" different clocks in a choice")
+               if t <> r then failwith ("MinBound: "^t^" and "^r^" are two different clocks in the same  choice-> NOT ALLOWED")
                else if d < c then b1 else b2
 ;;
 
@@ -178,7 +180,7 @@ let maxBound b1 b2 = match (b1, b2) with
      (Forever, b2)  -> Forever
 |    (b1, Forever)  -> Forever
 |    (Until (t,d), Until (r,c)) -> 
-               if t <> r then failwith ("MaxBound:  "^t^" "^r^" different clocks in a choice")
+               if t <> r then failwith ("MaxBound:  "^t^" and  "^r^" are different clocks in the same  choice-> NOT ALLOWED")
                else if d < c then b2 else b1
 ;;
 
@@ -199,18 +201,33 @@ let rec getBoundOfAllTheActions l b = match l with
                               in  getBoundOfAllTheActions tl m
 ;;
 
+
+
 let getClock l = match l with 
    [] -> ""
 |   (TSBClock c, r, d)::tl -> c;;
+
+let rec getClockWithUpperBound l = match l with 
+   [] -> ""
+|   (TSBClock c, r, d)::tl -> if r = Less then c else getClockWithUpperBound tl ;;
+
+let rec getClockWithUpperBoundChoice l = match l with 
+   [] -> ""
+| (a, TSBGuard gl, r, e)::tl -> let c = getClockWithUpperBound gl in 
+                                if c = "" then getClockWithUpperBoundChoice tl else c ;;
 
 let boundToInv b = match b with
   Forever -> ""
 | Until (c,d) -> c^" < "^string_of_int d;;
 
-(*to initialize the list with a default value for minimum I need to know the clock name*)
+(*to initialize the list with a default value for minimum I need to know the clock name --FOR THE CONTSRAINTS WITH < or <=*)
+(*Carefull: there is not only one clock in the guards, but there is only one clock which use  upper bound*)
+(*it must be searched in all the guard of all the branches*)
 let getMaxInv l =  if List.length l = 0 then ""
-                   else  let c = getClock (getGuard (List.nth l 0))
-                   in boundToInv(getBoundOfAllTheActions l (Until (c, 1)));;
+                   else ( let c = getClockWithUpperBoundChoice  l 
+                          in if c = "" then "" 
+                             else  boundToInv(getBoundOfAllTheActions l (Until (c, 1)))
+                   );;
 
 (****************************************************************************************************)
 (*                                                                                                  *)
@@ -288,8 +305,8 @@ let getMinBound b1 b2 = match (b1,b2) with
 (*minB is 2<t and maxB is t<10*)
 let rec  makeInterval part minB maxB = match part with 
   []-> (minB, maxB)
-| (c, r, d)::tl-> makeInterval tl (if r = Great then getMaxBound (Bound(c,r,d)) minB else minB)
-                                  (if r = Less then getMinBound (Bound(c,r,d)) maxB else maxB)
+| (c, r, d)::tl-> makeInterval tl (if r = Great || r = GreatEq then getMaxBound (Bound(c,r,d)) minB else minB)
+                                  (if r = Less || r = LessEq then getMinBound (Bound(c,r,d)) maxB else maxB)
 ;;  
 
 (*Re-converting a bound list to a guardlist*)
