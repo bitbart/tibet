@@ -227,8 +227,6 @@ let rec parse_multiple_contracts' l =
 
 let parse_multiple_contracts c = parse_multiple_contracts' (Str.split (Str.regexp "[|]+") c);;
 
-print_string (parse_contract "?pay{;tp}.?ok");;
-
 
 
 
