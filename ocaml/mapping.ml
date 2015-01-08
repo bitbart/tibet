@@ -226,7 +226,7 @@ let boundToInv b = match b with
 let getMaxInv l =  if List.length l = 0 then ""
                    else ( let c = getClockWithUpperBoundChoice  l 
                           in if c = "" then "" 
-                             else  boundToInv(getBoundOfAllTheActions l (Until (c, 1)))
+                             else  boundToInv(getBoundOfAllTheActions l (Until (c, 0)))
                    );;
 
 (****************************************************************************************************)
