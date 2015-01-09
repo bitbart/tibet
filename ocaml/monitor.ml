@@ -36,7 +36,7 @@ let evaluate guard time = List.fold_right (evaluate' time)  guard true;;
 (* Getting actions out of a list( iether internal or external choice)*)
 let rec getAction l act = match l with 
   (a,b,c,d)::tl -> if (a = act) then (b,c,d) else getAction tl act
-| [] ->  failwith "Action not found";;
+| [] ->  failwith _ERR_050;;
 
 let findAction l act = List.mem act (List.map (fun (a,b,c,d) -> a ) l);;
 
@@ -76,7 +76,7 @@ let rec dequeue' p b rho time pid act =   match (p, b) with
 let dequeue (Network ((p_id,p,rhop),(q_id,q,rhoq),b, time)) pid  act =  
   if pid = p_id then let (p',b', rho', time') =  dequeue' p b rhop time p_id act  in  Network ((p_id,p',rho'),(q_id,q,rhoq),b',time')
   else  if pid = q_id then let (q',b', rho', time') =  dequeue' q b rhoq time q_id act  in  Network ((p_id,p, rhop),(q_id,q',rho'),b',time')
-  else failwith "Wrong pid";;  
+  else failwith _ERR_051;;  
 
 (*delaying: if the buffer contains something, then the other participant is gone Nil*)
 
@@ -102,7 +102,7 @@ let m_step (Network (p,q,b, time)) s = match s with
 (*Managing recursion*)
 let rec unfold (id, p, rho) = match p with 
   Rec (id, p') -> unfold  (id, p', rho)
-| Call id -> let p' =  applyEnv rho id in if p' == Nil then  failwith ("Unbound id: Call"^id) else p'
+| Call id -> let p' =  applyEnv rho id in if p' == Nil then  failwith (_ERR_052^id) else p'
 | _ -> p ;;
 
 let rec actionIsPossible l time = match l with 

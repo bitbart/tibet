@@ -13,7 +13,8 @@
 		#load "xml-light.cma";;
 		#load "dynlink.cma";;
 		#load "camlp4o.cma";;
-
+*)
+(*
 ----------------------------------------------------
 	 OCAML TOPLEVEL IMPORTS (for Emacs)
  
@@ -22,7 +23,7 @@
 ----------------------------------------------------
 *) 
 
-(*Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE*)
+(* Inclusion to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE *)
 open Tipi;;
 
 
@@ -416,14 +417,3 @@ let buildAutomaMain p name= let (tap, idxp, recList)  = buildAutoma p 0 in
 (*tsb_mapping performs the conversion of two TSBprocesses p and q into two Uppaal automata*)
 (*"p" and "q" are two simple names given: it is useful only in UPPAAL*) 
 let tsb_mapping p q  =  [ buildAutomaMain p "p" ; buildAutomaMain q "q"] ;;
-        
-
-
-
-
-
-
-
-
-
-

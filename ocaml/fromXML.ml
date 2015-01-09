@@ -15,7 +15,6 @@ open ToXML;;
 open Errors;;
 
 
-
 let rec fromIntChoiceToList (IntChoice l) = l;;
 
 let rec fromExtChoiceToList (ExtChoice l) = l;;
@@ -24,7 +23,7 @@ let getOperator op =
 	match op with
 	| "less" -> Less
 	| "great" -> Great
-	| _ -> failwith "ERR02: Invalid operator in automaton guard!"
+	| _ -> failwith _ERR_027
 ;;
 
 let rec getSingleGuards g =
@@ -71,7 +70,7 @@ let rec getIntChoice ic =
 	| Xml.Element ("intchoice", attrs, children)::ic' ->
 		getIntChoice children @ getIntChoice ic'
 	| [] -> []
-	| _ -> failwith "ERR401: Invalid element found in intchoice!"
+	| _ -> failwith _ERR_028
 and getExtChoice ec = 
 	match ec with
 	| Xml.Element ("extaction", attrs, children)::ec' -> 
@@ -82,7 +81,7 @@ and getExtChoice ec =
 	| Xml.Element ("extchoice", attrs, children)::ec' ->
 		getExtChoice children @ getExtChoice ec'
 	| [] -> []
-	| _ -> failwith "ERR402: Invalid element found in extchoice!"
+	| _ -> failwith _ERR_029
 and getSequence s =
 	match s with
 	| Xml.Element ("intaction", attrs, children)::s' -> 
@@ -120,7 +119,7 @@ let getChildren c =
 	| Xml.Element ("rec", attrs, children)::c' ->
 		let id = List.assoc "name" attrs in
 		Rec(id, getSequence children)
-	| _ -> failwith "ERR01: Invalid element found in XML!"
+	| _ -> failwith _ERR_030
 ;;
 
 let preprocess_contract s = 
@@ -131,14 +130,14 @@ let readXmlContract contr =
 	let myfile = Xml.parse_string contr in
   match myfile with
   | Xml.Element ("contract", attrs, c) -> getChildren c
-  | _ -> failwith "ERR00: Not valid contract XML file!"
+  | _ -> failwith _ERR_031
 ;;
 
 let readXmlContract_fromFile f = 
 	let myfile = Xml.parse_file f in
   match myfile with
   | Xml.Element ("contract", attrs, c) -> getChildren c
-  | _ -> failwith "ERR00: Not a valid contract XML file!"
+  | _ -> failwith _ERR_031
 ;;
 
 (* Checks if a variable x (called from CALL) is declared in the recursive variables list (updated from REC). *)
@@ -155,7 +154,7 @@ let readXmlContract_special contr =
 	let myfile = Xml.parse_string contr in
   match myfile with
   | Xml.Element ("contract", attrs, c) -> IntChoice(getIntChoice c)
-  | _ -> failwith "ERR00: Not valid contract XML file!"
+  | _ -> failwith _ERR_031
 ;;
 
 (* Checks variable binding (between REC and CALL) in a contract. *)
@@ -195,7 +194,7 @@ let rec print_intchoice ic =
 	| Xml.Element ("intchoice", attrs, children)::ic' ->
 		print_intchoice children ^ print_intchoice ic'
 	| [] -> ""
-	| _ -> failwith "ERR12: Invalid element found in XML (in remove_nested intchoice)!"
+	| _ -> failwith _ERR_032
 and print_extchoice ec = 
 	match ec with
 	| Xml.Element ("extaction", attrs, children)::ec' -> 
@@ -205,7 +204,7 @@ and print_extchoice ec =
 	| Xml.Element ("extchoice", attrs, children)::ec' ->
 		print_extchoice children ^ print_extchoice ec'
 	| [] -> ""
-	| _ -> failwith "ERR11: Invalid element found in XML (in remove_nested extchoice)!"
+	| _ -> failwith _ERR_033
 and print_sequence s =
 	match s with
 	| Xml.Element ("intaction", attrs, children)::s' -> 
@@ -224,7 +223,7 @@ and print_sequence s =
 	| Xml.Element ("sequence", attrs, children)::s' ->
 		print_sequence children ^ print_sequence s'
 	| [] -> ""
-	| _ -> failwith "ERR11: Invalid element found in XML (in remove_nested sequence)!"
+	| _ -> failwith _ERR_034
 and print_rec r =
 		match r with
 	| Xml.Element ("intaction", attrs, children)::s' -> 
@@ -243,7 +242,7 @@ and print_rec r =
 	| Xml.Element ("sequence", attrs, children)::s' ->
 		print_sequence children ^ print_rec s'
 	| [] -> ""
-	| _ -> failwith "ERR11: Invalid element found in XML (in remove_nested rec)!"
+	| _ -> failwith _ERR_035
 ;;
 
 let removeNestedTag' c =
@@ -255,12 +254,12 @@ let removeNestedTag' c =
 	| Xml.Element ("extaction", attrs, children)::c' -> Xml.to_string (Xml.Element ("extaction", attrs, children))
 	| Xml.Element ("rec", attrs, children)::c' ->
 		let name = List.assoc "name" attrs in "<rec name=\"" ^ name ^ "\">" ^ print_rec children ^ "</rec>"
-	| _ -> failwith "ERR10: Invalid element found in XML (in remove_nested)!"
+	| _ -> failwith _ERR_036
 ;;
 
 let removeNestedTag xml = 
 	let input = Xml.parse_string xml in
   match input with
   | Xml.Element ("contract", attrs, c) -> "<contract>" ^ removeNestedTag' c ^ "</contract>"
-  | _ -> failwith "ERR00: Not valid contract XML file (in remove_nested)!"
+  | _ -> failwith _ERR_037
 ;;

@@ -23,12 +23,33 @@ let _ERR_013 = "ERR_013: Missing a valid reset in at least one reset field.";;
 let _ERR_014 = "ERR_014: Missing a valid sequence or choice inside a REC[ ] declaration.";;
 let _ERR_015 = "ERR_015: Missing '[' after at least one REC name.";;
 let _ERR_016 = "ERR_016: Missing a valid action name after symbol '?'.";;
-let _ERR_017 = "ERR_017: An action cannot have an empty identifier!";;
+let _ERR_017 = "ERR_017: An action cannot have an empty identifier.";;
 let _ERR_018 = "ERR_018: Missing a valid action name after symbol '!'"
 let _ERR_019 = "ERR_019: Missing 'E' after 'R' in REC declaration.";;
 let _ERR_020 = "ERR_020: Missing 'C' after 'E' in REC declaration.";;
-let _ERR_021 = "ERR_021: Missing '_' after 'C' in REC declaration.";;
+let _ERR_021 = "ERR_021: Recursive variables must be enclosed with quotation marks (e.g. REC \"x\"[...])";;
 let _ERR_022 = "ERR_022: Missing variable name in REC." ;;
 let _ERR_023 = "ERR_023: Error parsing guard after '{' symbol." ;;
-let _ERR_024 = "ERR_024: A clock id cannot have an empty identifier!";;
+let _ERR_024 = "ERR_024: A clock id cannot have an empty identifier.";;
 let _ERR_025 = "ERR_025: Calling an undefined recursive block.";;
+let _ERR_026 = "ERR_026: Syntax error: unexpected char sequence after '}'. Maybe you missed a '.' or a '+' or a '&' or a ')' after: ";;
+let _ERR_027 = "ERR_027: Invalid operator in automaton guard.";;
+let _ERR_028 = "ERR_028: Invalid element found in intchoice.";;
+let _ERR_029 = "ERR_029: Invalid element found in extchoice.";;
+let _ERR_030 = "ERR_030: Invalid element found in XML.";;
+let _ERR_031 = "ERR_031: Not valid contract XML file.";;
+let _ERR_032 = "ERR_032: Invalid element found in XML (in remove_nested intchoice)";;
+let _ERR_033 = "ERR_033: Invalid element found in XML (in remove_nested extchoice)";;
+let _ERR_034 = "ERR_034: Invalid element found in XML (in remove_nested sequence)";;
+let _ERR_035 = "ERR_035: Invalid element found in XML (in remove_nested rec)!";;
+let _ERR_036 = "ERR_036: Invalid element found in XML (in remove_nested)!";;
+let _ERR_037 = "ERR_037: Not valid contract XML file (in remove_nested)!";;
+let _ERR_038 = "ERR_038: Syntax error: unexpected char sequence after ']'. Maybe you missed a '+' or a '&' or a ')' after: ";;
+let _ERR_039 = "ERR_039: Syntax error: unexpected char sequence after '?'. Maybe you missed an action at: ?";;
+let _ERR_040 = "ERR_040: Syntax error: unexpected char sequence after '!'. Maybe you missed an action at: !";;
+
+
+(* LIST OF MONITOR ERRORS *)
+let _ERR_050 = "ERR_050: Action not found";;
+let _ERR_051 = "ERR_051: Wrong pid";;
+let _ERR_052 = "ERR_052: Unbound id: Call";;

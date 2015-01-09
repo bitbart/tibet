@@ -205,7 +205,7 @@ let rec print_automataIds la = match la with
 |  (TimedAutoma (id, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures))::tl -> id::(print_automataIds tl);; 
 
 
-(*********Debugging utilities*****)
+(*********Debugging utilities*********)
 let rec toString_guard (TSBGuard la)  = match la with
      []-> ""
 |  (c,r,d)::tl ->  (string_of_int d)^toString_guard (TSBGuard tl);; 

@@ -90,27 +90,36 @@ and parse_contract' =
 	| [< 'x; y = parse_contract' ?? "4" >] -> (printc x) ^ y
 ;;
 
+
 (* Checks if a string contract contains "tailing tokens", eg: !a{}ciao (the "tail" will be ignored by the parser) *)
-let rec find_tail' l =
+let rec find_tail' l c =
     match l with
     | s::l' -> 
         (try 
-            let tmp = Str.search_forward (Str.regexp "^[a-z]+[\\.\\+\\&\\{\\)\\*]") s 0 in (false || find_tail' l') 
-        with Not_found -> true)
+           ((Str.search_forward (Str.regexp "^[a-z]+[\\.\\+\\&\\{\\)\\*]") s 0) != 0) && (find_tail' l' c)
+        with Not_found -> match c with
+				| "?" -> failwith (_ERR_039 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
+				| _ -> failwith (_ERR_040 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
+				)
     | [] -> false
 ;;
 
+
+
+
+
 let find_tail c s = 
-    if (String.compare (String.sub s 0 1) c == 0) then find_tail' (Str.split (Str.regexp ("\\" ^ c)) (s ^ "*"))
-    else find_tail' (List.tl (Str.split (Str.regexp ("\\" ^ c)) (s ^ "*")));;
+    if (String.compare (String.sub s 0 1) c == 0) then find_tail' (Str.split (Str.regexp ("\\" ^ c)) (s ^ "*")) c
+    else find_tail' (List.tl (Str.split (Str.regexp ("\\" ^ c)) (s ^ "*"))) c;;
 
 let check_tails s' = 
     let s = s' ^ "*" in
-    let c1 = try let res = Str.search_forward (Str.regexp "\\}[^\\.\\+\\&\\*\\)]") s 0 in true with Not_found -> false in
-    let c2 = try let res = Str.search_forward (Str.regexp "\\][^\\+\\&\\*\\)\\*]") s 0 in true with Not_found -> false in
+		let c1 = try let res = Str.search_forward (Str.regexp "\\}[^\\.\\+\\&\\*\\)]") s 0 in failwith (_ERR_026 ^ (String.sub s 0 (res+1))) with Not_found -> false in
+		let c2 = try let res = Str.search_forward (Str.regexp "\\][^\\+\\&\\*\\)\\*]") s 0 in failwith (_ERR_038 ^ (String.sub s 0 (res+1))) with Not_found -> false in
     let c3 = find_tail "?" s in
-    let c4 = find_tail "!" s in 
+    let c4 = find_tail "!" s in
     c1 || c2 || c3 || c4;;
+
 
 (* Add empty braces to action names which haven't got them *)
 let add_empty_par s' = 
@@ -209,7 +218,7 @@ let preprocess_rec s =
 (* Performs all previous functions in the correct order *)
 let parse_contract c' = 
 	let c = (preprocess_rec (remove_spaces c')) in
-	if check_tails c then failwith "You have an error in your syntax: maybe you missed a . or + or & in your contract!"
+	if check_tails c then failwith _ERR_026
 	else
 	let contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (add_empty_par c))) ^ "\n</contract>") in
 	let correct = checkRecursion (readXmlContract contract) in

@@ -1,5 +1,6 @@
 
 #use "toXML.ml";;
+#use "cparser.ml";;
 
 (*example*)
 let p = ExtChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Success)];;
@@ -239,7 +240,19 @@ writeToFile lta "ex23";;
 
 
 
+(********************************************************)
+(*                                                      *)
+(*              Handling Parser Errors                  *) 
+(*               									                      *)
+(*                                                      *)
+(*                                                      *)
+(********************************************************)
+parse_contract "REC x[!a{}+!b{}.\"x\"]";;
+parse_contract "REC \"x\"[!a+!b.\"x\"]p";;
+parse_contract "!a{}.!p{}.!c{}!d{}.!e{}";;
+parse_contract "!Pippo{}.!x{}";;
 
+(* parse_contract "REC \"x\"[?a&?.\"x\"]";; *)
 
 
 
