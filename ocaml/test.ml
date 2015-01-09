@@ -9,10 +9,13 @@ writeToFile lta "ex_prova";;
 
 
 (*example*) (* !a{x > 2,x<1} # !b{x < 2,x > 1} *) (*?b*)
-let p = IntChoice [(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 1); (TSBClock "t", Great, 2)], TSBReset[] , Success);
-                   (TSBAction "b",  TSBGuard [(TSBClock "t", Less, 2); (TSBClock "t", Great, 1)], TSBReset[] , Success)];;
-let q = ExtChoice [(TSBAction "b", TSBGuard[], TSBReset[] , Success)];;
+let p = IntChoice [(TSBAction "a", TSBGuard [(TSBClock "r", LessEq, 4)], TSBReset[TSBClock "y"] , Success);
+                    ( TSBAction "a", TSBGuard [(TSBClock "t", GreatEq, 4)], TSBReset[TSBClock "y"] , Success)
+                  ];;
+
+let q = Nil;;
 let lta = tsb_mapping   p q;;
+getInvariants (List.nth lta 0);;
 writeToFile lta "ex_111";;
 
 (*counter example*)
@@ -20,7 +23,7 @@ writeToFile lta "ex_111";;
 let p =  IntChoice [(TSBAction "a", TSBGuard[],  TSBReset[] , Success)];;
 let q = Rec ("x", ExtChoice [(TSBAction "a", TSBGuard[],  TSBReset[] , Call "x")]);;
 let lta = tsb_mapping  p q;;
-writeToFile lta "exContoresempio";;
+writeToFile lta "exControesempio";;
 
 (********************************************************)
 (*                                                      *)
