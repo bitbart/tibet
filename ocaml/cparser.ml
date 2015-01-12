@@ -284,7 +284,7 @@ let missing_angle_bracket contract =
 (* Performs all previous functions in the correct order *)
 let parse_contract c' = 
 	let c = (preprocess_rec (remove_spaces c')) in
-	if check_tails c then failwith _ERR_041 else
+	if check_branches c then failwith _ERR_041 else
 		let contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (add_empty_par  c))) ^ "\n</contract>") in
 		(*let error = missing_angle_bracket contract in 
 			if error then failwith _ERR_041 else*)
