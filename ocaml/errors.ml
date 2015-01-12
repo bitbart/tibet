@@ -47,6 +47,8 @@ let _ERR_037 = "ERR_037: Not valid contract XML file (in remove_nested)!";;
 let _ERR_038 = "ERR_038: Syntax error: unexpected char sequence after ']'. Maybe you missed a '+' or a '&' or a ')' after: ";;
 let _ERR_039 = "ERR_039: Syntax error: unexpected char sequence after '?'. Maybe you missed an action at: ?";;
 let _ERR_040 = "ERR_040: Syntax error: unexpected char sequence after '!'. Maybe you missed an action at: !";;
+let _ERR_041 = "ERR_041: Syntax error.";;
+let _ERR_042 = "ERR_042: Missing a valid sequence or choice after variable.";;
 
 
 (* LIST OF MONITOR ERRORS *)

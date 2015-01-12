@@ -11,9 +11,6 @@ open Errors;;
 open FromXML;;
 
 
-
-
-
 (** PRINTC **)
 (* Checks if symbols for action names, clocks etc are in (a-z) range, else raises an exception *)
 let printc c =
@@ -93,20 +90,17 @@ and parse_contract' =
 
 (* Checks if a string contract contains "tailing tokens", eg: !a{}ciao (the "tail" will be ignored by the parser) *)
 let rec find_tail' l c =
-    match l with
-    | s::l' -> 
+		    match l with
+    | s::l' ->
         (try 
-           ((Str.search_forward (Str.regexp "^[a-z]+[\\.\\+\\&\\{\\)\\*]") s 0) != 0) && (find_tail' l' c)
-        with Not_found -> match c with
-				| "?" -> failwith (_ERR_039 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
-				| _ -> failwith (_ERR_040 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
+          let p = (Str.search_forward (Str.regexp "^[a-z]+[\\.\\+\\&\\{\\)\\*]") s 0) in (find_tail' l' c)
+          with Not_found -> match c with
+				  | "?" -> failwith (_ERR_039 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
+				  | "!" -> failwith (_ERR_040 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
+				  | _ 	-> failwith ("Caso non rilevato" ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
 				)
     | [] -> false
 ;;
-
-
-
-
 
 let find_tail c s = 
     if (String.compare (String.sub s 0 1) c == 0) then find_tail' (Str.split (Str.regexp ("\\" ^ c)) (s ^ "*")) c
@@ -126,6 +120,7 @@ let add_empty_par s' =
 	let s = s' ^ "*" in
 	let res = Str.global_replace (Str.regexp "\\([\\!\\?][a-z]+\\)\\([\\.\\+\\&\\)\\*]+\\)") "\\1{}\\2" s in String.sub res 0 (String.length res - 1);;
 
+
 (** REMOVE_SPACES **)
 let rec remove_spaces' =
 	parser
@@ -135,6 +130,7 @@ let rec remove_spaces' =
 ;;
 
 let remove_spaces s = remove_spaces' (Stream.of_string (s^"*"));;
+
 
 (** GET_OPERATOR_PRIORITIES **)
 let getOp_prio op =
@@ -147,6 +143,7 @@ let getOp_prio op =
 	| _ -> 0
 ;;
 
+
 (** REVERSE string **)
 let rec reverse s =
 	match s with
@@ -155,6 +152,7 @@ let rec reverse s =
 		let new_len =  (String.length s) - 1 in
 		(Char.escaped (String.get s new_len)) ^ (reverse (String.sub s 0 new_len))
 ;;
+
 
 (** UPDATE_STACK & INFIX_TO_PREFIX **)
 (* Algorithm for conversion from infix to prefix notation *)
@@ -193,6 +191,7 @@ let rec infix_to_prefix' s stack =
 
 let infix_to_prefix s = reverse(infix_to_prefix' (reverse (remove_spaces (s))) []);;
 
+
 (** REMOVE_EMPTIES **)
 (* Parsing post-processing: removes empty tags, not allowed in contract XML syntax *)
 let rec remove_empties' l =
@@ -208,25 +207,48 @@ let rec remove_empties' l =
 
 let rec remove_empties s = remove_empties' (Str.split (Str.regexp "[\n]+") s);;
 
+
 (** PREPROCESS_REC **)
 (* Parsing pre-processing: force parentheses in REC content to avoid an unwanted behavior in infix_to_prefix conversion *)
 let preprocess_rec s = 
 	let s' = Str.global_replace (Str.regexp "\\[") "[(" s in
 	Str.global_replace (Str.regexp "\\]") ")]" s';;
 
+
+(** MISSING ANGLE_BRACKET **)
+(* Parsing pre-processing: it checks if there are some angle bracket missing in the xml contract, obtained when the parser lacks checks. *)
+let rec missing_angle_bracket' contract state =
+	if ((String.compare contract "" == 0) && (state == 0)) then false
+	else if (String.compare contract "" == 0) then true
+	else if ((state < 0) || (state > 1)) then true 
+	else
+		let char = String.sub contract 0 1 in
+		let contract' = String.sub contract 1 ((String.length contract) -1) in
+		if (String.compare char "<" == 0) then missing_angle_bracket' contract' (state + 1) 
+		else if (String.compare char ">" == 0) then missing_angle_bracket' contract' (state - 1)
+		else missing_angle_bracket' contract' state;;
+
+let missing_angle_bracket contract =
+	if (missing_angle_bracket' contract 0) then failwith _ERR_042
+	else false;;
+
+
 (** PARSE_CONTRACT **)
 (* Performs all previous functions in the correct order *)
 let parse_contract c' = 
 	let c = (preprocess_rec (remove_spaces c')) in
-	if check_tails c then failwith _ERR_026
-	else
-	let contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (add_empty_par c))) ^ "\n</contract>") in
-	let correct = checkRecursion (readXmlContract contract) in
-		if(correct == true) 
-		then
-			Xml.to_string_fmt (Xml.parse_string (removeNestedTag (contract)))
-		else
-			failwith _ERR_025;;
+	if check_tails c then failwith _ERR_041 else
+		infix_to_prefix (add_empty_par  c);;
+
+let parse_contract c' = 
+	let c = (preprocess_rec (remove_spaces c')) in
+	if check_tails c then failwith _ERR_041 else
+		let contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (add_empty_par  c))) ^ "\n</contract>") in
+		let error = missing_angle_bracket contract in 
+			if error then failwith _ERR_041 else
+				let correct = checkRecursion (readXmlContract contract) in
+					if correct then	Xml.to_string_fmt (Xml.parse_string (removeNestedTag (contract)))
+					else failwith _ERR_025;;
 
 let rec parse_multiple_contracts' l =
 	match l with

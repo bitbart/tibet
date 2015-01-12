@@ -250,13 +250,32 @@ writeToFile lta "ex23";;
 (*                                                      *)
 (*                                                      *)
 (********************************************************)
-parse_contract "REC x[!a{}+!b{}.\"x\"]";;
-parse_contract "REC \"x\"[!a+!b.\"x\"]p";;
-parse_contract "!a{}.!p{}.!c{}!d{}.!e{}";;
-parse_contract "!Pippo{}.!x{}";;
 
-(* parse_contract "REC \"x\"[?a&?.\"x\"]";; *)
-
+(* There isn't an error and no error is detected. *)
+parse_multiple_contracts "!a.!b.!c";;
+parse_multiple_contracts "!a{}.!b{}.!c{}";;
+parse_multiple_contracts "REC \"x\"[!a+!b.\"x\"]";;
 
 
+(* Error is detected correctly. *)
+parse_multiple_contracts "!a{}.!p{}.!c{}!d{}.!e{}";;
+parse_multiple_contracts "!Pippo{}.!x{}";;
+parse_multiple_contracts "REC \"x\"[!a+!b.\"x\"]p";;
+parse_multiple_contracts "!a{}.!b{}.?";;
+parse_multiple_contracts "!a.!b!c";;
+parse_multiple_contracts "REC x[!a{}+!b{}.\"x\"]";;
+parse_multiple_contracts "REC \"x\"[!a+!.\"x\"]";;
+parse_multiple_contracts "!a{}.?b{}.?";;
 
+
+(* Error is correctly detected but it can be detected in a better way! *)
+
+
+(* Is error correctly detected? *)
+parse_multiple_contracts "!a.!a.";;
+
+
+(* Error is not detectedy correctly. *)
+
+
+(* To test. *)
