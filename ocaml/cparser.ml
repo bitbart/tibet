@@ -87,10 +87,6 @@ and parse_contract' =
 	| [< 'x; y = parse_contract' ?? "4" >] -> (printc x) ^ y
 ;;
 
-
-print_string ( parse_contract "REC\"x\"[!a+!b.\"x\"a]a" );;
-
-
 (* Checks if a string contract contains "tailing tokens", eg: !a{}ciao (the "tail" will be ignored by the parser) *)
 let rec find_tail' l c =
 		    match l with
