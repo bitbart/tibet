@@ -81,38 +81,85 @@ and parse_contract' =
 			if ((String.compare "\n<guard id=\"\"" (String.sub g 0 13)) == 0) then raise (Stream.Error _ERR_024) 
 			else "\">\n<guards>" ^ g
 	| [< ''"'; x = parse_call >] -> "\n<call name=\"" ^ x
-	| [< ''+'; x = parse_contract' ?? "1"; y = parse_contract' ?? "7" >] -> "\n<intchoice>" ^ x ^ y ^ "\n</intchoice>"
-	| [< ''&'; x = parse_contract' ?? "2"; y = parse_contract' ?? "6" >] -> "\n<extchoice>" ^ x ^ y ^ "\n</extchoice>"
-	| [< ''.'; x = parse_contract' ?? "3"; y = parse_contract' ?? "5" >] -> "\n<sequence>" ^ x ^ y ^ "\n</sequence>"
-	| [< 'x; y = parse_contract' ?? "4" >] -> (printc x) ^ y
+	| [< ''+'; x = parse_contract' ?? _ERR_044; y = parse_contract' ?? _ERR_045 >] -> "\n<intchoice>" ^ x ^ y ^ "\n</intchoice>"
+	| [< ''&'; x = parse_contract' ?? _ERR_046; y = parse_contract' ?? _ERR_047 >] -> "\n<extchoice>" ^ x ^ y ^ "\n</extchoice>"
+	| [< ''.'; x = parse_contract' ?? _ERR_042; y = parse_contract' ?? _ERR_043 >] -> "\n<sequence>" ^ x ^ y ^ "\n</sequence>"
+	| [< 'x; y = parse_contract' ?? _ERR_041 >] -> (printc x) ^ y 	(* The case should not occur *)
 ;;
 
 
-(* Checks if a string contract contains "tailing tokens", eg: !a{}ciao (the "tail" will be ignored by the parser) *)
-let rec find_tail' l c =
-		    match l with
+(** CHECK BRANCHES **)
+(*
+	- Checks a list of action branches (all internal branches or all external branches), eg:
+	  - the list	["a."; "b{}.?.*"]		generates the exception _ERR_039 using the splitting char '!' because in the internal action 'b{}' no tokens are allowed after sequence symbol '.'.
+		- the list	["a{}"; "b"]				returns false using the splitting char '!' because this is a valid sequence of internal actions.
+
+	Input
+		- list : list of branches;
+		- char : a splitting char.
+
+	Output
+		- false : if the contract is correct;
+		- exception : otherwise.
+*)
+let rec find_branches' list char =
+		    match list with
     | s::l' ->
         (try 
-          let p = (Str.search_forward (Str.regexp "^[a-z]+[\\.\\+\\&\\{\\)\\*]") s 0) in (find_tail' l' c)
-          with Not_found -> match c with
+          let p = (Str.search_forward (Str.regexp "^[a-z]+[\\.\\+\\&\\{\\)\\*]") s 0) in (find_branches' l' char)
+          with Not_found -> match char with
 				  | "?" -> failwith (_ERR_039 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
 				  | "!" -> failwith (_ERR_040 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
-				  | _ 	-> failwith ("Caso non rilevato" ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
+				  | _ 	-> failwith (_ERR_041 ^ (Str.global_replace (Str.regexp "[\\*]") "" s)) (* The case should not occur *)
 				)
     | [] -> false
 ;;
 
-let find_tail c s = 
-    if (String.compare (String.sub s 0 1) c == 0) then find_tail' (Str.split (Str.regexp ("\\" ^ c)) (s ^ "*")) c
-    else find_tail' (List.tl (Str.split (Str.regexp ("\\" ^ c)) (s ^ "*"))) c;;
+(*
+	Splits the contract in branches using  a 'splitting char', then analyzes them, eg:
+		- the contract 	!a.!b{}.?. 			generates the branches ["a."; "b{}.?.*"]	using the splitting char '!', (where * always indicates the end of a contract).
+		- the contract	!a.!b{}.?.			generates the branche [".*"] using the splitting char '?'. 
+		- the contract	!a{}.!b					generates the branches ["a{}"; "b"] using the splitting char '!'.
+		
+	NB. the split function in example '?', creates two different elements: "!a.!b{}." and ".*". Because the future checks are performed considering that these
+	are branches about an external action ('?') the first element must be excluded (it is not an external action!). For this reason, the 'if' distinguishes
+	the two separated cases: the contract starts with the splitting char, and the contract starts with a different char.
+	
+	Input
+		- contract : a contract to check;
+		- char : the splitting char.
+		
+	Output
+		- false : if the contract is correct;
+		- exception : otherwise.
+*)
 
-let check_tails s' = 
-    let s = s' ^ "*" in
-		let c1 = try let res = Str.search_forward (Str.regexp "\\}[^\\.\\+\\&\\*\\)]") s 0 in failwith (_ERR_026 ^ (String.sub s 0 (res+1))) with Not_found -> false in
-		let c2 = try let res = Str.search_forward (Str.regexp "\\][^\\+\\&\\*\\)\\*]") s 0 in failwith (_ERR_038 ^ (String.sub s 0 (res+1))) with Not_found -> false in
-    let c3 = find_tail "?" s in
-    let c4 = find_tail "!" s in
-    c1 || c2 || c3 || c4;;
+let find_branches contract char = 
+    if (String.compare (String.sub contract 0 1) char == 0) then find_branches' (Str.split (Str.regexp ("\\" ^ char)) (contract ^ "*")) char
+    else find_branches' (List.tl (Str.split (Str.regexp ("\\" ^ char)) (contract ^ "*"))) char;;
+
+(* 
+  - Checks if a string contract contains "tailing tokens" after actions '}' and after recursion ']', eg: 
+		- !a{}hello 							(the "tail" will be ignored by the parser)
+		- REC "x"[!a."x"]hello		(the "tail" will be ignored by the parser)
+	- Checks all internal action branches (after '!') and external action branches (after '?'). 
+		- !a{}.!b{}hello
+		- ?a{}&?
+
+	Input
+		- contract' : a contract to check.
+	
+	Output
+		- false : if the contract is correct;
+		- exception : otherwise.
+*)
+let check_branches contract' = 
+    let contract = contract' ^ "*" in
+		let flag1 = try let res = Str.search_forward (Str.regexp "\\}[^\\.\\+\\&\\*\\)]") contract 0 in failwith (_ERR_026 ^ (String.sub contract 0 (res+1))) with Not_found -> false in
+		let flag2 = try let res = Str.search_forward (Str.regexp "\\][^\\+\\&\\*\\)\\*]") contract 0 in failwith (_ERR_038 ^ (String.sub contract 0 (res+1))) with Not_found -> false in
+    let flag3 = find_branches contract "?" in
+    let flag4 = find_branches contract "!" in
+    flag1 || flag2 || flag3 || flag4;;
 
 
 (* Add empty braces to action names which haven't got them *)
@@ -229,7 +276,7 @@ let rec missing_angle_bracket' contract state =
 		else missing_angle_bracket' contract' state;;
 
 let missing_angle_bracket contract =
-	if (missing_angle_bracket' contract 0) then failwith _ERR_042
+	if (missing_angle_bracket' contract 0) then failwith _ERR_041
 	else false;;
 
 
@@ -242,7 +289,7 @@ let parse_contract c' =
 
 let parse_contract c' = 
 	let c = (preprocess_rec (remove_spaces c')) in
-	if check_tails c then failwith _ERR_041 else
+	if check_branches c then failwith _ERR_041 else
 		let contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (add_empty_par  c))) ^ "\n</contract>") in
 		let error = missing_angle_bracket contract in 
 			if error then failwith _ERR_041 else
