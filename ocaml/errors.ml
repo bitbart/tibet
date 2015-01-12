@@ -48,7 +48,12 @@ let _ERR_038 = "ERR_038: Syntax error: unexpected char sequence after ']'. Maybe
 let _ERR_039 = "ERR_039: Syntax error: unexpected char sequence after '?'. Maybe you missed an action at: ?";;
 let _ERR_040 = "ERR_040: Syntax error: unexpected char sequence after '!'. Maybe you missed an action at: !";;
 let _ERR_041 = "ERR_041: Syntax error.";;
-let _ERR_042 = "ERR_042: Missing a valid sequence or choice after variable.";;
+let _ERR_042 = "ERR_042: Missing a valid operand before symbol '.'. Sequence requires two valid operands.";;
+let _ERR_043 = "ERR_043: Missing a valid operand after symbol '.'. Sequence requires two valid operands.";;
+let _ERR_044 = "ERR_044: Missing a valid operand before symbol '+'. Internal choice requires two valid operands.";;
+let _ERR_045 = "ERR_045: Missing a valid operand after symbol '+'. Internal choice requires two valid operands.";;
+let _ERR_046 = "ERR_046: Missing a valid operand before symbol '&'. External choice requires two valid operands.";;
+let _ERR_047 = "ERR_047: Missing a valid operand after symbol '&'. External choice requires two valid operands.";;
 
 
 (* LIST OF MONITOR ERRORS *)

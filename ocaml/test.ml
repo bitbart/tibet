@@ -279,3 +279,4 @@ parse_multiple_contracts "!a.!a.";;
 
 
 (* To test. *)
+parse_multiple_contracts "!a.!b{}.?.";;
