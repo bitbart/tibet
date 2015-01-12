@@ -14,14 +14,14 @@ open FromXML;;
 (** PRINTC **)
 (* Checks if symbols for action names, clocks etc are in (a-z) range, else raises an exception *)
 let printc c =
-	let s = Char.escaped c in 
+	let s = String.make 1 c in 
 	if (Str.string_match (Str.regexp "[a-z]") s 0) then s 
 	else raise (Stream.Error _ERR_001);;
 
 (** PRINTV **)
 (* Checks if clock value digits are in (0-9) range, else raises an exception *)
 let printv c =
-	let s = Char.escaped c in 
+	let s = String.make 1 c in 
 	if (Str.string_match (Str.regexp "[0-9]") s 0) then s 
 	else raise (Stream.Error _ERR_002);;
 
@@ -61,11 +61,11 @@ and parse_guards =
 	| [< x = parse_guardType >] -> "\n<guard id=\"" ^ x 
 and parse_recname =
 	parser
-    [< ''"'; ''['; x = parse_contract' ?? _ERR_014 >] -> "\">" ^ x 
+    [< ''\039'; ''['; x = parse_contract' ?? _ERR_014 >] -> "\">" ^ x 
 	| [< 'x; y = parse_recname ?? _ERR_015 >] -> (printc x) ^ y
 and parse_call =
 	parser
-    [< ''"' >] -> "\" />"
+    [< ''\039' >] -> "\" />"
 	| [< 'x; y = parse_call ?? _ERR_015 >] -> (printc x) ^ y
 and parse_contract' =
 	parser
@@ -75,17 +75,20 @@ and parse_contract' =
 	| [< ''!'; x = parse_contract' ?? _ERR_018 >] -> 
 			if ((String.compare "\"" (String.sub x 0 1)) == 0) then raise (Stream.Error _ERR_017) 
 			else "\n<intaction id=\"" ^ x ^ "\n</intaction>"
-	| [< ''R'; ''E' ?? _ERR_019; ''C' ?? _ERR_020; ''"' ?? _ERR_021; x = parse_recname ?? _ERR_022 >] -> "\n<rec name=\"" ^ x ^ "\n</rec>"
+	| [< ''R'; ''E' ?? _ERR_019; ''C' ?? _ERR_020; ''\039' ?? _ERR_021; x = parse_recname ?? _ERR_022 >] -> "\n<rec name=\"" ^ x ^ "\n</rec>"
 	| [< '']'; x = parse_contract' >] -> x
 	| [< ''{'; g = parse_guards ?? _ERR_023 >] -> 			
 			if ((String.compare "\n<guard id=\"\"" (String.sub g 0 13)) == 0) then raise (Stream.Error _ERR_024) 
 			else "\">\n<guards>" ^ g
-	| [< ''"'; x = parse_call >] -> "\n<call name=\"" ^ x
+	| [< ''\039'; x = parse_call >] -> "\n<call name=\"" ^ x
 	| [< ''+'; x = parse_contract' ?? "1"; y = parse_contract' ?? "7" >] -> "\n<intchoice>" ^ x ^ y ^ "\n</intchoice>"
 	| [< ''&'; x = parse_contract' ?? "2"; y = parse_contract' ?? "6" >] -> "\n<extchoice>" ^ x ^ y ^ "\n</extchoice>"
 	| [< ''.'; x = parse_contract' ?? "3"; y = parse_contract' ?? "5" >] -> "\n<sequence>" ^ x ^ y ^ "\n</sequence>"
 	| [< 'x; y = parse_contract' ?? "4" >] -> (printc x) ^ y
 ;;
+
+
+print_string ( parse_contract "REC\"x\"[!a+!b.\"x\"a]a" );;
 
 
 (* Checks if a string contract contains "tailing tokens", eg: !a{}ciao (the "tail" will be ignored by the parser) *)
@@ -126,7 +129,7 @@ let rec remove_spaces' =
 	parser
 	  [< '' '; x = remove_spaces' >] -> x
 	| [< ''*' >] -> ""
-	| [< 'x; y = remove_spaces' >] -> Char.escaped x ^ y
+	| [< 'x; y = remove_spaces' >] -> String.make 1 x ^ y
 ;;
 
 let remove_spaces s = remove_spaces' (Stream.of_string (s^"*"));;
@@ -150,7 +153,7 @@ let rec reverse s =
 	| "" -> ""
 	| _ ->
 		let new_len =  (String.length s) - 1 in
-		(Char.escaped (String.get s new_len)) ^ (reverse (String.sub s 0 new_len))
+		(String.make 1 (String.get s new_len)) ^ (reverse (String.sub s 0 new_len))
 ;;
 
 
@@ -161,7 +164,7 @@ let rec update_stack res pr =
 		match l with
 		| c::l' ->
 			if (getOp_prio c >= pr) then 
-				(if (pr==2 && (getOp_prio c) == 2) then (s, l') else update_stack (s^(Char.escaped c), l') pr)
+				(if (pr==2 && (getOp_prio c) == 2) then (s, l') else update_stack (s^(String.make 1 c), l') pr)
 			else res
 		| [] -> res
 ;; 
@@ -186,7 +189,7 @@ let rec infix_to_prefix' s stack =
 			output ^ infix_to_prefix' s' ('.'::new_stack)
 		| '(' -> let (output, new_stack) = update_stack ("", stack) (getOp_prio '(') in
 			output ^ infix_to_prefix' s' new_stack
-	  | _ -> (Char.escaped c) ^ infix_to_prefix' s' stack
+	  | _ -> (String.make 1 c) ^ infix_to_prefix' s' stack
 ;;
 
 let infix_to_prefix s = reverse(infix_to_prefix' (reverse (remove_spaces (s))) []);;
@@ -215,7 +218,7 @@ let preprocess_rec s =
 	Str.global_replace (Str.regexp "\\]") ")]" s';;
 
 
-(** MISSING ANGLE_BRACKET **)
+(** MISSING ANGLE_BRACKET -- CURRENTLY UNUSED **)
 (* Parsing pre-processing: it checks if there are some angle bracket missing in the xml contract, obtained when the parser lacks checks. *)
 let rec missing_angle_bracket' contract state =
 	if ((String.compare contract "" == 0) && (state == 0)) then false
@@ -238,16 +241,11 @@ let missing_angle_bracket contract =
 let parse_contract c' = 
 	let c = (preprocess_rec (remove_spaces c')) in
 	if check_tails c then failwith _ERR_041 else
-		infix_to_prefix (add_empty_par  c);;
-
-let parse_contract c' = 
-	let c = (preprocess_rec (remove_spaces c')) in
-	if check_tails c then failwith _ERR_041 else
 		let contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (add_empty_par  c))) ^ "\n</contract>") in
-		let error = missing_angle_bracket contract in 
-			if error then failwith _ERR_041 else
+		(*let error = missing_angle_bracket contract in 
+			if error then failwith _ERR_041 else*)
 				let correct = checkRecursion (readXmlContract contract) in
-					if correct then	Xml.to_string_fmt (Xml.parse_string (removeNestedTag (contract)))
+					if correct then	try Xml.to_string_fmt (Xml.parse_string (removeNestedTag (contract))) with Xml.Error a -> failwith _ERR_041
 					else failwith _ERR_025;;
 
 let rec parse_multiple_contracts' l =
