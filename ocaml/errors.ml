@@ -54,9 +54,13 @@ let _ERR_044 = "ERR_044: Missing a valid operand before symbol '+'. Internal cho
 let _ERR_045 = "ERR_045: Missing a valid operand after symbol '+'. Internal choice requires two valid operands.";;
 let _ERR_046 = "ERR_046: Missing a valid operand before symbol '&'. External choice requires two valid operands.";;
 let _ERR_047 = "ERR_047: Missing a valid operand after symbol '&'. External choice requires two valid operands.";;
+let _ERR_048 = "ERR_048: Syntax error: unbalanced round brackets, maybe you missed a ')'.";;
+let _ERR_049 = "ERR_049: Syntax error: unbalanced round brackets, maybe you missed a '('.";;
+let _ERR_050 = "ERR_050: Syntax error: unbalanced square brackets, maybe you missed a ']'.";;
+let _ERR_051 = "ERR_051: Syntax error: unbalanced square brackets, maybe you missed a '['.";;
 
 
 (* LIST OF MONITOR ERRORS *)
-let _ERR_050 = "ERR_050: Action not found";;
-let _ERR_051 = "ERR_051: Wrong pid";;
-let _ERR_052 = "ERR_052: Unbound id: Call";;
+let _ERR_100 = "ERR_100: Action not found";;
+let _ERR_101 = "ERR_101: Wrong pid";;
+let _ERR_102 = "ERR_102: Unbound id: Call";;

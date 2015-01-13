@@ -280,16 +280,41 @@ let missing_angle_bracket contract =
 	else false;;
 
 
+(** MISSING OTHER_BRACKET **)
+let rec missing_other_bracket' contract round square =
+	match contract with
+	| "" -> (if ((round == 0) && (square == 0)) then false
+ 						else if (round > 0) then failwith _ERR_048
+						else if (round < 0) then failwith _ERR_049
+						else if (square > 0) then failwith _ERR_050
+						else failwith _ERR_051
+					)	
+	| _ -> 
+		let char = String.get contract 0 in
+		let contract' = String.sub contract 1 ((String.length contract) -1) in (
+			match char with
+			| '[' -> missing_other_bracket' contract' round (square+1) 
+			| ']' -> missing_other_bracket' contract' round (square-1)
+			| '(' -> missing_other_bracket' contract' (round+1) square
+			| ')' -> missing_other_bracket' contract' (round-1) square 
+			| _ -> missing_other_bracket' contract' round square);;
+
+(* Parsing pre-processing: it checks if there are some round bracket or square bracket missing in the contract. *)
+let missing_other_bracket contract = 
+	missing_other_bracket' contract 0 0;;
+
+
 (** PARSE_CONTRACT **)
 (* Performs all previous functions in the correct order *)
-let parse_contract c' = 
-	let c = (preprocess_rec (remove_spaces c')) in
-	if check_branches c then failwith _ERR_041 else
-		let contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (add_empty_par  c))) ^ "\n</contract>") in
-		(*let error = missing_angle_bracket contract in 
+let parse_contract string_contract' = 
+	if (missing_other_bracket string_contract') then failwith _ERR_041 else
+	let string_contract = (preprocess_rec (remove_spaces string_contract')) in
+	if (check_branches string_contract) then failwith _ERR_041 else
+		let xml_contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (add_empty_par string_contract))) ^ "\n</contract>") in
+		(*let error = missing_angle_bracket xml_contract in 
 			if error then failwith _ERR_041 else*)
-				let correct = checkRecursion (readXmlContract contract) in
-					if correct then	try Xml.to_string_fmt (Xml.parse_string (removeNestedTag (contract))) with Xml.Error a -> failwith _ERR_041
+				let correct = checkRecursion (readXmlContract xml_contract) in
+					if correct then	try Xml.to_string_fmt (Xml.parse_string (removeNestedTag (xml_contract))) with Xml.Error a -> failwith _ERR_041
 					else failwith _ERR_025;;
 
 let rec parse_multiple_contracts' l =
