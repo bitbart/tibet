@@ -255,6 +255,8 @@ writeToFile lta "ex23";;
 parse_multiple_contracts "!a.!b.!c";;
 parse_multiple_contracts "!a{}.!b{}.!c{}";;
 parse_multiple_contracts "REC 'x'[!a+!b.'x']";;
+parse_multiple_contracts "REC 'x'[!a.'x'+!b]";;
+parse_multiple_contracts "REC 'x'[!a . 'x']";;
 
 
 (* Error is detected correctly. *)
@@ -262,7 +264,6 @@ parse_multiple_contracts "!a{}.!p{}.!c{}!d{}.!e{}";;
 parse_multiple_contracts "!Pippo{}.!x{}";;
 parse_multiple_contracts "REC 'x'[!a+!b.'x']p";;
 parse_multiple_contracts "!a{}.!b{}.?";;
-parse_multiple_contracts "!a.!b!c";;
 parse_multiple_contracts "REC x[!a{}+!b{}.'x']";;
 parse_multiple_contracts "REC 'x'[!a+!.'x']";;
 parse_multiple_contracts "!a{}.?b{}.?";;
@@ -270,6 +271,11 @@ parse_multiple_contracts "!a.!a.";;
 parse_multiple_contracts "REC 'x' [!a . 'x'";;
 parse_multiple_contracts "REC 'x' !a . 'x']";;
 parse_multiple_contracts "!a{}.!b{})";;
+parse_multiple_contracts "REC 'x'[!a . 'x'string]";;
+parse_multiple_contracts "REC 'x'[!a . 'x'p";;
+parse_multiple_contracts "REC 'x'[!a . 'x'";;
+parse_multiple_contracts "REC 'x'[!a . 'x'}";;
+parse_multiple_contracts "REC 'x'[!a . 'x'$]";;
 
 
 (* Error is correctly detected but it can be detected in a better way! *)
@@ -278,8 +284,17 @@ parse_multiple_contracts "!a{}.!b{})";;
 (* Is error correctly detected? *)
 
 
-(* Error is not detectedy correctly. *)
-parse_multiple_contracts "REC 'x' [!a . 'x' !a]";;				(* 1) Check tails after ' that close recursive variable. *)
+(* Error is not detected correctly. *)
+parse_multiple_contracts "REC 'x'[(!a . 'x')]";;						(* Error #1. Tailing tokens after ' must complain of round brackets. *)
+
+
+(* An error is detected but it is not the real error. *)
+parse_multiple_contracts "(((REC 'x')))[!y.'x']";;					(* Error #1. The error occurred is not correct, work in progress by Livio. *)
+parse_multiple_contracts "!a.b";;														(* Error #2. Work in progress by Sebastian. *)
+parse_multiple_contracts "!a.!b!c";;												(* Error #2. The error occurred is not correct, work in progress by Sebastian. *)
+
+
+(* There is no error but an error occurred. *)
 
 
 (* To test. *)

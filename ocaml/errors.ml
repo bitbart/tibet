@@ -58,6 +58,7 @@ let _ERR_048 = "ERR_048: Syntax error: unbalanced round brackets, maybe you miss
 let _ERR_049 = "ERR_049: Syntax error: unbalanced round brackets, maybe you missed a '('.";;
 let _ERR_050 = "ERR_050: Syntax error: unbalanced square brackets, maybe you missed a ']'.";;
 let _ERR_051 = "ERR_051: Syntax error: unbalanced square brackets, maybe you missed a '['.";;
+let _ERR_052 = "ERR_052: Syntax error: unexpected char sequence after a recursive variable at: ";;
 
 
 (* LIST OF MONITOR ERRORS *)
