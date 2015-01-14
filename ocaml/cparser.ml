@@ -113,7 +113,7 @@ let rec find_branches' list char =
           with Not_found -> match char with
 				  | "?" -> failwith (_ERR_039 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
 				  | "!" -> failwith (_ERR_040 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
-				  | _ 	-> failwith (_ERR_041 ^ (Str.global_replace (Str.regexp "[\\*]") "" s)) (* The case should not occur *)
+				  | _ 	-> failwith _ERR_999 (* The case should not occur *)
 				)
     | [] -> false
 ;;
@@ -280,7 +280,7 @@ let rec missing_angle_bracket' contract state =
 		else missing_angle_bracket' contract' state;;
 
 let missing_angle_bracket contract =
-	if (missing_angle_bracket' contract 0) then failwith _ERR_041
+	if (missing_angle_bracket' contract 0) then failwith _ERR_999
 	else false;;
 
 
@@ -311,13 +311,13 @@ let missing_other_bracket contract =
 (** PARSE_CONTRACT **)
 (* Performs all previous functions in the correct order *)
 let parse_contract string_contract' =
-	if ((missing_other_bracket string_contract') || (check_branches (remove_spaces string_contract'))) then failwith _ERR_041 else
+	if ((missing_other_bracket string_contract') || (check_branches (remove_spaces string_contract'))) then failwith _ERR_999 else
 		let string_contract = (preprocess_rec (remove_spaces string_contract')) in
 		let xml_contract = remove_empties ("<contract>" ^ parse_contract' (Stream.of_string (infix_to_prefix (add_empty_par string_contract))) ^ "\n</contract>") in
 		(*let error = missing_angle_bracket xml_contract in 
-			if error then failwith _ERR_041 else*)
+			if error then failwith _ERR_999 else*)
 				let correct = checkRecursion (readXmlContract xml_contract) in
-					if correct then	try Xml.to_string_fmt (Xml.parse_string (removeNestedTag (xml_contract))) with Xml.Error a -> failwith _ERR_041
+					if correct then	try Xml.to_string_fmt (Xml.parse_string (removeNestedTag (xml_contract))) with Xml.Error a -> failwith _ERR_999
 					else failwith _ERR_025;;
 				
 

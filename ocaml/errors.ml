@@ -38,12 +38,12 @@ let _ERR_028 = "ERR_028: Invalid element found in internal choice (only branches
 let _ERR_029 = "ERR_029: Invalid element found in external choice (only branches starting with an external action are allowed).";;
 let _ERR_030 = "ERR_030: Invalid element found in XML.";;
 let _ERR_031 = "ERR_031: Not valid contract XML file.";;
-let _ERR_032 = "ERR_032: Invalid element found in XML (in remove_nested intchoice)";;
-let _ERR_033 = "ERR_033: Invalid element found in XML (in remove_nested extchoice)";;
-let _ERR_034 = "ERR_034: Invalid element found in XML (in remove_nested sequence)";;
-let _ERR_035 = "ERR_035: Invalid element found in XML (in remove_nested rec)!";;
-let _ERR_036 = "ERR_036: Invalid element found in XML (in remove_nested)!";;
-let _ERR_037 = "ERR_037: Not valid contract XML file (in remove_nested)!";;
+let _ERR_032 = "ERR_032: Invalid char sequence found in your contract.";;
+let _ERR_033 = "ERR_033: Invalid char sequence found in your contract.";;
+let _ERR_034 = "ERR_034: Invalid char sequence found in your contract.";;
+let _ERR_035 = "ERR_035: Invalid char sequence found in your contract.";;
+let _ERR_036 = "ERR_036: Invalid char sequence found in your contract.";;
+let _ERR_037 = "ERR_037: Not a valid XML contract!";;
 let _ERR_038 = "ERR_038: Syntax error: unexpected char sequence after ']'. Maybe you missed a '+' or a '&' or a ')' after: ";;
 let _ERR_039 = "ERR_039: Syntax error: unexpected char sequence after '?'. Maybe you missed an action at: ?";;
 let _ERR_040 = "ERR_040: Syntax error: unexpected char sequence after '!'. Maybe you missed an action at: !";;
@@ -60,6 +60,8 @@ let _ERR_050 = "ERR_050: Syntax error: unbalanced square brackets, maybe you mis
 let _ERR_051 = "ERR_051: Syntax error: unbalanced square brackets, maybe you missed a '['.";;
 let _ERR_052 = "ERR_052: Syntax error: unexpected char sequence after a recursive variable at: ";;
 let _ERR_053 = "ERR_053: Missing a valid clock value after symbol '=' in at least one guard field.";;
+
+let _ERR_999 = "ERR_999: The contract contains an unhandled syntax error. Check the syntax tutorial.";;
 
 
 (* LIST OF MONITOR ERRORS *)

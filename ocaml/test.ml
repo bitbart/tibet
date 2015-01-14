@@ -280,6 +280,7 @@ parse_multiple_contracts "REC 'x'[!a . 'x'$]";;
 
 (* Error is correctly detected but it can be detected in a better way! *)
 
+parse_multiple_contracts "!a.b";;                           (* Partially fixed. *)
 
 (* Is error correctly detected? *)
 
@@ -290,7 +291,7 @@ parse_multiple_contracts "REC 'x'[(!a . 'x')]";;						(* Error #1. Tailing token
 
 (* An error is detected but it is not the real error. *)
 parse_multiple_contracts "(((REC 'x')))[!y.'x']";;					(* Error #1. The error occurred is not correct, work in progress by Livio. *)
-parse_multiple_contracts "!a.b";;														(* Error #2. Work in progress by Sebastian. *)
+
 parse_multiple_contracts "!a.!b!c";;												(* Error #2. The error occurred is not correct, work in progress by Sebastian. *)
 
 
