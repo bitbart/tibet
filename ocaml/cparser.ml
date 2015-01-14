@@ -48,6 +48,9 @@ and parse_guardType =
 	| [< ''>' ; x = parse_guardValue ?? _ERR_008 >] -> 
 			if ((String.compare "\"" (String.sub x 0 1)) == 0) then raise (Stream.Error _ERR_010) 
 			else "\" op=\"great\" value=\"" ^ x
+(*  | [< ''=' ; x = parse_guardValue ?? _ERR_008 >] -> 
+      if ((String.compare "\"" (String.sub x 0 1)) == 0) then raise (Stream.Error _ERR_053) 
+      else "\" op=\"equal\" value=\"" ^ x *)
 	| [< 'x; y = parse_guardType ?? _ERR_011 >] -> (printc x) ^ y
 and parse_guards' =
 	parser

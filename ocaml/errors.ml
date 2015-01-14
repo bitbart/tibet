@@ -47,7 +47,7 @@ let _ERR_037 = "ERR_037: Not valid contract XML file (in remove_nested)!";;
 let _ERR_038 = "ERR_038: Syntax error: unexpected char sequence after ']'. Maybe you missed a '+' or a '&' or a ')' after: ";;
 let _ERR_039 = "ERR_039: Syntax error: unexpected char sequence after '?'. Maybe you missed an action at: ?";;
 let _ERR_040 = "ERR_040: Syntax error: unexpected char sequence after '!'. Maybe you missed an action at: !";;
-let _ERR_041 = "ERR_041: Syntax error.";;
+let _ERR_041 = "ERR_041: Syntax error: probably you miss a '!' or a '?' before a branch label.";;
 let _ERR_042 = "ERR_042: Missing a valid operand before symbol '.'. Sequence requires two valid operands.";;
 let _ERR_043 = "ERR_043: Missing a valid operand after symbol '.'. Sequence requires two valid operands.";;
 let _ERR_044 = "ERR_044: Missing a valid operand before symbol '+'. Internal choice requires two valid operands.";;
@@ -59,6 +59,7 @@ let _ERR_049 = "ERR_049: Syntax error: unbalanced round brackets, maybe you miss
 let _ERR_050 = "ERR_050: Syntax error: unbalanced square brackets, maybe you missed a ']'.";;
 let _ERR_051 = "ERR_051: Syntax error: unbalanced square brackets, maybe you missed a '['.";;
 let _ERR_052 = "ERR_052: Syntax error: unexpected char sequence after a recursive variable at: ";;
+let _ERR_053 = "ERR_053: Missing a valid clock value after symbol '=' in at least one guard field.";;
 
 
 (* LIST OF MONITOR ERRORS *)
