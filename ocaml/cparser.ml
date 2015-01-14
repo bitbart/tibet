@@ -319,6 +319,7 @@ let parse_contract string_contract' =
 				let correct = checkRecursion (readXmlContract xml_contract) in
 					if correct then	try Xml.to_string_fmt (Xml.parse_string (removeNestedTag (xml_contract))) with Xml.Error a -> failwith _ERR_041
 					else failwith _ERR_025;;
+				
 
 let rec parse_multiple_contracts' l =
 	match l with

@@ -15,9 +15,17 @@ open ToXML;;
 open Errors;;
 
 
-let rec fromIntChoiceToList (IntChoice l) = l;;
+let rec fromIntChoiceToList l =
+	match l with
+	| (IntChoice ic) -> ic
+	| _ -> failwith _ERR_028
+;;
 
-let rec fromExtChoiceToList (ExtChoice l) = l;;
+let rec fromExtChoiceToList l =
+    match l with
+    | (ExtChoice ic) -> ic
+    | _ -> failwith _ERR_029
+;;
 
 let getOperator op =
 	match op with
