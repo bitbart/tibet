@@ -1,7 +1,7 @@
 (** 
  ********************************************************************************
  **																																						 **
- **				MAIN (7): contains a simple interface to run CTU converter           **
+ **				MAIN (8): Contains a simple interface to run CTU converter           **
  **																																						 **
  ********************************************************************************
  **)

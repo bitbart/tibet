@@ -1,7 +1,7 @@
 (** 
  ********************************************************************************
  **																																						 **
- **				CPARSER (5): contains a converter from string contracts to XML ones  **
+ **				CPARSER (6): Contains a converter from string contracts to XML ones  **
  **																																						 **
  ********************************************************************************
  **)

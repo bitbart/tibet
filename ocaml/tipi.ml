@@ -1,7 +1,7 @@
 (** 
  ********************************************************************************
  **																																						 **
- **				TIPI (1): contains abstract data types for contracts and automata    **
+ **				TIPI (1): Contains abstract data types for contracts and automata    **
  **																																						 **
  ********************************************************************************
  **)

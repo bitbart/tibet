@@ -1,6 +1,6 @@
 (** ************************************************************************** **)
 (**                                                                            **)
-(**  	TOXML (3): offers functions which generate xml uppaal templates          **)
+(**  	TOXML (4): Offers functions which generate xml uppaal templates          **)
 (**									     																										   **)
 (** ************************************************************************** **)
 

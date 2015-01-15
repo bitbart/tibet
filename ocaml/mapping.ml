@@ -1,7 +1,7 @@
 (** 
  ********************************************************************************
  **																																						 **
- **				MAPPING (2): offers functions which map contracts into automata      **
+ **				MAPPING (2): Offers functions which map contracts into automata      **
  **																																						 **
  ********************************************************************************
  **)
@@ -18,7 +18,7 @@
 ----------------------------------------------------
 	 OCAML TOPLEVEL IMPORTS (for Emacs)
  
-	        #load "str.cma";;
+	  #load "str.cma";;
 		#use "tipi.ml";;
 ----------------------------------------------------
 *) 
