@@ -59,7 +59,7 @@ let pythonDeclarationGuard guardOr = "a=(c.x<10); ";;
 
 (* It takes the output received by python libraries and converts it in a guardOr. *)
 let toGuardOr pythonOutput =
-	pythonOutput;
+	pythonOutput;;
 
 (** PAST: CALLS PYTHON FUNCTION 'DOWN' **)
 (* It takes a guardOr, then calls python libraries and executes the 'down' function. It returns a new guardOr. *)
@@ -74,4 +74,4 @@ let invReset guardOr clock =
 	let command = "" in 
 		toGuardOr (syscall command);;
 
-past "g{x; y; z}";;
+(* Test: past "g{x; y; z}";; *)
