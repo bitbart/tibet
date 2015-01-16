@@ -173,14 +173,18 @@ let add_empty_par s' =
 
 
 (** REMOVE_SPACES **)
-let rec remove_spaces' =
-	parser
-	  [< '' '; x = remove_spaces' >] -> x
-	| [< ''*' >] -> ""
-	| [< 'x; y = remove_spaces' >] -> String.make 1 x ^ y
+let rec remove_spaces s = 
+    if String.compare s "" == 0 then "" else
+    let c = String.get s 0 in
+    let s' = String.sub s 1 ((String.length s)-1) in
+    match c with
+    | ' ' -> "" ^ remove_spaces s'
+    | '\012' -> "" ^ remove_spaces s'
+    | '\n' -> "" ^ remove_spaces s'
+    | '\r' -> "" ^ remove_spaces s' 
+    | '\t' -> "" ^ remove_spaces s'
+  | _ -> (String.make 1 c) ^ remove_spaces s' 
 ;;
-
-let remove_spaces s = remove_spaces' (Stream.of_string (s^"*"));;
 
 
 (** GET_OPERATOR_PRIORITIES **)
