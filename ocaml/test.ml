@@ -3,8 +3,9 @@
 #use "cparser.ml";;
 
 (*example*)
-let p = ExtChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Success)];;
-let lta = tsb_mapping   p p;;
+let p = IntChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Success); (TSBAction "b", TSBGuard[], TSBReset[] , Success)];;
+let q = ExtChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Success); (TSBAction "c", TSBGuard[], TSBReset[] , Success)];;
+let lta = tsb_mapping   p q;;
 writeToFile lta "ex_prova";;
 
 

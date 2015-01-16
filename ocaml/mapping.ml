@@ -18,13 +18,14 @@
 ----------------------------------------------------
 	 OCAML TOPLEVEL IMPORTS (for Emacs)
  
-	  #load "str.cma";;
-		#use "tipi.ml";;
+	 #load "str.cma";;
+         #use "tipi.ml";;
 ----------------------------------------------------
 *) 
 
 (* Inclusion to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE *)
 open Tipi;;
+
 
 
 (*getter functions for  [(Action "a", g, r , Success)*)
