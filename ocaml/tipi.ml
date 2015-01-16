@@ -65,9 +65,9 @@ type extTsb = Nil | Success |
 let g = TSBExtGuard(And(Not(SC(TSBClock "x", Less, 4)),Or(Not(DC (TSBClock "x", TSBClock "t",  LessEq, 7)), DC(TSBClock "t", TSBClock "x", Eq, 5))));;
 
 (*************************************)
-(*                                    *)
-(*         Timed TSB --monitor        *)
-(*                                    *)
+(*                                   *)
+(*         Timed TSB --monitor       *)
+(*                                   *)
 (*************************************)
 (*Environment as a function*)
 (*type tsb_env = Env of ( string -> tsb);;*)
