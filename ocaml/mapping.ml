@@ -26,8 +26,6 @@
 (* Inclusion to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE *)
 open Tipi;;
 
-
-
 (*getter functions for  [(Action "a", g, r , Success)*)
 let getAction (TSBAction a,b,c,d) = a;;
 let getGuard (a,TSBGuard b,c,d) = b;;

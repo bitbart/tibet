@@ -3,7 +3,7 @@
 (*         Extended Timed TSB --extended static      *)
 (*                                                   *)
 (*****************************************************)
-type tsb_ext_relation = Less | Great | LessEq | GreatEq | Eq;;
+type tsb_ext_relation = ExtLess | ExtGreat | ExtLessEq | ExtGreatEq | ExtEq;;
 
 type extGuard =   SC of tsb_clock * tsb_ext_relation * int              (*simple constraint: es:  t < 4*) 
                 | DC of tsb_clock * tsb_clock * tsb_ext_relation * int  (*diagonal constraint: es: t - x < 4*) 
