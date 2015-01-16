@@ -16,7 +16,6 @@
 (* Inclusion to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE *)
 open Unix;;
 
-
 (** STRINGS PYTHON SOURCE **)
 let python_command_start = "python -c '";;
 let python_command_end = "'";;
