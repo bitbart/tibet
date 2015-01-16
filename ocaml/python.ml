@@ -40,8 +40,8 @@ let syscall cmd =
 
 
 (** OCAML INTERFACE FOR PYTHON LIBRARIES **)
-(* It takes a guardOr, then returns a list of its clocks names. *)
-let clocksNamesFromGuardOr guardOr = 
+(* It takes a extGuard, then returns a list of its clocks names. *)
+let clocksNamesFromExtGuard extGuard = 
 	["x"];;
 
 (* It takes a list of clocks names and uses it to create the initial python command, that is the istruction: 'c = Context c =([...])' *)
@@ -55,29 +55,29 @@ let pythonContextInstruction clocksNames =
 	pythonContextInstruction' clocksNames python_context_start;;
 
 
-(** PARSER FROM GUARD EXTENDED TO PYTHON DELCARATION **)
-(* It takes a guardOr and returns the string with the python instruction used to declare the guard: 'a = (c.x<10)'. *)
-let pythonDeclarationGuard guardOr = "a=(c.x<10); ";;
+(** PARSER FROM EXTENDED GUARD TO PYTHON DELCARATION **)
+(* It takes a extGuard and returns the string with the python instruction used to declare the guard: 'a = (c.x<10)'. *)
+let pythonDeclarationGuard extGuard = "a=(c.x<10); ";;
 
 
-(** PARSER FROM PYTHON DELCARATION TO GUARD EXTENDED **)
-(* It takes the output received by python libraries and converts it in a guardOr. *)
-let toGuardOr pythonOutput =
+(** PARSER FROM PYTHON DELCARATION TO EXTENDED GUARD **)
+(* It takes the output received by python libraries and converts it in a extGuard. *)
+let toExtGuard pythonOutput =
 	pythonOutput;;
 
 
 (** PAST: CALLS PYTHON FUNCTION 'DOWN' **)
-(* It takes a guardOr, then calls python libraries and executes the 'down' function. It returns a new guardOr. *)
-let past guardOr = 
-	let clocksNames = clocksNamesFromGuardOr guardOr in
-	let command = python_command_start^(pythonContextInstruction clocksNames)^(pythonDeclarationGuard guardOr)^python_print^python_down^python_command_end in 
-	toGuardOr (syscall command);;
+(* It takes a extGuard, then calls python libraries and executes the 'down' function. It returns a new extGuard. *)
+let past extGuard = 
+	let clocksNames = clocksNamesFromExtGuard extGuard in
+	let command = python_command_start^(pythonContextInstruction clocksNames)^(pythonDeclarationGuard extGuard)^python_print^python_down^python_command_end in 
+	toExtGuard (syscall command);;
 
 
 (** INVRESET: CALLS PYTHON FUNCTION 'INVRESET' **)
-(* It takes a guardOr and a clock, then calls python libraries and executes the 'invReset' function. It returns a new guardOr. *)
-let invReset guardOr clock = 
+(* It takes a extGuard and a clock, then calls python libraries and executes the 'invReset' function. It returns a new extGuard. *)
+let invReset extGuard clock = 
 	let command = "" in 
-		toGuardOr (syscall command);;
+		toExtGuard (syscall command);;
 
 (* Test: past "g{x; y; z}";; *)
