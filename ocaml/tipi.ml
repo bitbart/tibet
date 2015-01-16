@@ -42,9 +42,9 @@ type tsb = Nil | Success |
 
 
 (*************************************)
-(*                                    *)
-(*         Timed TSB --monitor        *)
-(*                                    *)
+(*                                   *)
+(*         Timed TSB --monitor       *)
+(*                                   *)
 (*************************************)
 (*Environment as a function*)
 (*type tsb_env = Env of ( string -> tsb);;*)

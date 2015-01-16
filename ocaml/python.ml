@@ -54,12 +54,17 @@ let pythonContextInstruction clocksNames =
 		) in
 	pythonContextInstruction' clocksNames python_context_start;;
 
+
+(** PARSER FROM GUARD EXTENDED TO PYTHON DELCARATION **)
 (* It takes a guardOr and returns the string with the python instruction used to declare the guard: 'a = (c.x<10)'. *)
 let pythonDeclarationGuard guardOr = "a=(c.x<10); ";;
 
+
+(** PARSER FROM PYTHON DELCARATION TO GUARD EXTENDED **)
 (* It takes the output received by python libraries and converts it in a guardOr. *)
 let toGuardOr pythonOutput =
 	pythonOutput;;
+
 
 (** PAST: CALLS PYTHON FUNCTION 'DOWN' **)
 (* It takes a guardOr, then calls python libraries and executes the 'down' function. It returns a new guardOr. *)
@@ -67,6 +72,7 @@ let past guardOr =
 	let clocksNames = clocksNamesFromGuardOr guardOr in
 	let command = python_command_start^(pythonContextInstruction clocksNames)^(pythonDeclarationGuard guardOr)^python_print^python_down^python_command_end in 
 	toGuardOr (syscall command);;
+
 
 (** INVRESET: CALLS PYTHON FUNCTION 'INVRESET' **)
 (* It takes a guardOr and a clock, then calls python libraries and executes the 'invReset' function. It returns a new guardOr. *)
