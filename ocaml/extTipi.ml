@@ -17,7 +17,4 @@ type extTsb = ExtNil | ExtSuccess |
            ExtIntChoice of (tsb_action * tsb_extGuard * tsb_reset * extTsb) list | 
            ExtExtChoice of (tsb_action *tsb_extGuard * tsb_reset * extTsb) list  |
            ExtRec of string * extTsb |
-           ExtCall of string ;; 
-
-(*Examples*)
-(*let g = TSBExtGuard(And(Not(SC(TSBClock "x", Less, 4)),Or(Not(DC (TSBClock "x", TSBClock "t",  LessEq, 7)), DC(TSBClock "t", TSBClock "x", Eq, 5))));;*)
+           ExtCall of string ;;

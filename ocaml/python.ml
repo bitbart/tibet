@@ -39,10 +39,36 @@ let syscall cmd =
 	 let _ = Unix.close_process (ic, oc) in (Buffer.contents buf);;
 
 
-(** OCAML INTERFACE FOR PYTHON LIBRARIES **)
-(* It takes a extGuard, then returns a list of its clocks names. *)
-let clocksNamesFromExtGuard extGuard = 
-	["x"];;
+(** COPARSER FROM EXTENDED GUARD TO PYTHON DELCARATION **)
+(* It returns the name of a clock. *)
+let pythonStringOfClock clock = 
+	match clock with
+	| TSBClock c -> c;;
+
+(* It compares two strings. This is used to eliminate duplicates from the list of clocks declaration. *)
+let comparatorStrings s1 s2 =
+	if(s1 > s2) then 1
+	else if (s1 == s2) then 0
+	else -1;;
+
+(* It eliminates all duplicates from the list of clocks declaration. *)
+let rec compress clocksList =
+	match clocksList with
+	| a :: (b :: _ as t) -> if a = b then compress t else a :: compress t
+  | smaller -> smaller;;
+
+(* It takes a guard, then returns a list of its clocks names (without duplicates). *)
+let clocksNamesFromGuard guard = 
+	match guard with
+		| TSBExtGuard inputGuard ->
+			let rec clocksNamesFromGuard' inputGuard clocksNames =
+			(match inputGuard with
+				| SC (c, r, i) -> (pythonStringOfClock c)::clocksNames
+				| DC (c, c', r, i) -> (pythonStringOfClock c)::((pythonStringOfClock c')::clocksNames)
+				| And (g, g') -> List.append (clocksNamesFromGuard' g clocksNames) (clocksNamesFromGuard' g' clocksNames)
+				| Or (g, g') -> List.append (clocksNamesFromGuard' g clocksNames) (clocksNamesFromGuard' g' clocksNames)
+				| Not g -> []
+			) in compress (List.sort comparatorStrings (clocksNamesFromGuard' inputGuard []));;
 
 (* It takes a list of clocks names and uses it to create the initial python command, that is the istruction: 'c = Context c =([...])' *)
 let pythonContextInstruction clocksNames =
@@ -54,30 +80,50 @@ let pythonContextInstruction clocksNames =
 		) in
 	pythonContextInstruction' clocksNames python_context_start;;
 
+(* Returns the string representation of a relation. *)
+let pythonStringOfTsbRelation relation = 
+	match relation with
+	| ExtLess -> "<"
+	| ExtGreat -> ">"
+	| ExtLessEq -> "<="
+	| ExtGreatEq -> ">="
+	| ExtEq -> "=";;
 
-(** PARSER FROM EXTENDED GUARD TO PYTHON DELCARATION **)
-(* It takes a extGuard and returns the string with the python instruction used to declare the guard: 'a = (c.x<10)'. *)
-let pythonDeclarationGuard extGuard = "a=(c.x<10); ";;
+(* It takes a guard and returns the string with the python instruction used to declare the guard: 'a = (c.x<10)'. *)
+let pythonGuardFromGuard guard =
+		match guard with
+		| TSBExtGuard inputGuard ->
+			let rec pythonGuardFromGuard' inputGuard clocksNames =
+			(match inputGuard with
+				| SC (c, r, i) -> "(c." ^ (pythonStringOfClock c) ^ (pythonStringOfTsbRelation r) ^ (string_of_int i) ^ ")"
+				| DC (c, c', r, i) -> "(c." ^ (pythonStringOfClock c) ^ " - c." ^ (pythonStringOfClock c') ^ (pythonStringOfTsbRelation r) ^ (string_of_int i) ^ ")"
+				| And (g, g') -> "(" ^ (pythonGuardFromGuard' g clocksNames) ^ " & " ^ (pythonGuardFromGuard' g' clocksNames) ^ ")"
+				| Or (g, g') -> "(" ^ (pythonGuardFromGuard' g clocksNames) ^ " | " ^ (pythonGuardFromGuard' g' clocksNames) ^ ")"
+				| Not g -> ""
+			) in pythonGuardFromGuard' inputGuard [];;
+
+(* It takes a guard and returns the string with the python instruction used to declare the guard: 'a = (c.x<10)'. *)
+let pythonDeclarationInstruction guard = 
+	"a=" ^ (pythonGuardFromGuard guard) ^ ";";; 
 
 
-(** PARSER FROM PYTHON DELCARATION TO EXTENDED GUARD **)
-(* It takes the output received by python libraries and converts it in a extGuard. *)
-let toExtGuard pythonOutput =
+(** PARSER FROM PYTHON DELCARATION TO GUARD **)
+(* It takes the output received by python libraries and converts it in a guard. *)
+let toGuard pythonOutput =
 	pythonOutput;;
 
 
+(** OCAML INTERFACE TO PYTHON LIBRARIES **)
 (** PAST: CALLS PYTHON FUNCTION 'DOWN' **)
-(* It takes a extGuard, then calls python libraries and executes the 'down' function. It returns a new extGuard. *)
-let past extGuard = 
-	let clocksNames = clocksNamesFromExtGuard extGuard in
-	let command = python_command_start^(pythonContextInstruction clocksNames)^(pythonDeclarationGuard extGuard)^python_print^python_down^python_command_end in 
-	toExtGuard (syscall command);;
+(* It takes a guard, then calls python libraries and executes the 'down' function. It returns a new guard. *)
+let past guard = 
+	let clocksNames = clocksNamesFromGuard guard in
+	let command = python_command_start^(pythonContextInstruction clocksNames)^(pythonDeclarationInstruction guard)^python_print^python_down^python_command_end in 
+	toGuard (syscall command);;
 
 
 (** INVRESET: CALLS PYTHON FUNCTION 'INVRESET' **)
-(* It takes a extGuard and a clock, then calls python libraries and executes the 'invReset' function. It returns a new extGuard. *)
-let invReset extGuard clock = 
+(* It takes a guard and a clock, then calls python libraries and executes the 'invReset' function. It returns a new guard. *)
+let invReset guard clock = 
 	let command = "" in 
-		toExtGuard (syscall command);;
-
-(* Test: past "g{x; y; z}";; *)
+		toGuard (syscall command);;

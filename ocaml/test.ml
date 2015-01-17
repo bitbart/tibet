@@ -246,6 +246,50 @@ writeToFile lta "ex23";;
 
 (********************************************************)
 (*                                                      *)
+(*              Handling Python Errors                  *) 
+(*               									                      *)
+(*                                                      *)
+(*                                                      *)
+(********************************************************)
+
+(*
+Original examples by Tiziana
+let g1 = TSBExtGuard(And(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtLessEq, 7)));;
+let g2 = TSBExtGuard(Or(SC(TSBClock "x", ExtEq, 4),DC (TSBClock "x", TSBClock "t", ExtGreatEq, 7)));;
+let g3 = TSBExtGuard(Or(SC(TSBClock "t", ExtEq, 4), Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
+let g4 = TSBExtGuard(Or(Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
+let g5 = TSBExtGuard(And(Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
+let g6 = TSBExtGuard(Or(And(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
+let g7 = TSBExtGuard(Or(SC(TSBClock "t", ExtEq, 4), And(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
+let gA = TSBExtGuard(Or(SC(TSBClock "t", ExtEq , 4), And(SC(TSBClock "x", ExtEq, 5), SC (TSBClock "s", ExtEq, 6))));;
+let gB = TSBExtGuard(And(Or(SC(TSBClock "t", ExtEq , 4),SC(TSBClock "x", ExtEq, 5)),  SC (TSBClock "s", ExtEq, 6)));;
+*)
+
+(* Examples without ExtEq (Python libraries don't allow this). *)
+let g1 = TSBExtGuard(And(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtLessEq, 7)));;
+let g2 = TSBExtGuard(Or(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtGreatEq, 7)));;
+let g3 = TSBExtGuard(Or(SC(TSBClock "t", ExtLess, 4), Or(SC(TSBClock "x", ExtLess, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
+let g4 = TSBExtGuard(Or(Or(SC(TSBClock "x", ExtGreatEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtGreatEq, 4)));;
+let g5 = TSBExtGuard(And(Or(SC(TSBClock "x", ExtGreatEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtLess, 4)));;
+let g6 = TSBExtGuard(Or(And(SC(TSBClock "x", ExtGreatEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtGreatEq, 4)));;
+let g7 = TSBExtGuard(Or(SC(TSBClock "t", ExtLess, 4), And(SC(TSBClock "x", ExtLess, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
+let gA = TSBExtGuard(Or(SC(TSBClock "t", ExtGreatEq , 4), And(SC(TSBClock "x", ExtGreatEq, 5), SC (TSBClock "s", ExtGreatEq, 6))));;
+let gB = TSBExtGuard(And(Or(SC(TSBClock "t", ExtLess , 4),SC(TSBClock "x", ExtLess, 5)),  SC (TSBClock "s", ExtGreatEq, 6)));;
+
+past g1;;
+past g2;;
+past g3;;
+past g4;;
+past g5;;
+past g6;;
+past g7;;
+past gA;;
+past gB;;
+
+
+
+(********************************************************)
+(*                                                      *)
 (*              Handling Parser Errors                  *) 
 (*               									                      *)
 (*                                                      *)
