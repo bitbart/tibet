@@ -11,8 +11,8 @@ type extGuard =   SC of tsb_clock * tsb_ext_relation * int              (*simple
                 | And of extGuard * extGuard 
                 | Or of extGuard * extGuard 
                 | Not of extGuard
-		| True
-		| False;;
+								| True
+								| False;;
 
 type tsb_extGuard =  TSBExtGuard of extGuard;;
 type tsb_action = TSBAction of string;;

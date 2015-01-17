@@ -22,7 +22,9 @@ let python_command_end = "'";;
 let python_context_start = "from python_dbm import Context; c = Context([";;
 let python_context_end = "], \"c\"); ";;
 let python_print = "print ";;
-let python_down = "a.down();";;
+let python_down = "a.down(); ";;
+let python_invReset_start = "a.invReset(";;
+let python_invReset_end = "); ";;
 
 
 (** SYSTEM CALLS **)
@@ -43,6 +45,12 @@ let syscall cmd =
 let pythonStringOfClock clock = 
 	match clock with
 	| TSBClock c -> c;;
+
+(* If 'list' contains 'element' then returns true else false. *)
+let rec exists element list = match list with
+  | [] -> false
+  | h::t -> if ((String.compare element  h) == 0) then true 
+    else exists element t;;
 
 (* It compares two strings. This is used to eliminate duplicates from the list of clocks declaration. *)
 let comparatorStrings s1 s2 =
@@ -99,6 +107,8 @@ let pythonGuardFromGuard guard =
 				| And (g, g') -> "(" ^ (pythonGuardFromGuard' g clocksNames) ^ " & " ^ (pythonGuardFromGuard' g' clocksNames) ^ ")"
 				| Or (g, g') -> "(" ^ (pythonGuardFromGuard' g clocksNames) ^ " | " ^ (pythonGuardFromGuard' g' clocksNames) ^ ")"
 				| Not g -> ""
+				| True -> ""
+				| False -> ""
 			) in pythonGuardFromGuard' inputGuard [];;
 
 (* It takes a guard and returns the string with the python instruction used to declare the guard: 'a = (c.x<10)'. *)
@@ -124,5 +134,12 @@ let past guard =
 (** INVRESET: CALLS PYTHON FUNCTION 'INVRESET' **)
 (* It takes a guard and a clock, then calls python libraries and executes the 'invReset' function. It returns a new guard. *)
 let invReset guard clock = 
-	let command = "" in 
-		toGuard (syscall command);;
+	let clocksNames = clocksNamesFromGuard guard in
+	let declaredClock = pythonStringOfClock clock in 
+	if (exists declaredClock clocksNames) 
+		then
+			(
+				let command = python_command_start^(pythonContextInstruction clocksNames)^(pythonDeclarationInstruction guard)^python_print^python_invReset_start^"c."^declaredClock^python_invReset_end^python_command_end in 
+				toGuard (syscall command)
+			)
+		else failwith _ERR_200;;

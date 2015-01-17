@@ -286,6 +286,17 @@ past g7;;
 past gA;;
 past gB;;
 
+let clockX = TSBClock "x";;
+
+invReset g1 clockX;;
+invReset g2 clockX;;
+invReset g3 clockX;;
+invReset g4 clockX;;
+invReset g5 clockX;;
+invReset g6 clockX;;
+invReset g7 clockX;;
+invReset gA clockX;;
+invReset gB clockX;;
 
 
 (********************************************************)
