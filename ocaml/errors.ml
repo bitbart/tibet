@@ -71,4 +71,5 @@ let _ERR_102 = "ERR_102: Unbound id: Call.";;
 
 
 (* LIST OF PYTHON ERRORS *)
-let _ERR_200 = "ERR_200: Clock not declared in this context."
+let _ERR_200 = "ERR_200: Clock not declared in this context.";;
+let _ERR_201 = "ERR_201: Error during equivalence operation.";;

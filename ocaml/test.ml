@@ -266,8 +266,8 @@ let gB = TSBExtGuard(And(Or(SC(TSBClock "t", ExtEq , 4),SC(TSBClock "x", ExtEq, 
 *)
 
 (* Examples without ExtEq (Python libraries don't allow this). *)
-let g1 = TSBExtGuard(And(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtLessEq, 7)));;
-let g2 = TSBExtGuard(Or(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtGreatEq, 7)));;
+let g1 = TSBExtGuard(And(SC(TSBClock "c", ExtLess, 4),DC (TSBClock "z", TSBClock "t", ExtLessEq, 7)));;
+let g2 = TSBExtGuard(Or(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "y", TSBClock "t", ExtGreatEq, 7)));;
 let g3 = TSBExtGuard(Or(SC(TSBClock "t", ExtLess, 4), Or(SC(TSBClock "x", ExtLess, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
 let g4 = TSBExtGuard(Or(Or(SC(TSBClock "x", ExtGreatEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtGreatEq, 4)));;
 let g5 = TSBExtGuard(And(Or(SC(TSBClock "x", ExtGreatEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtLess, 4)));;
@@ -297,6 +297,26 @@ invReset g6 clockX;;
 invReset g7 clockX;;
 invReset gA clockX;;
 invReset gB clockX;;
+
+subtract g1 g2;;
+subtract g1 g3;;
+subtract g1 g4;;
+subtract g1 g5;;
+subtract g1 g6;;
+subtract g1 g7;;
+subtract g1 gA;;
+subtract g1 gB;;
+
+equivalence g1 g1;;
+equivalence g1 g2;;
+equivalence g1 g3;;
+equivalence g1 g4;;
+equivalence g1 g5;;
+equivalence g1 g6;;
+equivalence g1 g7;;
+equivalence g1 gA;;
+equivalence g1 gB;;
+
 
 
 (********************************************************)

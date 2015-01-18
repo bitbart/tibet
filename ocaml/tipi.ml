@@ -25,7 +25,7 @@ let addSetSet s1 s2 = eliminateDuplicates (s1@s2);;
 
 (*************************************)
 (*                                   *)
-(*         Timed TSB --static        *)
+(*      Timed TSB -- Static          *)
 (*                                   *)
 (*************************************)
 type tsb_action = TSBAction of string;;
@@ -43,7 +43,7 @@ type tsb = Nil | Success |
 
 (*************************************)
 (*                                   *)
-(*         Timed TSB --monitor       *)
+(*         Timed TSB - Monitor       *)
 (*                                   *)
 (*************************************)
 (*Environment as a function*)
