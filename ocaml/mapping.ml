@@ -1,7 +1,7 @@
 (** 
  ********************************************************************************
  **																																						 **
- **				MAPPING (2): Offers functions which map contracts into automata      **
+ **				MAPPING (3): Offers functions which map contracts into automata      **
  **																																						 **
  ********************************************************************************
  **)

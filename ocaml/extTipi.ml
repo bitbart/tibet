@@ -1,8 +1,10 @@
-(*****************************************************)
-(*                                                   *)
-(*         Extended Timed TSB - Extended static      *)
-(*                                                   *)
-(*****************************************************)
+(**
+*******************************************************
+**                                                   **
+**      2) Extended Timed TSB - Extended static      **
+**                                                   **
+*******************************************************
+**)
 
 type tsb_ext_relation = ExtLess | ExtGreat | ExtLessEq | ExtGreatEq | ExtEq;;
 
@@ -15,8 +17,6 @@ type extGuard =   SC of tsb_clock * tsb_ext_relation * int              (*simple
 								| False;;
 
 type tsb_extGuard =  TSBExtGuard of extGuard;;
-type tsb_action = TSBAction of string;;
-type tsb_reset = TSBReset of tsb_clock list;;
 
 type extTsb = ExtNil | ExtSuccess |
            ExtIntChoice of (tsb_action * tsb_extGuard * tsb_reset * extTsb) list | 
