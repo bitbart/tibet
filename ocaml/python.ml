@@ -116,7 +116,7 @@ let pythonStringOfTsbRelation relation =
 	| ExtGreat -> ">"
 	| ExtLessEq -> "<="
 	| ExtGreatEq -> ">="
-	| ExtEq -> "=";;
+	| ExtEq -> "==";;
 
 (* It takes a guard and returns the string with the python instruction used to declare the guard: 'a = (c.x<10)'. *)
 let pythonGuardFromGuard guard =
