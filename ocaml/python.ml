@@ -77,6 +77,25 @@ let rec compress clocksList =
 	| a :: (b :: _ as t) -> if a = b then compress t else a :: compress t
   | smaller -> smaller;;
 
+(**)
+let substitute_minus_char char =
+	match char with
+	| '-' -> '@'
+	| _ -> char;;
+
+let rec python_remove_spaces s = 
+    if String.compare s "" == 0 then "" else
+    let c = String.get s 0 in
+    let s' = String.sub s 1 ((String.length s)-1) in
+    match c with
+    | ' ' -> "" ^ python_remove_spaces s'
+    | '\012' -> "" ^ python_remove_spaces s'
+    | '\n' -> "" ^ python_remove_spaces s'
+    | '\r' -> "" ^ python_remove_spaces s' 
+    | '\t' -> "" ^ python_remove_spaces s'
+  | _ -> (String.make 1 c) ^ python_remove_spaces s' 
+;;
+
 
 
 
@@ -144,69 +163,112 @@ let pythonGuardDeclaration guardName guard =
 (** 						SECTION #3										**)
 (** PARSER FROM PYTHON DELCARATION TO GUARD. 	**)
 
-(* It takes the output received by python libraries and converts it in a guard. *)
-let toGuard pythonOutput =
-	pythonOutput;;
-
-
 (** #3.1 PREPROCESSING: REMOVE CONTEXT NAME FROM PYTHON OUTPUT. **)
+(**)
 let testSearching stringInput regExp =
   try Str.search_forward regExp stringInput 0 with Not_found -> -1;;
 
+(**)
 let rec remove_context stringInput = 
 	let regExp = (Str.regexp "c.[a-z]+") in
 	if ((testSearching stringInput regExp) == -1) then stringInput else
 		let matched = (Str.matched_string stringInput) in 
-		let temp = String.sub matched 2 ((String.length matched) - 2) in 
+		let temp = (String.sub matched 2 ((String.length matched) - 2))^";" in 
 		let stringUpdated = Str.replace_first regExp temp stringInput in
 		remove_context stringUpdated;;
 
 
-(** #3.2 INFIX TO PREFIX. **)
+(** #3.2 REPLACE UNCOMFORTABLE SYMBOLS **)
+(**)
+let replacing_equal stringGuard = 
+	let stringUpdated = Str.global_replace (Str.regexp "<=") "$" stringGuard in
+	let stringUpdated = Str.global_replace (Str.regexp ">=") "%" stringUpdated in
+	Str.global_replace (Str.regexp "==") "=" stringUpdated;;
+
+(**)
+let rec replacing_minus stringGuard =
+	let regExp = (Str.regexp "[a-z]+;-[a-z]+") in
+	if ((testSearching stringGuard regExp) == -1) then stringGuard else
+		let stringMatched = Str.matched_string stringGuard in
+		let stringSubstituted = String.map substitute_minus_char stringMatched in
+		let stringUpdated = Str.replace_first regExp stringSubstituted stringGuard in
+		replacing_minus stringUpdated;;
+
+(**)
+let replacing_uncomfortable stringGuard =
+	replacing_minus (replacing_equal stringGuard);;
+
+
+(** #3.3 INFIX TO PREFIX. **)
+
+(**)
+let rec python_reverse s =
+	match s with
+	| "" -> ""
+	| _ ->
+		let new_len =  (String.length s) - 1 in
+		(String.make 1 (String.get s new_len)) ^ (python_reverse (String.sub s 0 new_len));;
+
+(**) 
 let python_getOp_prio op =
 	match op with
+	| '@' -> 6
 	| '|' -> 5
 	| '&' -> 5
 	| ')' -> 2
 	| '(' -> 2
-	| _ -> 0
-;;
+	| _ -> 0;;
 
+(* Algorithm for conversion from infix to prefix notation *)
+let rec python_update_stack res pr =
+	let (s, l) = res in
+		match l with
+		| c::l' ->
+			if (python_getOp_prio c >= pr) then 
+				(if (pr==2 && (python_getOp_prio c) == 2) then (s, l') else python_update_stack (s^(String.make 1 c), l') pr)
+			else res
+		| [] -> res;;
+
+(**)
 let rec python_infix_to_prefix' s stack =
 	match s with
 	| "" -> 
-		let (output, l) = update_stack ("", stack) 0 in output
+		let (output, l) = python_update_stack ("", stack) 0 in output
 	| _ ->
 		let c = String.get s 0 in
 		let s' = String.sub s 1 ((String.length s) - 1) in
 		match c with
 		| ')' -> python_infix_to_prefix' s' (')'::stack)
 		| '|' ->
-			let (output, new_stack) = update_stack ("", stack) (python_getOp_prio '|') in
+			let (output, new_stack) = python_update_stack ("", stack) (python_getOp_prio '|') in
 			output ^ python_infix_to_prefix' s' ('|'::new_stack)
 		| '&' ->
-			let (output, new_stack) = update_stack ("", stack) (python_getOp_prio '&') in
+			let (output, new_stack) = python_update_stack ("", stack) (python_getOp_prio '&') in
 			output ^ python_infix_to_prefix' s' ('&'::new_stack)
-		| '(' -> let (output, new_stack) = update_stack ("", stack) (python_getOp_prio '(') in
+		| '(' -> 
+			let (output, new_stack) = python_update_stack ("", stack) (python_getOp_prio '(') in
 			output ^ python_infix_to_prefix' s' new_stack
-	  | _ -> (String.make 1 c) ^ python_infix_to_prefix' s' stack
-;;
+		| '@' -> 
+			let (output, new_stack) = python_update_stack ("", stack) (python_getOp_prio '@') in
+			output ^ python_infix_to_prefix' s' ('@'::new_stack)
+	  | _ -> (String.make 1 c) ^ python_infix_to_prefix' s' stack;;
 
-let python_infix_to_prefix s = reverse(python_infix_to_prefix' (reverse (remove_spaces (s))) []);;
+(**)
+let python_infix_to_prefix s = python_reverse(python_infix_to_prefix' (python_reverse (python_remove_spaces (s))) []);;
 
 
-(** #3.3 REVERSE GUARD **)
+(** #3.4 REVERSE GUARD **)
 let reverse_guard_type guardType = 
 	match guardType with
 	| "<" -> ">"
 	| "<=" -> ">="
 	| "==" -> "=="
 	| ">" -> "<"
-	| ">=" -> "<="
-	| _ -> "ERROR";; (* The case should not occur. *)
+	| ">=" -> "<=";;
 
+(**)
 let rec reverse_guard stringGuard = 
-	let regExp = (Str.regexp "[-]*[0-9]+[<>=][=]*[a-z]+") in								(* To fix: only '=' is never returned by python libraries, equals is represented with '=='. *)
+	let regExp = (Str.regexp "[-]*[0-9]+[<>=][=]*[a-z]+;") in								(* To fix: only '=' is never returned by python libraries, equals is represented with '=='. *)
 	if ((testSearching stringGuard regExp) == -1) then stringGuard else
 		let stringTest = Str.matched_string stringGuard in
 		let regExp = (Str.regexp "[-]*[0-9]+") in
@@ -215,27 +277,21 @@ let rec reverse_guard stringGuard =
 			let regExp = (Str.regexp "[<>=][=]*") in
 			if ((testSearching stringTest regExp) == -1) then "ERROR" else
 				let guardType = Str.matched_string stringTest in
-				let regExp = (Str.regexp "[a-z]+") in
+				let regExp = (Str.regexp "[a-z]+;") in
 				if ((testSearching stringTest regExp) == -1) then "ERROR" else
 					let guardName = Str.matched_string stringTest in
-					let regExp = (Str.regexp "[-]*[0-9]+[<>=][=]*[a-z]+") in
+					let regExp = (Str.regexp "[-]*[0-9]+[<>=][=]*[a-z]+;") in
 					let newGuard = (guardName ^ (reverse_guard_type guardType) ^ guardValue) in
 					let stringUpdated = Str.replace_first regExp newGuard stringGuard in
 					reverse_guard stringUpdated;;
 
 
-(** #3.4 REPLACE UNCOMFORTABLE SYMBOLS **)
-let replacing_uncomfortable stringGuard = 
-	let stringUpdated = Str.global_replace (Str.regexp "<=") "$" stringGuard in
-	let stringUpdated = Str.global_replace (Str.regexp ">=") "%" stringUpdated in
-	Str.global_replace (Str.regexp "==") "=" stringUpdated;;
-
-
 (** #3.5 ADDING GUARD SEPARATOR **)
+(**)
 let rec adding_open_guard_separator stringGuard = 
-	let regExp = (Str.regexp "[^-{]*[a-z]+") in
+	let regExp = (Str.regexp "[^{]*[@]*[a-z]+") in
 	if ((testSearching stringGuard regExp) == -1) then stringGuard else
-		let regExp = (Str.regexp "[a-z]+") in
+		let regExp = (Str.regexp "[@]*[a-z]+") in
 		if ((testSearching stringGuard regExp) == -1) then stringGuard else		
 		let stringMatched = Str.matched_string stringGuard in
 		let stringSubstituted = "{" ^ stringMatched in
@@ -245,6 +301,7 @@ let rec adding_open_guard_separator stringGuard =
 		let nextFragment = String.sub stringUpdated position ((String.length stringUpdated)-position) in
 		thisFragment^(adding_open_guard_separator nextFragment);;
 
+(**)
 let rec adding_close_guard_separator stringGuard =
 	let regExp = (Str.regexp "[0-9]+[^}]*") in
 	if ((testSearching stringGuard regExp) == -1) then stringGuard else
@@ -258,76 +315,79 @@ let rec adding_close_guard_separator stringGuard =
 		let nextFragment = String.sub stringUpdated position ((String.length stringUpdated)-position) in
 		thisFragment^(adding_close_guard_separator nextFragment);;
 
+(**)
 let adding_guard_separator stringGuard =
 	adding_open_guard_separator (adding_close_guard_separator stringGuard);;
 
 
 (** #3.6 PYTHON MAIN PARSER **)
+(**)
 let rec python_parse_guardValue =
 	parser
-(*	  [< '',' ; x = python_parse_guardType ?? "ERROR" >] -> 
-			if ((String.compare "\"" (String.sub x 0 1)) == 0) then raise (Stream.Error "ERROR") 
-			else "\" />\n<guard id=\"" ^ x *)
-  | [< ''}' >] -> "}"
-	| [< 'x; y = python_parse_guardValue ?? "Error calculating value" >] -> (String.make 1 x ^ y)
-and python_parse_guardType =
-	parser
-	| [< ''$'; x = python_parse_guardValue ?? raise (Stream.Error "Missing value after <=") >] -> "<=" ^ x
-	| [< ''%'; x = python_parse_guardValue ?? raise (Stream.Error "Missing value after >=") >] -> ">=" ^ x
-	| [< ''='; x = python_parse_guardValue ?? raise (Stream.Error "Missing value after ==") >] -> "=" ^ x
-	| [< ''<'; x = python_parse_guardValue ?? raise (Stream.Error "Missing value after <")  >] -> "<" ^ x
-	| [< ''>'; x = python_parse_guardValue ?? raise (Stream.Error "Missing value after >") >] -> ">" ^ x
-	| [< 'x; y = python_parse_guardType ?? raise (Stream.Error "The case should not occur1") >] -> String.make 1 x ^ y
-and python_parse_guards =
-	parser
-	| [< x = python_parse_guardType >] -> x 
-and python_parser =
-	parser
-	| [< ''{'; x = python_parse_guards ?? raise (Stream.Error "Missing guard"); >] -> "G{" ^ x
-	| [< ''|'; x = python_parser ?? raise (Stream.Error "Missing first OR branch"); y = python_parser ?? raise (Stream.Error "Missing second OR branch") >] -> "<int>" ^ x ^ y ^ "</int>"
-	| [< ''&'; x = python_parser ?? raise (Stream.Error "Missing first AND branch"); y = python_parser ?? raise (Stream.Error "Missing second AND branch") >] -> "<ext>" ^ x ^ y ^ "</ext>"
-	| [< 'x; y = python_parser ?? raise (Stream.Error "The case should not occur2") >] -> String.make 1 x ^ y	(* The case should not occur *)
-;;
+  | [< ''}' >] -> ""
+	| [< 'x; y = python_parse_guardValue ?? "Error calculating value" >] -> (String.make 1 x ^ y);;
 
-python_parser (Stream.of_string ("|&{t-s<-2}{x<4}&"));;
-python_parser (Stream.of_string ("||&{t-s<-2}{x<4}&{t>4}&{s-t$2}{x<4}&{s<6}&{s-t$2}&{t$4}{x<4}"));;
+(**)
+let python_parse_guardType =
+	parser
+	| [< ''$' >] -> ExtLessEq					(*  <=  *)
+	| [< ''%' >] -> ExtGreatEq				(*  >=  *)
+	| [< ''=' >] -> ExtEq							(*  =  *)
+	| [< ''<' >] -> ExtGreat					(*  <  *)
+	| [< ''>' >] -> ExtLess;; 				(*  >  *)
+
+(**)
+let rec python_parse_name =
+	parser
+	| [< '';' >] -> "" 
+	| [< 'x; y = python_parse_name ?? raise (Stream.Error "Missing variable name") >] -> (String.make 1 x ^ y) ;;
+
+(**)
+let python_parse_guards =
+	parser
+	| [< ''@'; 
+			w = python_parse_name ?? raise (Stream.Error "Missing diagonal first variable"); 
+			x = python_parse_name ?? raise (Stream.Error "Missing diagonal second variable"); 
+			y = python_parse_guardType ?? raise (Stream.Error "Missing diagonal operator"); 
+			z = python_parse_guardValue ?? raise (Stream.Error "Missing diagonal value") >] -> 
+				DC (TSBClock w, TSBClock x, y, (int_of_string z))
+	| [< 'w;
+			x = python_parse_name ?? raise (Stream.Error "Missing diagonal second variable"); 
+			y = python_parse_guardType ?? raise (Stream.Error "Missing diagonal operator"); 
+			z = python_parse_guardValue ?? raise (Stream.Error "Missing diagonal value") >] ->
+				SC(TSBClock (String.make 1 w ^ x), y, (int_of_string z));;
+
+(**)
+let rec python_parser =
+	parser
+	| [< ''{'; 
+			x = python_parse_guards ?? raise (Stream.Error "Missing guard"); >] -> x
+	| [< ''|'; 
+			x = python_parser ?? raise (Stream.Error "Missing first OR branch");
+			y = python_parser ?? raise (Stream.Error "Missing second OR branch") >] -> Or (x, y)
+	| [< ''&'; 
+			x = python_parser ?? raise (Stream.Error "Missing first AND branch");
+			y = python_parser ?? raise (Stream.Error "Missing second AND branch") >] -> And (x, y);;
 
 
+
+(* It takes the output received by python libraries and converts it in a guard. *)
 (* 0) Take Python output. *)
-let a = "(c.t-c.s<-2 & c.x<4) | (4<c.t & c.s-c.t<=2 & c.x<4) | (c.s<6 & c.s-c.t<=2 & c.t<=4 & c.x<4)\n";;
-
-
 (* 1) Remove the final '\n' *)
-let b = String.sub a 0 ((String.length a)-1);;
-"(c.t-c.s<-2 & c.x<4) | (4<c.t & c.s-c.t<=2 & c.x<4) | (c.s<6 & c.s-c.t<=2 & c.t<=4 & c.x<4)";;
-
-
 (* 1) Remove context name. *)
-let c = remove_context b;;
-"(t-s<-2 & x<4) | (4<t & s-t<=2 & x<4) | (s<6 & s-t<=2 & t<=4 & x<4)";;
-
-
-(* 2) Infix to Prefix. *)
-let d = python_infix_to_prefix c;;
-"||&t-s<-2x<4&4<t&s-t<=2x<4&s<6&s-t<=2&t<=4x<4";;
-
-
-(* 3) Reverse guards. *)
-let e = reverse_guard d;;
-"||&t-s<-2x<4&t>4&s-t<=2x<4&s<6&s-t<=2&t<=4x<4";;
-
-
-(* 4) Replacing symbols uncomfortable: '<=' became '$', '>=' became '%' and '==' became '='. *)
-let f = replacing_uncomfortable e;;
-"||&t-s<-2x<4&t>4&s-t$2x<4&s<6&s-t$2&t$4x<4";;
-
-
+(* 2) Replacing symbols uncomfortable: '<=' became '$', '>=' became '%' and '==' became '='. *)
+(* 3) Infix to Prefix. *)
+(* 4) Reverse guards. *)
 (* 5) Adding guard separator. *)
-let g = adding_guard_separator f;;
-"||&{t-s<-2}{x<4}&{t>4}&{s-t$2}{x<4}&{s<6}&{s-t$2}&{t$4}{x<4}";;
-
-
 (* 6) Parsing result. *)
+let toGuard pythonOutput =
+	let guard = String.sub pythonOutput 0 ((String.length pythonOutput)-1) in
+	let guard = remove_context guard in
+	let guard = replacing_uncomfortable guard in
+	let guard = python_infix_to_prefix guard in
+	let guard = reverse_guard guard in 
+	let guard = adding_guard_separator guard in 
+	python_parser (Stream.of_string guard);;
 
 
 
