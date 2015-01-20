@@ -23,8 +23,9 @@
 ----------------------------------------------------
 *) 
 
+ 
 (* Inclusion to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE *)
-open Tipi;;
+(*open Tipi;;*)
 
 (*getter functions for  [(Action "a", g, r , Success)*)
 let getAction (TSBAction a,b,c,d) = a;;
@@ -52,8 +53,9 @@ let procHD = "res_";;
 let getRelation r = match r with 
   Less -> "<"
 | Great -> ">"
-| LessEq -> "<"
-| GreatEq -> ">";;
+| LessEq -> "<="
+| GreatEq -> ">="
+| Eq -> "=";;
 
 let getClockName (TSBClock c) = c;;
 
@@ -165,34 +167,76 @@ let rec createRecEdges  name loc list   = match list with (*idx has already been
 (*getMaxInc calculate the local maximum for the single guard: x> 5 returns "forever" as invariants*)
 (* while x>5 && x <10 return Until  (x, 10)*)
 (* the supInvariants takes the maximun which is Forever*)
-type bound = Forever | Until of string * int;;
+type bound = Forever | Until of string * int | UntilEq of string * int;;
 
 
 let minBound b1 b2 = match (b1, b2) with 
      (Forever, b2)  -> b2
 |    (b1, Forever)  -> b1 
 |    (Until (t,d), Until (r,c)) -> 
-               if t <> r then failwith ("MinBound: "^t^" and "^r^" are two different clocks in the same  choice-> NOT ALLOWED")
+               if t <> r then failwith ("MinBound: "^t^" and "^r^" are two different "^ 
+                                            "clocks in the same  choice-> NOT ALLOWED")
                else if d < c then b1 else b2
+|    (UntilEq (t,d), UntilEq (r,c)) -> 
+               if t <> r then failwith ("MinBound: "^t^" and "^r^" are two different "^ 
+                                            "clocks in the same  choice-> NOT ALLOWED")
+               else if d < c then b1 else b2
+|    (UntilEq (t,d), Until (r,c)) -> 
+               if t <> r then failwith ("MinBound: "^t^" and "^r^" are two different "^ 
+                                            "clocks in the same  choice-> NOT ALLOWED")
+               else if d < c then b1 else b2
+|    (Until (t,d), UntilEq (r,c)) -> 
+               if t <> r then failwith ("MinBound: "^t^" and "^r^" are two different "^ 
+                                            "clocks in the same  choice-> NOT ALLOWED")
+               else if d <= c then b1 else b2
 ;;
+
+
+
 
 let maxBound b1 b2 = match (b1, b2) with 
      (Forever, b2)  -> Forever
 |    (b1, Forever)  -> Forever
 |    (Until (t,d), Until (r,c)) -> 
-               if t <> r then failwith ("MaxBound:  "^t^" and  "^r^" are different clocks in the same  choice-> NOT ALLOWED")
+               if t <> r then failwith ("MaxBound:  "^t^" and  "^r^" are different"^
+                                            " clocks in the same  choice-> NOT ALLOWED")
                else if d < c then b2 else b1
+|    (UntilEq (t,d), UntilEq (r,c)) -> 
+               if t <> r then failwith ("MaxBound:  "^t^" and  "^r^" are different"^
+                                            " clocks in the same  choice-> NOT ALLOWED")
+               else if d < c then b2 else b1
+|    (UntilEq (t,d), Until (r,c)) -> 
+               if t <> r then failwith ("MaxBound:  "^t^" and  "^r^" are different"^
+                                            " clocks in the same  choice-> NOT ALLOWED")
+               else if d < c then b2 else ( if d = c then b1 else b1)
+|    (Until (t,d), UntilEq (r,c)) -> 
+               if t <> r then failwith ("MaxBound:  "^t^" and  "^r^" are different"^
+                                            " clocks in the same  choice-> NOT ALLOWED")
+               else if d < c then b2 else ( if d = c then b2 else b1)
 ;;
 
+(*maxBound (UntilEq ("x", 11))(UntilEq ("x", 1))*)
+
+
+let convert t r d = match (t,r,d) with 
+ _, Great, d 
+|_, GreatEq, d -> Forever
+|_, LessEq, d 
+|_, Eq, d -> UntilEq (t,d)
+|_, Less , d -> Until (t,d);;
+
+(*convert "x" Eq 3  *)
 
 (*for a single action you can have a list of guards t<1 && t>2 are represented ad list*)
 (* and you returns the minimun bound since it is an INTERVALL and you take the intersection*)
 let rec getBoundOfASingleAction l =  match l with 
   [] -> Forever
 | (TSBClock c, r, d)::tl -> let bound =  getBoundOfASingleAction tl in 
-                            if r = Great then bound else minBound bound (Until (c,d))
+                            if (r = Great || r = GreatEq) then bound 
+                                                          else minBound bound ( convert c r d)
 ;;
  
+
 
 let rec getBoundOfAllTheActions l b = match l with 
   [] -> b
@@ -202,23 +246,24 @@ let rec getBoundOfAllTheActions l b = match l with
 ;;
 
 
-
 let getClock l = match l with 
    [] -> ""
-|   (TSBClock c, r, d)::tl -> c;;
+|  (TSBClock c, r, d)::tl -> c;;
 
 let rec getClockWithUpperBound l = match l with 
    [] -> ""
-|   (TSBClock c, r, d)::tl -> if r = Less then c else getClockWithUpperBound tl ;;
+|  (TSBClock c, r, d)::tl -> if (r = Less || r = LessEq || r = Eq) then c 
+                                         else getClockWithUpperBound tl ;;
 
 let rec getClockWithUpperBoundChoice l = match l with 
    [] -> ""
-| (a, TSBGuard gl, r, e)::tl -> let c = getClockWithUpperBound gl in 
+|  (a, TSBGuard gl, r, e)::tl -> let c = getClockWithUpperBound gl in 
                                 if c = "" then getClockWithUpperBoundChoice tl else c ;;
 
 let boundToInv b = match b with
   Forever -> ""
-| Until (c,d) -> c^" < "^string_of_int d;;
+| Until (c,d) -> c^" < "^string_of_int d
+| UntilEq (c,d) -> c^" <= "^string_of_int d ;;
 
 (*to initialize the list with a default value for minimum I need to know the clock name --FOR THE CONTSRAINTS WITH < or <=*)
 (*Carefull: there is not only one clock in the guards, but there is only one clock which use  upper bound*)
@@ -228,6 +273,26 @@ let getMaxInv l =  if List.length l = 0 then ""
                           in if c = "" then "" 
                              else  boundToInv(getBoundOfAllTheActions l (Until (c, 0)))
                    );;
+
+
+
+(*PROVE DEBUG*)
+let g1 = TSBGuard [(TSBClock "x",LessEq,5)];;
+let g2 = TSBGuard [(TSBClock "x",Less,5)];;
+getBoundOfAllTheActions [(1,g1,1,1)   ; (2,g2,2,2)]  (Until ("x", 0));;
+
+getBoundOfASingleAction [(TSBClock "x",LessEq,5)];;
+maxBound  (UntilEq ("x", 5))(Until ("x", 0));;
+getBoundOfASingleAction [(TSBClock "x",Less,5)];;
+maxBound  (Until ("x", 5)) (UntilEq ("x", 5));;
+getBoundOfASingleAction [(TSBClock "x",Less,10); (TSBClock "x",GreatEq,3); (TSBClock "t",Great,4); (TSBClock "x",LessEq,5)];;
+
+getMaxInv  [(1,g1,1,1)   ; (2,g2,2,2)] ;;
+
+let p = [(TSBAction "a", TSBGuard [(TSBClock "r", LessEq, 4)], TSBReset[TSBClock "y"] , Success);
+         ( TSBAction "a", TSBGuard [(TSBClock "r", Eq, 4)], TSBReset[TSBClock "y"] , Success)
+        ];;
+getMaxInv p;;
 
 (****************************************************************************************************)
 (*                                                                                                  *)
@@ -287,8 +352,11 @@ let getMaxBound b1 b2 = match (b1,b2) with
     (MinBound, _) -> b2
 | ( _, MinBound) -> b1
 | (Bound (clock1, r1, d1), Bound(clock2,r2,d2))->     
-                   if r1<>r2 then failwith "getMaxBound: not the same relation"
-                   else if d1 < d2 then b2 else b1
+                   if r1 = Great && r2 = Great then       (if d1 < d2 then b2 else b1)
+                   else if r1 = Great && r2 = GreatEq then  (if d1 < d2 then b2 else ( if d1 = d2 then b1 else b1))
+                   else if r1 = GreatEq && r2 = Great then  (if d1 < d2 then b2 else ( if d1 = d2 then b2 else b1))
+                   else if r1 = GreatEq && r2 = GreatEq then  (if d1 < d2 then b2 else b1)
+                   else  failwith "getMaxBound:  relation not managed"
 |  _ ->  failwith "Something went wrong with getMaxBound"
 ;;
 
@@ -296,18 +364,27 @@ let getMinBound b1 b2 = match (b1,b2) with
     (MaxBound, _) -> b2
 | ( _, MaxBound) -> b1
 | (Bound (clock1, r1, d1), Bound(clock2,r2,d2))->     
-                   if r1<>r2 then failwith "getMinBound: not the same relation"
-                   else if d1 < d2 then b1 else b2
+                   if r1 = Less && r2 = Less then  (if d1 < d2 then b1 else b2)
+                   else if r1 = Less && r2 = LessEq then  (if d1 < d2 then b1 else  ( if d1 = d2 then b2 else b2))
+                   else if r1 = LessEq && r2 = Less then  (if d1 < d2 then b1 else  ( if d1 = d2 then b1 else b2))
+                   else if r1 = LessEq && r2 = LessEq then  (if d1 < d2 then b1 else b2)
+                   else  failwith "getMinBound:  relation not managed"
 |  _ ->  failwith "Something went wrong with getMinBound"
 ;;
 
 (*Converting the partitionned list into a list of intervals: takes the list of constraint for each clock*)
-(*minB is 2<t and maxB is t<10*)
+(*minB is the minimum constraint es: t>2 and maxB is the maximum constraint es: t<10*)
 let rec  makeInterval part minB maxB = match part with 
   []-> (minB, maxB)
-| (c, r, d)::tl-> makeInterval tl (if r = Great || r = GreatEq then getMaxBound (Bound(c,r,d)) minB else minB)
-                                  (if r = Less || r = LessEq then getMinBound (Bound(c,r,d)) maxB else maxB)
+| (c, r, d)::tl-> makeInterval tl (if r = Great || r = GreatEq  then getMaxBound (Bound(c,r,d)) minB 
+                                     else (if r = Eq then getMaxBound (Bound(c,GreatEq,d)) minB  else minB))
+                                  (if r = Less || r = LessEq    then getMinBound (Bound(c,r,d)) maxB 
+                                      else (if r = Eq then getMinBound (Bound(c,LessEq,d)) maxB  else maxB))
 ;;  
+ 
+
+makeInterval [(TSBClock "x", Eq, 5)] MinBound MaxBound;;
+
 
 (*Re-converting a bound list to a guardlist*)
 let rec constraint_of_bound bl = match bl with
@@ -318,7 +395,7 @@ let rec constraint_of_bound bl = match bl with
 
 (*Checking if the interval is empty*)
 let isEmptyInterval (minB, maxB) = match   (minB, maxB) with 
-   (Bound (clock1, r1, d1), Bound(clock2,r2,d2)) -> if d1 < d2 then false else true  
+   (Bound (clock1, r1, d1), Bound(clock2,r2,d2)) -> if d1 <= d2 then false else true  
 |  _ -> false;;
  
 (*knowing the clock name is enought*)
@@ -347,6 +424,12 @@ let normalize_guard l = let cl = getClockList l [] in
 let rec normalize l = match l with
    [] -> [] 
 |    (a,TSBGuard g,r,o)::tl -> (a,TSBGuard(normalize_guard g), r, o)::(normalize tl);;
+
+(*PROVE DEBUG*)
+let g1 = TSBGuard [(TSBClock "x",LessEq,15);(TSBClock "x",LessEq,17);(TSBClock "x",Great,5);(TSBClock "x",GreatEq,7)];;
+normalize  [(1,g1,1,1)] ;;
+let g2 = TSBGuard [(TSBClock "x",Eq, 5);(TSBClock "x",LessEq,17) ];;
+normalize  [(1,g2,1,1)] ;;
 
 
 (****************************************************************************************************)
@@ -433,3 +516,4 @@ let buildAutomaMain p name= let (tap, idxp, recList)  = buildAutoma p 0 in
 (*tsb_mapping performs the conversion of two TSBprocesses p and q into two Uppaal automata*)
 (*"p" and "q" are two simple names given: it is useful only in UPPAAL*) 
 let tsb_mapping p q  =  [ buildAutomaMain p "p" ; buildAutomaMain q "q"] ;;
+

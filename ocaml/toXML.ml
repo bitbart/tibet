@@ -19,10 +19,12 @@
 *)
 
 (* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
-(*open Printf;;
+open Printf;;
 open Tipi;;
 open Mapping;;
-open Printf;; *)
+open Printf;; 
+
+
 
 let escape g =
 	let ampregex = Str.regexp "&" in 

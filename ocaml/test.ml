@@ -11,10 +11,11 @@ writeToFile lta "ex_prova";;
 
 (*example*) (* !a{x > 2,x<1} # !b{x < 2,x > 1} *) (*?b*)
 let p = IntChoice [(TSBAction "a", TSBGuard [(TSBClock "r", LessEq, 4)], TSBReset[TSBClock "y"] , Success);
-                    ( TSBAction "a", TSBGuard [(TSBClock "t", GreatEq, 4)], TSBReset[TSBClock "y"] , Success)
+                    ( TSBAction "b", TSBGuard [(TSBClock "r", Eq, 6)], TSBReset[TSBClock "y"] , Success)
                   ];;
-
-let q = Nil;;
+let q = ExtChoice [(TSBAction "a", TSBGuard [(TSBClock "r", LessEq, 4)], TSBReset[TSBClock "y"] , Success);
+                    ( TSBAction "b", TSBGuard [(TSBClock "r", Eq, 6)], TSBReset[TSBClock "y"] , Success)
+                  ];;
 let lta = tsb_mapping   p q;;
 getInvariants (List.nth lta 0);;
 writeToFile lta "ex_111";;

@@ -30,7 +30,7 @@ let addSetSet s1 s2 = eliminateDuplicates (s1@s2);;
 (*************************************)
 type tsb_action = TSBAction of string;;
 type tsb_clock = TSBClock of string;;
-type tsb_relation = Less | Great | LessEq | GreatEq ;;
+type tsb_relation = Less | Great | LessEq | GreatEq | Eq ;;
 type tsb_guard = TSBGuard of (tsb_clock * tsb_relation * int) list;;
 type tsb_reset = TSBReset of tsb_clock list;;
 
