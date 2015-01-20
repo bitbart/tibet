@@ -77,6 +77,25 @@ let rec compress clocksList =
 	| a :: (b :: _ as t) -> if a = b then compress t else a :: compress t
   | smaller -> smaller;;
 
+(**)
+let substitute_minus_char char =
+	match char with
+	| '-' -> '@'
+	| _ -> char;;
+
+let rec python_remove_spaces s = 
+    if String.compare s "" == 0 then "" else
+    let c = String.get s 0 in
+    let s' = String.sub s 1 ((String.length s)-1) in
+    match c with
+    | ' ' -> "" ^ python_remove_spaces s'
+    | '\012' -> "" ^ python_remove_spaces s'
+    | '\n' -> "" ^ python_remove_spaces s'
+    | '\r' -> "" ^ python_remove_spaces s' 
+    | '\t' -> "" ^ python_remove_spaces s'
+  | _ -> (String.make 1 c) ^ python_remove_spaces s' 
+;;
+
 
 
 
@@ -162,9 +181,39 @@ let rec remove_context stringInput =
 		remove_context stringUpdated;;
 
 
-(** #3.2 INFIX TO PREFIX. **)
+(** #3.2 REPLACE UNCOMFORTABLE SYMBOLS **)
+let replacing_equal stringGuard = 
+	let stringUpdated = Str.global_replace (Str.regexp "<=") "$" stringGuard in
+	let stringUpdated = Str.global_replace (Str.regexp ">=") "%" stringUpdated in
+	Str.global_replace (Str.regexp "==") "=" stringUpdated;;
+
+let rec replacing_minus stringGuard =
+	let regExp = (Str.regexp "[a-z]+-[a-z]+") in
+	if ((testSearching stringGuard regExp) == -1) then stringGuard else
+		let stringMatched = Str.matched_string stringGuard in
+		let stringSubstituted = String.map substitute_minus_char stringMatched in
+		let stringUpdated = Str.replace_first regExp stringSubstituted stringGuard in
+		replacing_minus stringUpdated;;
+
+let replacing_uncomfortable stringGuard =
+	replacing_minus (replacing_equal stringGuard);;
+
+
+(** #3.3 INFIX TO PREFIX. **)
+
+(**)
+let rec python_reverse s =
+	match s with
+	| "" -> ""
+	| _ ->
+		let new_len =  (String.length s) - 1 in
+		(String.make 1 (String.get s new_len)) ^ (python_reverse (String.sub s 0 new_len))
+;;
+
+(**) 
 let python_getOp_prio op =
 	match op with
+	| '@' -> 6
 	| '|' -> 5
 	| '&' -> 5
 	| ')' -> 2
@@ -172,30 +221,47 @@ let python_getOp_prio op =
 	| _ -> 0
 ;;
 
+(* Algorithm for conversion from infix to prefix notation *)
+let rec python_update_stack res pr =
+	let (s, l) = res in
+		match l with
+		| c::l' ->
+			if (python_getOp_prio c >= pr) then 
+				(if (pr==2 && (python_getOp_prio c) == 2) then (s, l') else python_update_stack (s^(String.make 1 c), l') pr)
+			else res
+		| [] -> res
+;;
+
+(**)
 let rec python_infix_to_prefix' s stack =
 	match s with
 	| "" -> 
-		let (output, l) = update_stack ("", stack) 0 in output
+		let (output, l) = python_update_stack ("", stack) 0 in output
 	| _ ->
 		let c = String.get s 0 in
 		let s' = String.sub s 1 ((String.length s) - 1) in
 		match c with
 		| ')' -> python_infix_to_prefix' s' (')'::stack)
 		| '|' ->
-			let (output, new_stack) = update_stack ("", stack) (python_getOp_prio '|') in
+			let (output, new_stack) = python_update_stack ("", stack) (python_getOp_prio '|') in
 			output ^ python_infix_to_prefix' s' ('|'::new_stack)
 		| '&' ->
-			let (output, new_stack) = update_stack ("", stack) (python_getOp_prio '&') in
+			let (output, new_stack) = python_update_stack ("", stack) (python_getOp_prio '&') in
 			output ^ python_infix_to_prefix' s' ('&'::new_stack)
-		| '(' -> let (output, new_stack) = update_stack ("", stack) (python_getOp_prio '(') in
+		| '(' -> 
+			let (output, new_stack) = python_update_stack ("", stack) (python_getOp_prio '(') in
 			output ^ python_infix_to_prefix' s' new_stack
+		| '@' -> 
+			let (output, new_stack) = python_update_stack ("", stack) (python_getOp_prio '@') in
+			output ^ python_infix_to_prefix' s' ('@'::new_stack)
 	  | _ -> (String.make 1 c) ^ python_infix_to_prefix' s' stack
 ;;
 
-let python_infix_to_prefix s = reverse(python_infix_to_prefix' (reverse (remove_spaces (s))) []);;
+(**)
+let python_infix_to_prefix s = python_reverse(python_infix_to_prefix' (python_reverse (python_remove_spaces (s))) []);;
 
 
-(** #3.3 REVERSE GUARD **)
+(** #3.4 REVERSE GUARD **)
 let reverse_guard_type guardType = 
 	match guardType with
 	| "<" -> ">"
@@ -224,18 +290,12 @@ let rec reverse_guard stringGuard =
 					reverse_guard stringUpdated;;
 
 
-(** #3.4 REPLACE UNCOMFORTABLE SYMBOLS **)
-let replacing_uncomfortable stringGuard = 
-	let stringUpdated = Str.global_replace (Str.regexp "<=") "$" stringGuard in
-	let stringUpdated = Str.global_replace (Str.regexp ">=") "%" stringUpdated in
-	Str.global_replace (Str.regexp "==") "=" stringUpdated;;
-
-
 (** #3.5 ADDING GUARD SEPARATOR **)
+(**)
 let rec adding_open_guard_separator stringGuard = 
-	let regExp = (Str.regexp "[^-{]*[a-z]+") in
+	let regExp = (Str.regexp "[^{]*[@]*[a-z]+") in
 	if ((testSearching stringGuard regExp) == -1) then stringGuard else
-		let regExp = (Str.regexp "[a-z]+") in
+		let regExp = (Str.regexp "[@]*[a-z]+") in
 		if ((testSearching stringGuard regExp) == -1) then stringGuard else		
 		let stringMatched = Str.matched_string stringGuard in
 		let stringSubstituted = "{" ^ stringMatched in
@@ -245,6 +305,7 @@ let rec adding_open_guard_separator stringGuard =
 		let nextFragment = String.sub stringUpdated position ((String.length stringUpdated)-position) in
 		thisFragment^(adding_open_guard_separator nextFragment);;
 
+(**)
 let rec adding_close_guard_separator stringGuard =
 	let regExp = (Str.regexp "[0-9]+[^}]*") in
 	if ((testSearching stringGuard regExp) == -1) then stringGuard else
@@ -258,17 +319,19 @@ let rec adding_close_guard_separator stringGuard =
 		let nextFragment = String.sub stringUpdated position ((String.length stringUpdated)-position) in
 		thisFragment^(adding_close_guard_separator nextFragment);;
 
+(**)
 let adding_guard_separator stringGuard =
 	adding_open_guard_separator (adding_close_guard_separator stringGuard);;
 
 
 (** #3.6 PYTHON MAIN PARSER **)
+(**)
 let rec python_parse_guardValue =
 	parser
 (*	  [< '',' ; x = python_parse_guardType ?? "ERROR" >] -> 
 			if ((String.compare "\"" (String.sub x 0 1)) == 0) then raise (Stream.Error "ERROR") 
 			else "\" />\n<guard id=\"" ^ x *)
-  | [< ''}' >] -> "}"
+  | [< ''}' >] -> ""
 	| [< 'x; y = python_parse_guardValue ?? "Error calculating value" >] -> (String.make 1 x ^ y)
 and python_parse_guardType =
 	parser
@@ -278,19 +341,20 @@ and python_parse_guardType =
 	| [< ''<'; x = python_parse_guardValue ?? raise (Stream.Error "Missing value after <")  >] -> "<" ^ x
 	| [< ''>'; x = python_parse_guardValue ?? raise (Stream.Error "Missing value after >") >] -> ">" ^ x
 	| [< 'x; y = python_parse_guardType ?? raise (Stream.Error "The case should not occur1") >] -> String.make 1 x ^ y
+and python_parse_diagonal =
+	parser
+	 | [< 'x >] -> String.make 1 x ^ ""
 and python_parse_guards =
 	parser
-	| [< x = python_parse_guardType >] -> x 
+	| [< ''@'; x = python_parse_diagonal ?? raise (Stream.Error "Missing diagonal first variable"); y = python_parse_diagonal ?? raise (Stream.Error "Missing diagonal second variable"); z = python_parse_guardType ?? raise (Stream.Error "Missing diagonal operator") >] -> "DC{" ^ x ^ y ^ z ^ "}"
+	| [< x = python_parse_guardType >] -> "SC{" ^ x ^ "}"
 and python_parser =
 	parser
-	| [< ''{'; x = python_parse_guards ?? raise (Stream.Error "Missing guard"); >] -> "G{" ^ x
+	| [< ''{'; x = python_parse_guards ?? raise (Stream.Error "Missing guard"); >] -> x
 	| [< ''|'; x = python_parser ?? raise (Stream.Error "Missing first OR branch"); y = python_parser ?? raise (Stream.Error "Missing second OR branch") >] -> "<int>" ^ x ^ y ^ "</int>"
 	| [< ''&'; x = python_parser ?? raise (Stream.Error "Missing first AND branch"); y = python_parser ?? raise (Stream.Error "Missing second AND branch") >] -> "<ext>" ^ x ^ y ^ "</ext>"
 	| [< 'x; y = python_parser ?? raise (Stream.Error "The case should not occur2") >] -> String.make 1 x ^ y	(* The case should not occur *)
 ;;
-
-python_parser (Stream.of_string ("|&{t-s<-2}{x<4}&"));;
-python_parser (Stream.of_string ("||&{t-s<-2}{x<4}&{t>4}&{s-t$2}{x<4}&{s<6}&{s-t$2}&{t$4}{x<4}"));;
 
 
 (* 0) Take Python output. *)
@@ -307,27 +371,30 @@ let c = remove_context b;;
 "(t-s<-2 & x<4) | (4<t & s-t<=2 & x<4) | (s<6 & s-t<=2 & t<=4 & x<4)";;
 
 
-(* 2) Infix to Prefix. *)
-let d = python_infix_to_prefix c;;
-"||&t-s<-2x<4&4<t&s-t<=2x<4&s<6&s-t<=2&t<=4x<4";;
+(* 2) Replacing symbols uncomfortable: '<=' became '$', '>=' became '%' and '==' became '='. *)
+let d = replacing_uncomfortable c;;
+"(t@s<-2 & x<4) | (4<t & s@t$2 & x<4) | (s<6 & s@t$2 & t$4 & x<4)";;
 
 
-(* 3) Reverse guards. *)
-let e = reverse_guard d;;
-"||&t-s<-2x<4&t>4&s-t<=2x<4&s<6&s-t<=2&t<=4x<4";;
+(* 3) Infix to Prefix. *)
+let e = python_infix_to_prefix d;;
+"||&t@s<-2x<4&4<t&s@t$2x<4&s<6&s@t$2&t$4x<4";;			(* Original *)
+"|&@ts<-2x<4|&4<t&@st$2x<4&s<6&@st$2&t$4x<4";;			(* Now *)
 
 
-(* 4) Replacing symbols uncomfortable: '<=' became '$', '>=' became '%' and '==' became '='. *)
-let f = replacing_uncomfortable e;;
-"||&t-s<-2x<4&t>4&s-t$2x<4&s<6&s-t$2&t$4x<4";;
+(* 4) Reverse guards. *)
+let f = reverse_guard e;;
+"|&@ts<-2x<4|&t>4&@st$2x<4&s<6&@st$2&t$4x<4";;
 
 
 (* 5) Adding guard separator. *)
 let g = adding_guard_separator f;;
-"||&{t-s<-2}{x<4}&{t>4}&{s-t$2}{x<4}&{s<6}&{s-t$2}&{t$4}{x<4}";;
+"|&{@ts<-2}{x<4}|&{t>4}&{@st$2}{x<4}&{s<6}&{@st$2}&{t$4}{x<4}";;
 
 
 (* 6) Parsing result. *)
+let h = python_parser (Stream.of_string g);;
+"<int><ext>DC{ts<-2}SC{x<4}</ext><int><ext>SC{t>4}<ext>DC{st<=2}SC{x<4}</ext></ext><ext>SC{s<6}<ext>DC{st<=2}<ext>SC{t<=4}SC{x<4}</ext></ext></ext></int></int>";;
 
 
 
