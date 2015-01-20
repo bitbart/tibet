@@ -1,6 +1,6 @@
 (** ************************************************************************** **)
 (**                                                                            **)
-(**  	TOXML (4): Offers functions which generate xml uppaal templates          **)
+(**  	TOXML (5): Offers functions which generate xml uppaal templates          **)
 (**									     																										   **)
 (** ************************************************************************** **)
 
@@ -13,7 +13,7 @@
   ----------------------------------------------------
    OCAML TOPLEVEL IMPORTS (for Emacs only)
 
-		#use "mapping.ml";; 
+    #use "mapping.ml";; 
     open Printf;;
   ----------------------------------------------------
 *)
@@ -22,7 +22,8 @@
 open Printf;;
 open Tipi;;
 open Mapping;;
-open Printf;;
+open Printf;; 
+
 
 
 let escape g =

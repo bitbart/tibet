@@ -3,17 +3,19 @@
 #use "cparser.ml";;
 
 (*example*)
-let p = ExtChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Success)];;
-let lta = tsb_mapping   p p;;
+let p = IntChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Success); (TSBAction "b", TSBGuard[], TSBReset[] , Success)];;
+let q = ExtChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Success); (TSBAction "c", TSBGuard[], TSBReset[] , Success)];;
+let lta = tsb_mapping   p q;;
 writeToFile lta "ex_prova";;
 
 
 (*example*) (* !a{x > 2,x<1} # !b{x < 2,x > 1} *) (*?b*)
 let p = IntChoice [(TSBAction "a", TSBGuard [(TSBClock "r", LessEq, 4)], TSBReset[TSBClock "y"] , Success);
-                    ( TSBAction "a", TSBGuard [(TSBClock "t", GreatEq, 4)], TSBReset[TSBClock "y"] , Success)
+                    ( TSBAction "b", TSBGuard [(TSBClock "r", Eq, 6)], TSBReset[TSBClock "y"] , Success)
                   ];;
-
-let q = Nil;;
+let q = ExtChoice [(TSBAction "a", TSBGuard [(TSBClock "r", LessEq, 4)], TSBReset[TSBClock "y"] , Success);
+                    ( TSBAction "b", TSBGuard [(TSBClock "r", Eq, 6)], TSBReset[TSBClock "y"] , Success)
+                  ];;
 let lta = tsb_mapping   p q;;
 getInvariants (List.nth lta 0);;
 writeToFile lta "ex_111";;
@@ -240,6 +242,68 @@ let q = ExtChoice [(TSBAction "a", TSBGuard[], TSBReset[], Success);
 
 let lta = tsb_mapping  p q;;
 writeToFile lta "ex23";;
+
+
+
+(********************************************************)
+(*                                                      *)
+(*              Handling Python Errors                  *) 
+(*               									                      *)
+(*                                                      *)
+(*                                                      *)
+(********************************************************)
+
+(* Original examples by Tiziana *)
+let g1 = TSBExtGuard(And(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtLessEq, 7)));;
+let g2 = TSBExtGuard(Or(SC(TSBClock "x", ExtEq, 4),DC (TSBClock "x", TSBClock "t", ExtGreatEq, 7)));;
+let g3 = TSBExtGuard(Or(SC(TSBClock "t", ExtEq, 4), Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
+let g4 = TSBExtGuard(Or(Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
+let g5 = TSBExtGuard(And(Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
+let g6 = TSBExtGuard(Or(And(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
+let g7 = TSBExtGuard(Or(SC(TSBClock "t", ExtEq, 4), And(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
+let gA = TSBExtGuard(Or(SC(TSBClock "t", ExtEq , 4), And(SC(TSBClock "x", ExtEq, 5), SC (TSBClock "s", ExtEq, 6))));;
+let gB = TSBExtGuard(And(Or(SC(TSBClock "t", ExtEq , 4),SC(TSBClock "x", ExtEq, 5)),  SC (TSBClock "s", ExtEq, 6)));;
+
+past g1;;
+past g2;;
+past g3;;
+past g4;;
+past g5;;
+past g6;;
+past g7;;
+past gA;;
+past gB;;
+
+let clockX = TSBClock "x";;
+
+invReset g1 clockX;;
+invReset g2 clockX;;
+invReset g3 clockX;;
+invReset g4 clockX;;
+invReset g5 clockX;;
+invReset g6 clockX;;
+invReset g7 clockX;;
+invReset gA clockX;;
+invReset gB clockX;;
+
+subtract g1 g2;;
+subtract g1 g3;;
+subtract g1 g4;;
+subtract g1 g5;;
+subtract g1 g6;;
+subtract g1 g7;;
+subtract g1 gA;;
+subtract g1 gB;;
+
+equivalence g1 g1;;
+equivalence g1 g2;;
+equivalence g1 g3;;
+equivalence g1 g4;;
+equivalence g1 g5;;
+equivalence g1 g6;;
+equivalence g1 g7;;
+equivalence g1 gA;;
+equivalence g1 gB;;
 
 
 

@@ -1,14 +1,24 @@
 (** 
  ********************************************************************************
  **																																						 **
- **				CPARSER (6): Contains a converter from string contracts to XML ones  **
+ **				CPARSER (7): Contains a converter from string contracts to XML ones  **
  **																																						 **
  ********************************************************************************
  **)
 
+(* ----------------------------------------------------
+	 OCAML TOPLEVEL IMPORTS (for Emacs)
+
+ #load errors.ml
+ #load fromXML.ml
+
+---------------------------------------------------- *) 
+
 (* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
 open Errors;;
 open FromXML;;
+
+
 
 
 (** PRINTC **)

@@ -65,6 +65,11 @@ let _ERR_999 = "ERR_999: The contract contains an unhandled syntax error. Check 
 
 
 (* LIST OF MONITOR ERRORS *)
-let _ERR_100 = "ERR_100: Action not found";;
-let _ERR_101 = "ERR_101: Wrong pid";;
-let _ERR_102 = "ERR_102: Unbound id: Call";;
+let _ERR_100 = "ERR_100: Action not found.";;
+let _ERR_101 = "ERR_101: Wrong pid.";;
+let _ERR_102 = "ERR_102: Unbound id: Call.";;
+
+
+(* LIST OF PYTHON ERRORS *)
+let _ERR_200 = "ERR_200: Clock not declared in this context.";;
+let _ERR_201 = "ERR_201: Error during equivalence operation.";;
