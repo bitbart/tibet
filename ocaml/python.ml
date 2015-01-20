@@ -200,18 +200,16 @@ let reverse_guard_type guardType =
 	match guardType with
 	| "<" -> ">"
 	| "<=" -> ">="
-	| "=" -> "="
 	| "==" -> "=="
 	| ">" -> "<"
 	| ">=" -> "<="
 	| _ -> "ERROR";; (* The case should not occur. *)
 
-
 let rec reverse_guard stringGuard = 
-	let regExp = (Str.regexp "[0-9]+[<>=][=]*[a-z]+") in
+	let regExp = (Str.regexp "[-]*[0-9]+[<>=][=]*[a-z]+") in								(* To fix: only '=' is never returned by python libraries, equals is represented with '=='. *)
 	if ((testSearching stringGuard regExp) == -1) then stringGuard else
 		let stringTest = Str.matched_string stringGuard in
-		let regExp = (Str.regexp "[0-9]+") in
+		let regExp = (Str.regexp "[-]*[0-9]+") in
 		if ((testSearching stringTest regExp) == -1) then "ERROR" else
 			let guardValue = Str.matched_string stringTest in
 			let regExp = (Str.regexp "[<>=][=]*") in
@@ -220,40 +218,79 @@ let rec reverse_guard stringGuard =
 				let regExp = (Str.regexp "[a-z]+") in
 				if ((testSearching stringTest regExp) == -1) then "ERROR" else
 					let guardName = Str.matched_string stringTest in
-					let regExp = (Str.regexp "[0-9]+[<>=][=]*[a-z]+") in
+					let regExp = (Str.regexp "[-]*[0-9]+[<>=][=]*[a-z]+") in
 					let newGuard = (guardName ^ (reverse_guard_type guardType) ^ guardValue) in
 					let stringUpdated = Str.replace_first regExp newGuard stringGuard in
 					reverse_guard stringUpdated;;
 
 
-(** #3.4 PYTHON MAIN PARSER **)
+(** #3.4 REPLACE UNCOMFORTABLE SYMBOLS **)
+let replacing_uncomfortable stringGuard = 
+	let stringUpdated = Str.global_replace (Str.regexp "<=") "$" stringGuard in
+	let stringUpdated = Str.global_replace (Str.regexp ">=") "%" stringUpdated in
+	Str.global_replace (Str.regexp "==") "=" stringUpdated;;
+
+
+(** #3.5 ADDING GUARD SEPARATOR **)
+let rec adding_open_guard_separator stringGuard = 
+	let regExp = (Str.regexp "[^-{]*[a-z]+") in
+	if ((testSearching stringGuard regExp) == -1) then stringGuard else
+		let regExp = (Str.regexp "[a-z]+") in
+		if ((testSearching stringGuard regExp) == -1) then stringGuard else		
+		let stringMatched = Str.matched_string stringGuard in
+		let stringSubstituted = "{" ^ stringMatched in
+		let stringUpdated = Str.replace_first regExp stringSubstituted stringGuard in
+		let position = ((String.index stringUpdated '}') + 1) in
+		let thisFragment = String.sub stringUpdated 0 position in
+		let nextFragment = String.sub stringUpdated position ((String.length stringUpdated)-position) in
+		thisFragment^(adding_open_guard_separator nextFragment);;
+
+let rec adding_close_guard_separator stringGuard =
+	let regExp = (Str.regexp "[0-9]+[^}]*") in
+	if ((testSearching stringGuard regExp) == -1) then stringGuard else
+		let regExp = (Str.regexp "[0-9]+") in
+		if ((testSearching stringGuard regExp) == -1) then stringGuard else		
+		let stringMatched = Str.matched_string stringGuard in
+		let stringSubstituted = stringMatched ^ "}" in
+		let stringUpdated = Str.replace_first regExp stringSubstituted stringGuard in
+		let position = ((String.index stringUpdated '}') + 1) in
+		let thisFragment = String.sub stringUpdated 0 position in
+		let nextFragment = String.sub stringUpdated position ((String.length stringUpdated)-position) in
+		thisFragment^(adding_close_guard_separator nextFragment);;
+
+let adding_guard_separator stringGuard =
+	adding_open_guard_separator (adding_close_guard_separator stringGuard);;
+
+
+(** #3.6 PYTHON MAIN PARSER **)
 let rec python_parse_guardValue =
 	parser
-	  [< '',' ; x = python_parse_guardType ?? "ERROR" >] -> 
+(*	  [< '',' ; x = python_parse_guardType ?? "ERROR" >] -> 
 			if ((String.compare "\"" (String.sub x 0 1)) == 0) then raise (Stream.Error "ERROR") 
-			else "\" />\n<guard id=\"" ^ x
-	| [< ''}' >] -> "\" />\n</guards>"	
-	| [< 'x; y = python_parse_guardValue ?? "ERROR" >] -> (String.make 1 x ^ y)
+			else "\" />\n<guard id=\"" ^ x *)
+  | [< ''}' >] -> "}"
+	| [< 'x; y = python_parse_guardValue ?? "Error calculating value" >] -> (String.make 1 x ^ y)
 and python_parse_guardType =
 	parser
-	  [< ''<' ; x = python_parse_guardValue ?? "ERROR"  >] -> 
-			if ((String.compare "\"" (String.sub x 0 1)) == 0) then raise (Stream.Error "ERROR") 
-			else "\" op=\"less\" value=\"" ^ x
-	| [< ''>' ; x = python_parse_guardValue ?? "ERROR" >] -> 
-			if ((String.compare "\"" (String.sub x 0 1)) == 0) then raise (Stream.Error "ERROR") 
-			else "\" op=\"great\" value=\"" ^ x
-	| [< 'x; y = python_parse_guardType ?? "ERROR" >] -> (String.make 1 x ^ y)
+	| [< ''$'; x = python_parse_guardValue ?? raise (Stream.Error "Missing value after <=") >] -> "<=" ^ x
+	| [< ''%'; x = python_parse_guardValue ?? raise (Stream.Error "Missing value after >=") >] -> ">=" ^ x
+	| [< ''='; x = python_parse_guardValue ?? raise (Stream.Error "Missing value after ==") >] -> "=" ^ x
+	| [< ''<'; x = python_parse_guardValue ?? raise (Stream.Error "Missing value after <")  >] -> "<" ^ x
+	| [< ''>'; x = python_parse_guardValue ?? raise (Stream.Error "Missing value after >") >] -> ">" ^ x
+	| [< 'x; y = python_parse_guardType ?? raise (Stream.Error "The case should not occur1") >] -> String.make 1 x ^ y
 and python_parse_guards =
 	parser
-	  [< ''}' >] -> "\n</guards>\n<resets />"
-	| [< '';' ; x = python_parse_guards ?? "ERROR" >] -> x
-	| [< x = python_parse_guardType >] -> "\n<guard id=\"" ^ x 
+	| [< x = python_parse_guardType >] -> x 
 and python_parser =
 	parser
-	| [< ''|'; x = python_parse_guards ?? "ERROR"; y = python_parse_guards ?? "ERROR" >] -> "\n<intchoice>" ^ x ^ y ^ "\n</intchoice>"
-	| [< ''&'; x = python_parse_guards ?? "ERROR"; y = python_parse_guards ?? "ERROR" >] -> "\n<extchoice>" ^ x ^ y ^ "\n</extchoice>"
-	| [< 'x; y = python_parser ?? "ERROR" >] -> (String.make 1 x ^ y) 	(* The case should not occur *)
+	| [< ''{'; x = python_parse_guards ?? raise (Stream.Error "Missing guard"); >] -> "G{" ^ x
+	| [< ''|'; x = python_parser ?? raise (Stream.Error "Missing first OR branch"); y = python_parser ?? raise (Stream.Error "Missing second OR branch") >] -> "<int>" ^ x ^ y ^ "</int>"
+	| [< ''&'; x = python_parser ?? raise (Stream.Error "Missing first AND branch"); y = python_parser ?? raise (Stream.Error "Missing second AND branch") >] -> "<ext>" ^ x ^ y ^ "</ext>"
+	| [< 'x; y = python_parser ?? raise (Stream.Error "The case should not occur2") >] -> String.make 1 x ^ y	(* The case should not occur *)
 ;;
+
+python_parser (Stream.of_string ("|&{t-s<-2}{x<4}&"));;
+python_parser (Stream.of_string ("||&{t-s<-2}{x<4}&{t>4}&{s-t$2}{x<4}&{s<6}&{s-t$2}&{t$4}{x<4}"));;
 
 
 (* 0) Take Python output. *)
@@ -262,7 +299,7 @@ let a = "(c.t-c.s<-2 & c.x<4) | (4<c.t & c.s-c.t<=2 & c.x<4) | (c.s<6 & c.s-c.t<
 
 (* 1) Remove the final '\n' *)
 let b = String.sub a 0 ((String.length a)-1);;
-"(c.t-c.s<-2 & c.x<4) | (4<c.t & c.s-c.t<=2 & c.x<4) | (c.s<6 & c.s-c.t<=2 & c.t<=4 & c.x<4)"
+"(c.t-c.s<-2 & c.x<4) | (4<c.t & c.s-c.t<=2 & c.x<4) | (c.s<6 & c.s-c.t<=2 & c.t<=4 & c.x<4)";;
 
 
 (* 1) Remove context name. *)
@@ -273,15 +310,24 @@ let c = remove_context b;;
 (* 2) Infix to Prefix. *)
 let d = python_infix_to_prefix c;;
 "||&t-s<-2x<4&4<t&s-t<=2x<4&s<6&s-t<=2&t<=4x<4";;
-"(((t-s<-2) & (x<4)) | ((4<t) & ((s-t<=2) & (x<4)))) | ((s<6) & ((s-t<=2) & ((t<=4) & (x<4))))";;
-" ((t-s<-2 & x<4) | (4<t & s-t<=2 & x<4)) | (s<6 & (s-t<=2 & (t<=4 & x<4))) ";;
 
 
 (* 3) Reverse guards. *)
 let e = reverse_guard d;;
+"||&t-s<-2x<4&t>4&s-t<=2x<4&s<6&s-t<=2&t<=4x<4";;
 
 
-(* 4) Parsing result. *)
+(* 4) Replacing symbols uncomfortable: '<=' became '$', '>=' became '%' and '==' became '='. *)
+let f = replacing_uncomfortable e;;
+"||&t-s<-2x<4&t>4&s-t$2x<4&s<6&s-t$2&t$4x<4";;
+
+
+(* 5) Adding guard separator. *)
+let g = adding_guard_separator f;;
+"||&{t-s<-2}{x<4}&{t>4}&{s-t$2}{x<4}&{s<6}&{s-t$2}&{t$4}{x<4}";;
+
+
+(* 6) Parsing result. *)
 
 
 
