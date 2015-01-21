@@ -175,6 +175,11 @@ let rec remove_context stringInput =
 
 (** #3.2 REPLACE UNCOMFORTABLE SYMBOLS **)
 (**)
+let replacing_bool stringGuard = 
+	let stringUpdated = Str.global_replace (Str.regexp "true") "?" stringGuard in
+	Str.global_replace (Str.regexp "false") "!" stringUpdated;;
+
+(**)
 let replacing_equal stringGuard = 
 	let stringUpdated = Str.global_replace (Str.regexp "<=") "$" stringGuard in
 	let stringUpdated = Str.global_replace (Str.regexp ">=") "%" stringUpdated in
@@ -191,7 +196,7 @@ let rec replacing_minus stringGuard =
 
 (**)
 let replacing_uncomfortable stringGuard =
-	replacing_minus (replacing_equal stringGuard);;
+	replacing_minus (replacing_equal (replacing_bool stringGuard));;
 
 
 (** #3.3 INFIX TO PREFIX. **)
@@ -357,13 +362,14 @@ let rec python_parser =
 	parser
 	[< ''{'; 
 			x = python_parse_guards ?? raise (Stream.Error "Missing guard"); >] -> x
+	| [< ''?' >] -> True
+	| [< ''!' >] -> False
 	| [< ''|'; 
 			x = python_parser ?? raise (Stream.Error "Missing first OR branch");
 			y = python_parser ?? raise (Stream.Error "Missing second OR branch") >] -> Or (x, y)
 	| [< ''&'; 
 			x = python_parser ?? raise (Stream.Error "Missing first AND branch");
 			y = python_parser ?? raise (Stream.Error "Missing second AND branch") >] -> And (x, y);;
-
 
 
 (* It takes the output received by python libraries and converts it in a guard. *)
@@ -380,7 +386,7 @@ let toGuard pythonOutput =
 	let guard = remove_context guard in
 	let guard = replacing_uncomfortable guard in
 	let guard = python_infix_to_prefix guard in
-	let guard = reverse_guard guard in 
+	let guard = reverse_guard guard in
 	let guard = adding_guard_separator guard in
 	python_parser (Stream.of_string guard);;
 
@@ -446,3 +452,58 @@ let equivalence guard' guard'' =
 	if ((String.compare result "True\n") == 0) then true
 	else if ((String.compare result "False\n") == 0) then false
 	else failwith _ERR_201;;
+
+
+
+(*
+let g1 = (And(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtLessEq, 7)));;
+let g2 = (Or(SC(TSBClock "x", ExtEq, 4),DC (TSBClock "x", TSBClock "t", ExtGreatEq, 7)));;
+let g3 = (Or(SC(TSBClock "t", ExtEq, 4), Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
+let g4 = (Or(Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
+let g5 = (And(Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
+let g6 = (Or(And(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
+let g7 = (Or(SC(TSBClock "t", ExtEq, 4), And(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
+let gA = (Or(SC(TSBClock "t", ExtEq , 4), And(SC(TSBClock "x", ExtEq, 5), SC (TSBClock "s", ExtEq, 6))));;
+let gB = (And(Or(SC(TSBClock "t", ExtEq , 4),SC(TSBClock "x", ExtEq, 5)),  SC (TSBClock "s", ExtEq, 6)));;
+
+past g1;;
+past g2;;
+past g3;;
+past g4;;
+past g5;;
+past g6;;
+past g7;;
+past gA;;
+past gB;;
+
+let clockX = TSBClock "x";;
+
+invReset g1 clockX;;
+invReset g2 clockX;;
+invReset g3 clockX;;
+invReset g4 clockX;;
+invReset g5 clockX;;
+invReset g6 clockX;;
+invReset g7 clockX;;
+invReset gA clockX;;
+invReset gB clockX;;
+
+subtract g1 g2;;
+subtract g1 g3;;
+subtract g1 g4;;
+subtract g1 g5;;
+subtract g1 g6;;
+subtract g1 g7;;
+subtract g1 gA;;
+subtract g1 gB;;
+
+equivalence g1 g1;;
+equivalence g1 g2;;
+equivalence g1 g3;;
+equivalence g1 g4;;
+equivalence g1 g5;;
+equivalence g1 g6;;
+equivalence g1 g7;;
+equivalence g1 gA;;
+equivalence g1 gB;;
+*)
