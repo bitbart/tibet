@@ -17,8 +17,14 @@ open Errors;;
 open Tipi;;
 open ExtTipi;;
 
+
+
+
+
+
 (** 									SECTION #1								**)
 (** GENERAL TOOLS USED BY DIFFERENT FUNCTIONS. 	**)
+
 
 (** #1.1 PYTHON SOURCE STRINGS **)
 (* Command. *)
@@ -52,17 +58,11 @@ let syscall cmd =
 	 let _ = Unix.close_process (ic, oc) in (Buffer.contents buf);;
 
 
-(** #1.3 STRING TOOLS **)
+(** #1.3 TOOLS **)
 (* It returns the name of a clock. *)
 let pythonStringOfClock clock = 
 	match clock with
 	| TSBClock c -> c;;
-
-(* If 'list' contains 'element' then returns true else false. This is used to verify when the argument of invReset is a declared clock. *)
-let rec exists element list = match list with
-  | [] -> false
-  | h::t -> if ((String.compare element  h) == 0) then true 
-    else exists element t;;
 
 (* It compares two strings. This is used to eliminate duplicates from the list of declared clocks. *)
 let comparatorStrings s1 s2 =
@@ -76,12 +76,14 @@ let rec compress clocksList =
 	| a :: (b :: _ as t) -> if a = b then compress t else a :: compress t
   | smaller -> smaller;;
 
-(**)
+(* It is used to substitute the '-' used to indicate a Diagonal Constraint: (eg. x-y<10). *)
+(* In this way '-' it is not confused with '-' used for negative numbers. *)
 let substitute_minus_char char =
 	match char with
 	| '-' -> '@'
 	| _ -> char;;
 
+(* It is the same of cparser, it is used for remove spaces, in order to simplify parsing operations. *)
 let rec python_remove_spaces s = 
     if String.compare s "" == 0 then "" else
     let c = String.get s 0 in
@@ -92,8 +94,11 @@ let rec python_remove_spaces s =
     | '\n' -> "" ^ python_remove_spaces s'
     | '\r' -> "" ^ python_remove_spaces s' 
     | '\t' -> "" ^ python_remove_spaces s'
-  | _ -> (String.make 1 c) ^ python_remove_spaces s' 
-;;
+  | _ -> (String.make 1 c) ^ python_remove_spaces s';;
+
+(* It looks for a regular expression in a string: if there is no match, function returns -1, else it returns the position of the first result in the string. *)
+let testSearching stringInput regExp =
+  try Str.search_forward regExp stringInput 0 with Not_found -> -1;;
 
 
 
@@ -101,6 +106,9 @@ let rec python_remove_spaces s =
 
 (** 										SECTION #2											**)
 (** COPARSER FROM EXTENDED GUARD TO PYTHON DELCARATION. **)
+(* It doesn't exists a 'main function' that merges all the results about next functions. *)
+(* All OCaml functions that need python libraries, call some of this function and some *)
+(* of python strings (expressed in SECTION #1): this calls depend on the python library desidered. *)
 
 (* It takes a guard, then returns a list of its clocks names (without duplicates). *)
 let clocksNamesFromGuard guard = 
@@ -115,7 +123,7 @@ let clocksNamesFromGuard guard =
        | False -> "f"::clocksNames
      ) in compress (List.sort comparatorStrings (clocksNamesFromGuard' guard []));;
 
-(* It takes a list of clocks names and uses it to create the initial python command, that is the istruction: 'c = Context c =([...])' *)
+(* It takes a list of clocks names and uses it to create the initial python command, the istruction: 'c = Context c =([x, ..., z]) ...' *)
 let pythonContextDeclaration clocksNames =
 	let rec pythonContextDeclaration' clocksNames command =
 		(
@@ -135,6 +143,7 @@ let pythonStringOfTsbRelation relation =
 	| ExtEq -> "==";;
 
 (* It takes a guard and returns the string with the python instruction used to declare the guard: 'a = (c.x<10)'. *)
+(* Python doesn't know 'True' and 'False' (probably also 'Not'): these values are represented with expressions always true and always false. *)
 let pythonGuardFromGuard guard =
   let rec pythonGuardFromGuard' inputGuard clocksNames =
     (match inputGuard with
@@ -158,11 +167,8 @@ let pythonGuardDeclaration guardName guard =
 (** 						SECTION #3										**)
 (** PARSER FROM PYTHON DELCARATION TO GUARD. 	**)
 
-(** #3.1 PREPROCESSING: REMOVE CONTEXT NAME FROM PYTHON OUTPUT. **)
-(**)
-let testSearching stringInput regExp =
-  try Str.search_forward regExp stringInput 0 with Not_found -> -1;;
 
+(** #3.1 PREPROCESSING: REMOVE CONTEXT NAME FROM PYTHON OUTPUT AND DIVIDE CLOCK NAMES. **)
 (**)
 let rec remove_context stringInput = 
 	let regExp = (Str.regexp "c.[a-z]+") in
@@ -460,59 +466,3 @@ let equivalence guard' guard'' =
 	if ((String.compare result "True\n") == 0) then true
 	else if ((String.compare result "False\n") == 0) then false
 	else failwith _ERR_201;;
-
-
-
-
-(*
-let g1 = (And(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtLessEq, 7)));;
-let g2 = (Or(SC(TSBClock "x", ExtEq, 4),DC (TSBClock "x", TSBClock "t", ExtGreatEq, 7)));;
-let g3 = (Or(SC(TSBClock "t", ExtEq, 4), Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
-let g4 = (Or(Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
-let g5 = (And(Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
-let g6 = (Or(And(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
-let g7 = (Or(SC(TSBClock "t", ExtEq, 4), And(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
-let gA = (Or(SC(TSBClock "t", ExtEq , 4), And(SC(TSBClock "x", ExtEq, 5), SC (TSBClock "s", ExtEq, 6))));;
-let gB = (And(Or(SC(TSBClock "t", ExtEq , 4),SC(TSBClock "x", ExtEq, 5)),  SC (TSBClock "s", ExtEq, 6)));;
-
-past g1;;
-past g2;;
-past g3;;
-past g4;;
-past g5;;
-past g6;;
-past g7;;
-past gA;;
-past gB;;
-
-let clockX = TSBClock "x";;
-
-invReset g1 clockX;;
-invReset g2 clockX;;
-invReset g3 clockX;;
-invReset g4 clockX;;
-invReset g5 clockX;;
-invReset g6 clockX;;
-invReset g7 clockX;;
-invReset gA clockX;;
-invReset gB clockX;;
-
-subtract g1 g2;;
-subtract g1 g3;;
-subtract g1 g4;;
-subtract g1 g5;;
-subtract g1 g6;;
-subtract g1 g7;;
-subtract g1 gA;;
-subtract g1 gB;;
-
-equivalence g1 g1;;
-equivalence g1 g2;;
-equivalence g1 g3;;
-equivalence g1 g4;;
-equivalence g1 g5;;
-equivalence g1 g6;;
-equivalence g1 g7;;
-equivalence g1 gA;;
-equivalence g1 gB;;
-*)
