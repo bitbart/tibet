@@ -17,9 +17,6 @@ open Errors;;
 open Tipi;;
 open ExtTipi;;
 
-
-
-
 (** 									SECTION #1								**)
 (** GENERAL TOOLS USED BY DIFFERENT FUNCTIONS. 	**)
 
@@ -107,18 +104,16 @@ let rec python_remove_spaces s =
 
 (* It takes a guard, then returns a list of its clocks names (without duplicates). *)
 let clocksNamesFromGuard guard = 
-	match guard with
-		| TSBExtGuard inputGuard ->
-			let rec clocksNamesFromGuard' inputGuard clocksNames =
-			(match inputGuard with
-				| SC (c, r, i) -> (pythonStringOfClock c)::clocksNames
-				| DC (c, c', r, i) -> (pythonStringOfClock c)::((pythonStringOfClock c')::clocksNames)
-				| And (g, g') -> List.append (clocksNamesFromGuard' g clocksNames) (clocksNamesFromGuard' g' clocksNames)
-				| Or (g, g') -> List.append (clocksNamesFromGuard' g clocksNames) (clocksNamesFromGuard' g' clocksNames)
-				| Not g -> []
-				| True -> []
-				| False -> []
-			) in compress (List.sort comparatorStrings (clocksNamesFromGuard' inputGuard []));;
+   let rec clocksNamesFromGuard' inputGuard clocksNames =
+     (match inputGuard with
+       | SC (c, r, i) -> (pythonStringOfClock c)::clocksNames
+       | DC (c, c', r, i) -> (pythonStringOfClock c)::((pythonStringOfClock c')::clocksNames)
+       | And (g, g') -> List.append (clocksNamesFromGuard' g clocksNames) (clocksNamesFromGuard' g' clocksNames)
+       | Or (g, g') -> List.append (clocksNamesFromGuard' g clocksNames) (clocksNamesFromGuard' g' clocksNames)
+       | Not g -> []
+       | True -> []
+       | False -> []
+     ) in compress (List.sort comparatorStrings (clocksNamesFromGuard' guard []));;
 
 (* It takes a list of clocks names and uses it to create the initial python command, that is the istruction: 'c = Context c =([...])' *)
 let pythonContextDeclaration clocksNames =
@@ -141,18 +136,16 @@ let pythonStringOfTsbRelation relation =
 
 (* It takes a guard and returns the string with the python instruction used to declare the guard: 'a = (c.x<10)'. *)
 let pythonGuardFromGuard guard =
-		match guard with
-		| TSBExtGuard inputGuard ->
-			let rec pythonGuardFromGuard' inputGuard clocksNames =
-			(match inputGuard with
-				| SC (c, r, i) -> "(c." ^ (pythonStringOfClock c) ^ (pythonStringOfTsbRelation r) ^ (string_of_int i) ^ ")"
-				| DC (c, c', r, i) -> "(c." ^ (pythonStringOfClock c) ^ " - c." ^ (pythonStringOfClock c') ^ (pythonStringOfTsbRelation r) ^ (string_of_int i) ^ ")"
-				| And (g, g') -> "(" ^ (pythonGuardFromGuard' g clocksNames) ^ " & " ^ (pythonGuardFromGuard' g' clocksNames) ^ ")"
-				| Or (g, g') -> "(" ^ (pythonGuardFromGuard' g clocksNames) ^ " | " ^ (pythonGuardFromGuard' g' clocksNames) ^ ")"
-				| Not g -> ""
-				| True -> ""
-				| False -> ""
-			) in pythonGuardFromGuard' inputGuard [];;
+  let rec pythonGuardFromGuard' inputGuard clocksNames =
+    (match inputGuard with
+      | SC (c, r, i) -> "(c." ^ (pythonStringOfClock c) ^ (pythonStringOfTsbRelation r) ^ (string_of_int i) ^ ")"
+      | DC (c, c', r, i) -> "(c." ^ (pythonStringOfClock c) ^ " - c." ^ (pythonStringOfClock c') ^ (pythonStringOfTsbRelation r) ^ (string_of_int i) ^ ")"
+      | And (g, g') -> "(" ^ (pythonGuardFromGuard' g clocksNames) ^ " & " ^ (pythonGuardFromGuard' g' clocksNames) ^ ")"
+      | Or (g, g') -> "(" ^ (pythonGuardFromGuard' g clocksNames) ^ " | " ^ (pythonGuardFromGuard' g' clocksNames) ^ ")"
+      | Not g -> ""
+      | True -> ""
+      | False -> ""
+     ) in pythonGuardFromGuard' guard [];;
 
 (* It takes a guardName (string) and a guard, then returns the string with the python instruction used to declare the guard: 'a = (c.x<10)'. *)
 let pythonGuardDeclaration guardName guard = 
@@ -403,7 +396,13 @@ let toGuard pythonOutput =
 let past guard = 
 	let clocksNames = clocksNamesFromGuard guard in
 	let guardName = "a" in 
-	let command = python_command_start^(pythonContextDeclaration clocksNames)^(pythonGuardDeclaration guardName guard)^python_print^guardName^python_down^python_command_end in 
+	let command = python_command_start^
+	  (pythonContextDeclaration clocksNames)^
+	  (pythonGuardDeclaration guardName guard)^
+	  python_print^
+	  guardName^
+	  python_down^
+	  python_command_end in 
 	toGuard (syscall command);;
 
 

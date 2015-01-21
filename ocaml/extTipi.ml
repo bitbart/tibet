@@ -6,9 +6,8 @@
 *******************************************************
 **)
 
-(* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
+(* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES*) 
 open Tipi;;
-
 
 type tsb_ext_relation = ExtLess | ExtGreat | ExtLessEq | ExtGreatEq | ExtEq;;
 

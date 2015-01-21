@@ -19,8 +19,6 @@ open Errors;;
 open FromXML;;
 
 
-
-
 (** PRINTC **)
 (* Checks if symbols for action names, clocks etc are in (a-z) range, else raises an exception *)
 let printc c =
