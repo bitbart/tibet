@@ -3,14 +3,17 @@
 all:
 	ocamlopt -c errors.ml
 	ocamlopt -c tipi.ml
+	ocamlopt -c extTipi.ml
 	ocamlopt -c mapping.ml
+	ocamlopt -c -pp camlp4o python.ml
+	ocamlopt -c kindsystem.ml
 	ocamlopt -c toXML.ml
 	ocamlopt -c fromXML.ml
 	ocamlopt -c -pp camlp4o cparser.ml
 	ocamlopt -c monitor.ml
 	ocamlopt -c main.ml
 
-	ocamlopt -o ctu unix.cmxa str.cmxa xml-light.cmxa errors.cmx tipi.cmx mapping.cmx toXML.cmx fromXML.cmx cparser.cmx monitor.cmx main.cmx
+	ocamlopt -o ctu unix.cmxa str.cmxa xml-light.cmxa errors.cmx tipi.cmx extTipi.cmx mapping.cmx python.cmx kindsystem.cmx toXML.cmx fromXML.cmx cparser.cmx monitor.cmx main.cmx
 
 clean:
 	@'rm' *.cmo *.cmi *.cmx *.o ctu 2>/dev/null || true

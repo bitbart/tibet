@@ -1,7 +1,7 @@
 (** 
  ********************************************************************************
  **																																						 **
- **				FROMXML (6): Offers functions for reading xml contracts              **
+ **				FROMXML (7): Offers functions for reading xml contracts              **
  **																																						 **
  ********************************************************************************
  **)

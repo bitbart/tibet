@@ -1,7 +1,7 @@
 (** 
  ********************************************************************************
  **																																						 **
- **				CPARSER (7): Contains a converter from string contracts to XML ones  **
+ **				CPARSER (8): Contains a converter from string contracts to XML ones  **
  **																																						 **
  ********************************************************************************
  **)
@@ -34,7 +34,6 @@ let printv c =
 	let s = String.make 1 c in 
 	if (Str.string_match (Str.regexp "[0-9]") s 0) then s 
 	else raise (Stream.Error _ERR_002);;
-
 
 (** MAIN PARSER **)
 let rec parse_resets =
@@ -102,6 +101,10 @@ and parse_contract' =
 
 
 (** CHECK BRANCHES **)
+let searching stringInput regExp =
+  try Str.search_forward regExp stringInput 0 with Not_found -> -1;;
+
+
 (*
 	- Checks a list of action branches (all internal branches or all external branches), eg:
 	  - the list	["a."; "b{}.?.*"]		generates the exception _ERR_039 using the splitting char '!' because in the internal action 'b{}' no tokens are allowed after sequence symbol '.'.
@@ -117,16 +120,16 @@ and parse_contract' =
 *)
 let rec find_branches' list char =
 		    match list with
-    | s::l' ->
-        (try 
-          let p = (Str.search_forward (Str.regexp "^[a-z]+[]\\.\\+\\&\\{\\)\\*]") s 0) in (find_branches' l' char)
-          with Not_found -> match char with
-				  | "?" -> failwith (_ERR_039 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
-				  | "!" -> failwith (_ERR_040 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
-				  | _ 	-> failwith _ERR_999 (* The case should not occur *)
-				)
-    | [] -> false
-;;
+    | s::l' -> 
+			(
+				let regExp = (Str.regexp "^[a-z]+[]\\.\\+\\&\\{\\)\\*]") in
+				if ((searching s regExp) == -1 ) then (find_branches' l' char) else
+					match char with
+				  	| "?" -> failwith (_ERR_039 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
+				  	| "!" -> failwith (_ERR_040 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
+				  	| _ 	-> failwith _ERR_999 (* The case should not occur *)
+			)
+    | [] -> false;;
 
 (*
 	Splits the contract in branches using  a 'splitting char', then analyzes them, eg:

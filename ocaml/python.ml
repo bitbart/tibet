@@ -13,7 +13,9 @@
 
 (* Inclusion to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE *)
 open Unix;;
-
+open Errors;;
+open Tipi;;
+open ExtTipi;;
 
 
 
@@ -264,7 +266,7 @@ let reverse_guard_type guardType =
 	| "<=" -> ">="
 	| "==" -> "=="
 	| ">" -> "<"
-	| ">=" -> "<=";;
+	| _ -> "<=";;
 
 (**)
 let rec reverse_guard stringGuard = 
@@ -324,13 +326,13 @@ let adding_guard_separator stringGuard =
 (**)
 let rec python_parse_guardValue =
 	parser
-  | [< ''}' >] -> ""
-	| [< 'x; y = python_parse_guardValue ?? "Error calculating value" >] -> (String.make 1 x ^ y);;
+  [< ''}' >] -> ""
+  | [< 'x; y = python_parse_guardValue ?? "Error calculating value" >] -> (String.make 1 x ^ y);;
 
 (**)
 let python_parse_guardType =
 	parser
-	| [< ''$' >] -> ExtLessEq					(*  <=  *)
+	[< ''$' >] -> ExtLessEq					(*  <=  *)
 	| [< ''%' >] -> ExtGreatEq				(*  >=  *)
 	| [< ''=' >] -> ExtEq							(*  =  *)
 	| [< ''<' >] -> ExtGreat					(*  <  *)
@@ -339,13 +341,13 @@ let python_parse_guardType =
 (**)
 let rec python_parse_name =
 	parser
-	| [< '';' >] -> "" 
+	[< '';' >] -> "" 
 	| [< 'x; y = python_parse_name ?? raise (Stream.Error "Missing variable name") >] -> (String.make 1 x ^ y) ;;
 
 (**)
 let python_parse_guards =
 	parser
-	| [< ''@'; 
+	[< ''@'; 
 			w = python_parse_name ?? raise (Stream.Error "Missing diagonal first variable"); 
 			x = python_parse_name ?? raise (Stream.Error "Missing diagonal second variable"); 
 			y = python_parse_guardType ?? raise (Stream.Error "Missing diagonal operator"); 
@@ -360,7 +362,7 @@ let python_parse_guards =
 (**)
 let rec python_parser =
 	parser
-	| [< ''{'; 
+	[< ''{'; 
 			x = python_parse_guards ?? raise (Stream.Error "Missing guard"); >] -> x
 	| [< ''|'; 
 			x = python_parser ?? raise (Stream.Error "Missing first OR branch");

@@ -1,6 +1,6 @@
 (** ************************************************************************** **)
 (**                                                                            **)
-(**  	TOXML (5): Offers functions which generate xml uppaal templates          **)
+(**  	TOXML (6): Offers functions which generate xml uppaal templates          **)
 (**									     																										   **)
 (** ************************************************************************** **)
 
@@ -19,7 +19,6 @@
 *)
 
 (* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
-open Printf;;
 open Tipi;;
 open Mapping;;
 open Printf;; 

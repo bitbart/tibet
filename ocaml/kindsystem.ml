@@ -1,12 +1,30 @@
+(** ************************************************************************** **)
+(**                                                                            **)
+(**  	KINDSYSTEM (5): Offers functions to calculate the dual of a contract     **)
+(**									     																										   **)
+(** ************************************************************************** **)
+
+(*----------------------------------------------------
+   OCAML TOPLEVEL IMPORTS (for Emacs only)
+
 #use "tipi.ml";;
 #use "extTipi.ml";;
 #use "python.ml";;
 
-(*Da cancellare*)
+----------------------------------------------------*)
+
+(* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
+open Tipi;;
+open ExtTipi;;
+open Python;;
+
+(*
+Da cancellare
 let invReset (g:extGuard) (TSBClock x) = True;;
 let past (g:extGuard) = True;;
 let subtract (g:extGuard) (g':extGuard) = False;;
 let equiv (g:extGuard) (g':extGuard) = true;;
+*)
 
 type 'a partial = Some of 'a | None ;;
 
@@ -22,6 +40,7 @@ let applyRecEnv (RecEnv env) var = match env var with
 
 let bindRecEnv (RecEnv env) var guard = RecEnv (fun v -> if (v = var) then Some guard else env v);;
 
+(*
 let invResetList (g:extGuard) (TSBReset list) = List.fold_left (fun g x -> Or(g , invReset g x)) True list;; 
 
 let rec kindof env p = match p with
@@ -44,3 +63,4 @@ let rec kindof env p = match p with
 ;;
 
 let kindof p = kindof emptyRecEnv p;;
+*)
