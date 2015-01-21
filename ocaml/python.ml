@@ -261,26 +261,26 @@ let python_infix_to_prefix s = python_reverse(python_infix_to_prefix' (python_re
 let reverse_guard_type guardType = 
 	match guardType with
 	| "<" -> ">"
-	| "<=" -> ">="
-	| "==" -> "=="
+	| "$" -> "%"
+	| "=" -> "="
 	| ">" -> "<"
-	| _ -> "<=";;
+	| _ -> "$";;
 
 (**)
 let rec reverse_guard stringGuard = 
-	let regExp = (Str.regexp "[-]*[0-9]+[<>=][=]*[a-z]+;") in								(* To fix: only '=' is never returned by python libraries, equals is represented with '=='. *)
+	let regExp = (Str.regexp "[-]*[0-9]+[\\$%=<>][a-z]+;") in
 	if ((testSearching stringGuard regExp) == -1) then stringGuard else
 		let stringTest = Str.matched_string stringGuard in
 		let regExp = (Str.regexp "[-]*[0-9]+") in
 		if ((testSearching stringTest regExp) == -1) then "ERROR" else
 			let guardValue = Str.matched_string stringTest in
-			let regExp = (Str.regexp "[<>=][=]*") in
+			let regExp = (Str.regexp "[\\$%=<>]") in
 			if ((testSearching stringTest regExp) == -1) then "ERROR" else
 				let guardType = Str.matched_string stringTest in
 				let regExp = (Str.regexp "[a-z]+;") in
 				if ((testSearching stringTest regExp) == -1) then "ERROR" else
 					let guardName = Str.matched_string stringTest in
-					let regExp = (Str.regexp "[-]*[0-9]+[<>=][=]*[a-z]+;") in
+					let regExp = (Str.regexp "[-]*[0-9]+[\\$%=<>][a-z]+;") in
 					let newGuard = (guardName ^ (reverse_guard_type guardType) ^ guardValue) in
 					let stringUpdated = Str.replace_first regExp newGuard stringGuard in
 					reverse_guard stringUpdated;;
@@ -449,10 +449,36 @@ let equivalence guard' guard'' =
 	else failwith _ERR_201;;
 
 
+
+
 (*
-past True;;
-past False;;
-invReset (SC(TSBClock "x", ExtLess, 4)) (TSBClock "y");;
+let pythonOutput = "(4<=c.x & c.x<6)\n";;
+let guard = String.sub pythonOutput 0 ((String.length pythonOutput)-1);;
+"(4<=c.x & c.x<6)";;
+
+let guard = remove_context guard;;
+"(4<=x; & x;<6)";;
+
+let guard = replacing_uncomfortable guard;;
+"(4$x; & x;<6)";;
+
+let guard = python_infix_to_prefix guard;;
+"&4$x;x;<6";;
+
+let guard = reverse_guard guard;;
+"&4$x;x;<6";;
+
+let guard = adding_guard_separator guard;;
+"&4}${{x;x;<6}";;
+
+python_parser (Stream.of_string guard);;
+And (SC (TSBClock "x", ExtGreatEq, 4), SC (TSBClock "x", ExtLess, 6))
+
+
+subtract (SC(TSBClock "x", ExtLess, 6)) (SC(TSBClock "x", ExtLess, 4));;
+				"(4<=c.x & c.x<6)\n"
+
+toGuard "(4<=c.x & c.x<6)";;
 
 
 let g1 = (And(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtLessEq, 7)));;
