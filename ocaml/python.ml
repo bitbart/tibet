@@ -111,8 +111,8 @@ let clocksNamesFromGuard guard =
        | And (g, g') -> List.append (clocksNamesFromGuard' g clocksNames) (clocksNamesFromGuard' g' clocksNames)
        | Or (g, g') -> List.append (clocksNamesFromGuard' g clocksNames) (clocksNamesFromGuard' g' clocksNames)
        | Not g -> []
-       | True -> []
-       | False -> []
+       | True -> "t"::clocksNames
+       | False -> "f"::clocksNames
      ) in compress (List.sort comparatorStrings (clocksNamesFromGuard' guard []));;
 
 (* It takes a list of clocks names and uses it to create the initial python command, that is the istruction: 'c = Context c =([...])' *)
@@ -143,8 +143,8 @@ let pythonGuardFromGuard guard =
       | And (g, g') -> "(" ^ (pythonGuardFromGuard' g clocksNames) ^ " & " ^ (pythonGuardFromGuard' g' clocksNames) ^ ")"
       | Or (g, g') -> "(" ^ (pythonGuardFromGuard' g clocksNames) ^ " | " ^ (pythonGuardFromGuard' g' clocksNames) ^ ")"
       | Not g -> ""
-      | True -> ""
-      | False -> ""
+      | True -> "(c.t>=0)"
+      | False -> "(c.f<0)"
      ) in pythonGuardFromGuard' guard [];;
 
 (* It takes a guardName (string) and a guard, then returns the string with the python instruction used to declare the guard: 'a = (c.x<10)'. *)
@@ -454,8 +454,10 @@ let equivalence guard' guard'' =
 	else failwith _ERR_201;;
 
 
-
 (*
+past True;;
+past False;;
+
 let g1 = (And(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtLessEq, 7)));;
 let g2 = (Or(SC(TSBClock "x", ExtEq, 4),DC (TSBClock "x", TSBClock "t", ExtGreatEq, 7)));;
 let g3 = (Or(SC(TSBClock "t", ExtEq, 4), Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
