@@ -186,6 +186,19 @@ let replacing_equal stringGuard =
 	Str.global_replace (Str.regexp "==") "=" stringUpdated;;
 
 (**)
+let rec replacing_difference_variables stringGuard =
+	let regExp1 = (Str.regexp "[a-z]+;[\\$%=<>][a-z]+;") in															(* 		(y;<4 & y;<x;) 	*)
+	if ((testSearching stringGuard regExp1) == -1) then stringGuard else
+		let stringMatched = Str.matched_string stringGuard in															(*		y;<x;						*)
+		let regExp2 = (Str.regexp "[\\$%=<>]") in
+			if ((testSearching stringGuard regExp2) == -1) then stringGuard else
+				let sign = Str.matched_string stringGuard in																	(*		<								*)
+				let replace = Str.replace_first regExp2 "-" stringMatched in									(*		y;-x;						*)
+				let replace = replace ^ sign ^ "0" in 																				(*		y;-x;<0					*)
+				let stringUpdated = Str.replace_first regExp1 replace stringGuard in					(*		y;<4 & y;-x;<0	*)
+				replacing_difference_variables stringUpdated;;
+
+(**)
 let rec replacing_minus stringGuard =
 	let regExp = (Str.regexp "[a-z]+;-[a-z]+") in
 	if ((testSearching stringGuard regExp) == -1) then stringGuard else
@@ -196,7 +209,7 @@ let rec replacing_minus stringGuard =
 
 (**)
 let replacing_uncomfortable stringGuard =
-	replacing_minus (replacing_equal (replacing_bool stringGuard));;
+	replacing_minus (replacing_difference_variables (replacing_equal (replacing_bool stringGuard)));;
 
 
 (** #3.3 INFIX TO PREFIX. **)
@@ -452,35 +465,6 @@ let equivalence guard' guard'' =
 
 
 (*
-let pythonOutput = "(4<=c.x & c.x<6)\n";;
-let guard = String.sub pythonOutput 0 ((String.length pythonOutput)-1);;
-"(4<=c.x & c.x<6)";;
-
-let guard = remove_context guard;;
-"(4<=x; & x;<6)";;
-
-let guard = replacing_uncomfortable guard;;
-"(4$x; & x;<6)";;
-
-let guard = python_infix_to_prefix guard;;
-"&4$x;x;<6";;
-
-let guard = reverse_guard guard;;
-"&4$x;x;<6";;
-
-let guard = adding_guard_separator guard;;
-"&4}${{x;x;<6}";;
-
-python_parser (Stream.of_string guard);;
-And (SC (TSBClock "x", ExtGreatEq, 4), SC (TSBClock "x", ExtLess, 6))
-
-
-subtract (SC(TSBClock "x", ExtLess, 6)) (SC(TSBClock "x", ExtLess, 4));;
-				"(4<=c.x & c.x<6)\n"
-
-toGuard "(4<=c.x & c.x<6)";;
-
-
 let g1 = (And(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtLessEq, 7)));;
 let g2 = (Or(SC(TSBClock "x", ExtEq, 4),DC (TSBClock "x", TSBClock "t", ExtGreatEq, 7)));;
 let g3 = (Or(SC(TSBClock "t", ExtEq, 4), Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
