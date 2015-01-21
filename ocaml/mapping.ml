@@ -19,7 +19,7 @@
 	 OCAML TOPLEVEL IMPORTS (for Emacs)
  
 	 #load "str.cma";;
-         #use "tipi.ml";;
+   #use "tipi.ml";;
 ----------------------------------------------------
 *) 
 

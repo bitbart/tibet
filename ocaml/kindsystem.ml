@@ -66,6 +66,7 @@ let rec kindof env p = match p with
 
 let kindof p = kindof emptyRecEnv p;;
 
+
 (*
 let g1 = (And(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtLessEq, 7)));;
 let g2 = (Or(SC(TSBClock "x", ExtEq, 4),DC (TSBClock "x", TSBClock "t", ExtGreatEq, 7)));;

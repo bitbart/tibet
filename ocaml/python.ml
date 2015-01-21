@@ -325,11 +325,11 @@ let rec python_parse_guardValue =
 (**)
 let python_parse_guardType =
 	parser
-	[< ''$' >] -> ExtLessEq					(*  <=  *)
+	[< ''$' >] -> ExtLessEq					  (*  <=  *)
 	| [< ''%' >] -> ExtGreatEq				(*  >=  *)
 	| [< ''=' >] -> ExtEq							(*  =  *)
-	| [< ''<' >] -> ExtGreat					(*  <  *)
-	| [< ''>' >] -> ExtLess;; 				(*  >  *)
+	| [< ''<' >] -> ExtLess					  (*  <  *)
+	| [< ''>' >] -> ExtGreat;; 				(*  >  *)
 
 (**)
 let rec python_parse_name =
@@ -381,7 +381,7 @@ let toGuard pythonOutput =
 	let guard = replacing_uncomfortable guard in
 	let guard = python_infix_to_prefix guard in
 	let guard = reverse_guard guard in 
-	let guard = adding_guard_separator guard in 
+	let guard = adding_guard_separator guard in
 	python_parser (Stream.of_string guard);;
 
 
@@ -402,8 +402,8 @@ let past guard =
 	  python_print^
 	  guardName^
 	  python_down^
-	  python_command_end in 
-	toGuard (syscall command);;
+	  python_command_end in
+  	toGuard (syscall command);;
 
 
 (** #4.2 INVRESET: CALLS PYTHON FUNCTION 'INVRESET' **)
