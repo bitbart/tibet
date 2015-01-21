@@ -415,16 +415,11 @@ let past guard =
 (** #4.2 INVRESET: CALLS PYTHON FUNCTION 'INVRESET' **)
 (* It takes a guard and a clock, then calls python libraries and executes the 'invReset' function. It returns a new guard. *)
 let invReset guard clock = 
-	let clocksNames = clocksNamesFromGuard guard in
 	let declaredClock = pythonStringOfClock clock in 
-	if (exists declaredClock clocksNames) 
-		then
-			(
-				let guardName = "a" in 
-				let command = python_command_start^(pythonContextDeclaration clocksNames)^(pythonGuardDeclaration guardName guard)^python_print^guardName^python_invReset_start^"c."^declaredClock^python_invReset_end^python_command_end in 
-				toGuard (syscall command)
-			)
-		else failwith _ERR_200;;
+	let clocksNames = compress (List.sort comparatorStrings (declaredClock::(clocksNamesFromGuard guard))) in
+	let guardName = "a" in 
+	let command = python_command_start^(pythonContextDeclaration clocksNames)^(pythonGuardDeclaration guardName guard)^python_print^guardName^python_invReset_start^"c."^declaredClock^python_invReset_end^python_command_end in 
+	toGuard (syscall command);;
 
 
 (** #4.3 SUBTRACT: CALLS PYTHON OPERATION '-' **)
@@ -457,6 +452,8 @@ let equivalence guard' guard'' =
 (*
 past True;;
 past False;;
+invReset (SC(TSBClock "x", ExtLess, 4)) (TSBClock "y");;
+
 
 let g1 = (And(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtLessEq, 7)));;
 let g2 = (Or(SC(TSBClock "x", ExtEq, 4),DC (TSBClock "x", TSBClock "t", ExtGreatEq, 7)));;
