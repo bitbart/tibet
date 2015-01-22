@@ -121,7 +121,7 @@ let rec find_branches' list char =
     | s::l' -> 
 			(
 				let regExp = (Str.regexp "^[a-z]+[]\\.\\+\\&\\{\\)\\*]") in
-				if ((searching s regExp) == -1 ) then (find_branches' l' char) else
+				if ((searching s regExp) != -1 ) then (find_branches' l' char) else
 					match char with
 				  	| "?" -> failwith (_ERR_039 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
 				  	| "!" -> failwith (_ERR_040 ^ (Str.global_replace (Str.regexp "[\\*]") "" s))
