@@ -20,13 +20,7 @@
 (* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
 open Tipi;;
 open ExtTipi;;
-open Python;;
-
-(*Da cancellare
-let invReset (g:extGuard) (TSBClock x) = True;;
-let past (g:extGuard) = True;;
-let subtract (g:extGuard) (g':extGuard) = False;;
-let equiv (g:extGuard) (g':extGuard) = true;;*)
+open Python;; 
 
 type 'a partial = Some of 'a | None ;;
 
@@ -42,79 +36,136 @@ let applyRecEnv (RecEnv env) var = match env var with
 
 let bindRecEnv (RecEnv env) var guard = RecEnv (fun v -> if (v = var) then Some guard else env v);;
 
+(*checks if recursion variable var is binded in the environment env*)
+let isBind (RecEnv env) var = match env var with 
+    Some g -> true
+  | None -> false;;
 
-let invResetList (g:extGuard) (TSBReset list) = List.fold_left (fun g x -> Or(g , invReset g x)) True list;; 
+(*computes the inverse reset of g for a list of clocks*)
+let invResetList g (TSBReset list) = List.fold_left (fun g x -> invReset g x) g list;; 
 
-let rec kindof env p = match p with
+(*computes the kind of p in the environment env with the kind inference algorithm in the paper. 
+Raises UndefinedVariable if some free rec-variable of p is not binded in env*)
+let rec envkindof env p = match p with
     ExtSuccess -> True
   | ExtNil -> False
-  | ExtExtChoice(list) -> List.fold_left (fun g x -> Or(g , x)) True (List.map (
-    fun (act,(TSBExtGuard guard),reset,p') -> past(And(guard,(invResetList (kindof env p') reset)))) list)
-  | ExtIntChoice(list) ->  let gp = List.fold_left (fun g x -> Or(g , x)) True (List.map (
+  | ExtExtChoice(list) -> List.fold_left (fun g x -> Or(g , x)) False (List.map (
+    fun (act,(TSBExtGuard guard),reset,p') -> past(And(guard,(invResetList (envkindof env p') reset)))) list)
+  | ExtIntChoice(list) ->  let gp = List.fold_left (fun g x -> Or(g , x)) False (List.map (
     fun (act,(TSBExtGuard guard),reset,p') -> past(guard)) list) and 
-      ge =  List.fold_left (fun g x -> Or(g , x)) True (List.map (
-    fun (act,(TSBExtGuard guard),reset,p') -> past(subtract guard (invResetList (kindof env p') reset))) list)
+      ge =  List.fold_left (fun g x -> Or(g , x)) False (List.map (
+    fun (act,(TSBExtGuard guard),reset,p') -> past(subtract guard (invResetList (envkindof env p') reset))) list)
     in subtract gp ge
   | ExtCall var -> applyRecEnv env var 
   | ExtRec (var,p') -> let gFix env var p' = 
 			 let rec f env var p' g = 
-			   let g' = kindof (bindRecEnv env var g) p' 
+			   let g' = envkindof (bindRecEnv env var g) p' 
 			   in if (equivalence g g') then g else f env var p' g'
 			 in f env var p' True
 		       in gFix env var p'
 ;;
 
-let kindof p = kindof emptyRecEnv p;;
+(*computes the kind of p in the environment env. Raises UndefinedVariable if p contains free rec-variables.
+IS PART OF THE API*)
+let kindof = envkindof emptyRecEnv;;
+
+(*computes the dual of p in the environment env. Raises UndefinedVariable if some free rec-variable
+of p is not binded in env*)
+let rec envdualof env p = match p with
+    ExtSuccess -> ExtSuccess
+  | ExtNil -> ExtNil
+  | ExtExtChoice(list) -> ExtIntChoice(List.map (
+                  fun (act,(TSBExtGuard guard),reset,p') -> 
+		    (act,(TSBExtGuard (And(guard,invResetList(envkindof env p') reset))),reset,envdualof env p'))
+		      list)
+  | ExtIntChoice(list) -> ExtExtChoice(List.map (
+                  fun (act,(TSBExtGuard guard),reset,p') -> (act,(TSBExtGuard guard),reset,envdualof env p'))
+		    list)
+  | ExtCall var ->  if (isBind env var) then ExtCall var else raise (UndefinedVariable var)
+  | ExtRec (var,p') -> let k = envkindof env  (ExtRec (var,p')) in 
+		       ExtRec(var,envdualof (bindRecEnv env var k) p');;
+
+(*computes the dual of p in the environment env. Raises UndefinedVariable if p contains free rec-variables.
+IS PART OF THE API*)
+let dualof = envdualof emptyRecEnv;;
+
+(*conversion of tsb_ext_relation in the corresponding ocaml function*)
+let op_of_rel rel = match rel with
+    ExtLess -> (<)
+  | ExtGreat -> (>)
+  | ExtLessEq -> (<=)
+  | ExtGreatEq -> (>=)
+  | ExtEq -> (==);;
+
+(*checks if a clock evaluation nu satisfy the guard g. nu must be of type: tsb_clock -> float*)
+let rec satisfy nu g = match g with
+    False -> false
+  | True -> true
+  | SC(x,rel,d) -> (op_of_rel rel) (nu x) (float_of_int d)
+  | DC(x,y,rel,d) -> (op_of_rel rel) ((nu x) -. (nu y)) (float_of_int d)
+  | And(g,g') -> (satisfy nu g) && (satisfy nu g')
+  | Or(g,g') -> (satisfy nu g) || (satisfy nu g')
+  | Not(g) -> not (satisfy nu g);;
+
+(*the starting clock evaluation*)
+let nu0 (TSBClock s) = 0.;; 
+
+(*checks if p admits a compliant TST by verifing that nu0 satisfy the kind of p
+IS PART OF THE API*)
+let admitsCompliant p = let k = kindof p in satisfy nu0 k;;
 
 
-(*
-let g1 = (And(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtLessEq, 7)));;
-let g2 = (Or(SC(TSBClock "x", ExtEq, 4),DC (TSBClock "x", TSBClock "t", ExtGreatEq, 7)));;
-let g3 = (Or(SC(TSBClock "t", ExtEq, 4), Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
-let g4 = (Or(Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
-let g5 = (And(Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
-let g6 = (Or(And(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
-let g7 = (Or(SC(TSBClock "t", ExtEq, 4), And(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
-let gA = (Or(SC(TSBClock "t", ExtEq , 4), And(SC(TSBClock "x", ExtEq, 5), SC (TSBClock "s", ExtEq, 6))));;
-let gB = (And(Or(SC(TSBClock "t", ExtEq , 4),SC(TSBClock "x", ExtEq, 5)),  SC (TSBClock "s", ExtEq, 6)));;
+(*Tests, to be moved somewhere*)
+let a = TSBAction "a";;
+let b = TSBAction "b";;
+let emptyR = TSBReset[];;
 
-past g1;;
-past g2;;
-past g3;;
-past g4;;
-past g5;;
-past g6;;
-past g7;;
-past gA;;
-past gB;;
+let p1 = ExtExtChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 2)),emptyR,
+ExtExtChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 1)),emptyR,ExtSuccess)])
+];;
 
-let clockX = TSBClock "x";;
+kindof p1;;
+dualof p1;;
+admitsCompliant p1;;(*should be true*)
 
-invReset g1 clockX;;
-invReset g2 clockX;;
-invReset g3 clockX;;
-invReset g4 clockX;;
-invReset g5 clockX;;
-invReset g6 clockX;;
-invReset g7 clockX;;
-invReset gA clockX;;
-invReset gB clockX;;
+let p2 = ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 2)),emptyR,
+ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 1)),emptyR,ExtSuccess)])
+];;
 
-subtract g1 g2;;
-subtract g1 g3;;
-subtract g1 g4;;
-subtract g1 g5;;
-subtract g1 g6;;
-subtract g1 g7;;
-subtract g1 gA;;
-subtract g1 gB;;
+kindof p2;;
+dualof p2;;
+admitsCompliant p2;;(*should be false*)
 
-equivalence g1 g1;;
-equivalence g1 g2;;
-equivalence g1 g3;;
-equivalence g1 g4;;
-equivalence g1 g5;;
-equivalence g1 g6;;
-equivalence g1 g7;;
-equivalence g1 gA;;
-equivalence g1 gB;;*)
+let p3 = ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 1)),emptyR,
+ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 1)),emptyR,ExtSuccess)])
+];;
+
+kindof p3;;
+dualof p3;;
+admitsCompliant p3;;(*should be true*)
+
+let p4 = ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 2)),emptyR,ExtSuccess);
+(b,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 1)),emptyR,
+ExtExtChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLess, 0)),emptyR,ExtSuccess)])
+];;
+
+kindof p4;;
+dualof p4;;
+admitsCompliant p4;;(*should be false*)
+
+let p5 = ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 2)),TSBReset[TSBClock "y"],
+ExtExtChoice[(a,TSBExtGuard(And(SC(TSBClock "x", ExtGreatEq, 5),SC(TSBClock "y",ExtLessEq,2))),emptyR,ExtSuccess)])
+];;
+
+kindof p5;;
+dualof p5;;
+admitsCompliant p5;;(*should be false*)
+
+let p6 = ExtRec ("X",
+ExtExtChoice[(a,TSBExtGuard(And(SC(TSBClock "x", ExtLessEq, 1),SC(TSBClock "y",ExtLessEq,1))),emptyR,
+ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x",ExtLessEq,1)),TSBReset[TSBClock "x"],ExtCall "X");
+(b,TSBExtGuard(True),TSBReset[TSBClock "x";TSBClock "y"],ExtCall "X")])]);;
+
+kindof p6;;
+dualof p6;;
+admitsCompliant p6;;(*should be false*)
