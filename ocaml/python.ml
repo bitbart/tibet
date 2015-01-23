@@ -404,8 +404,8 @@ let toGuard pythonOutput =
 	let guard = String.sub pythonOutput 0 ((String.length pythonOutput)-1) in
 	let guard = remove_context guard in
 	let guard = replacing_uncomfortable guard in
-	let guard = python_infix_to_prefix guard in
 	let guard = reverse_guard guard in
+	let guard = python_infix_to_prefix guard in
 	let guard = adding_guard_separator guard in
 	python_parser (Stream.of_string guard);;
 
