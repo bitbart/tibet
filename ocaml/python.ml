@@ -197,9 +197,9 @@ let rec replacing_difference_variables stringGuard =
 	if ((testSearching stringGuard regExp1) == -1) then stringGuard else
 		let stringMatched = Str.matched_string stringGuard in															(*		y;<x;						*)
 		let regExp2 = (Str.regexp "[\\$%=<>]") in
-			if ((testSearching stringGuard regExp2) == -1) then stringGuard else
-				let sign = Str.matched_string stringGuard in																	(*		<								*)
-				let replace = Str.replace_first regExp2 "-" stringMatched in									(*		y;-x;						*)
+			if ((testSearching stringMatched regExp2) == -1) then stringGuard else
+				let sign = Str.matched_string stringMatched in																(*		<								*)				
+				let replace = Str.replace_first regExp2 "-" stringMatched in									(*		y;-x;						*)				
 				let replace = replace ^ sign ^ "0" in 																				(*		y;-x;<0					*)
 				let stringUpdated = Str.replace_first regExp1 replace stringGuard in					(*		y;<4 & y;-x;<0	*)
 				replacing_difference_variables stringUpdated;;
@@ -438,7 +438,7 @@ let invReset guard clock =
 	let clocksNames = compress (List.sort comparatorStrings (declaredClock::(clocksNamesFromGuard guard))) in
 	let guardName = "a" in 
 	let command = python_command_start^(pythonContextDeclaration clocksNames)^(pythonGuardDeclaration guardName guard)^python_print^guardName^python_invReset_start^"c."^declaredClock^python_invReset_end^python_command_end in 
-	toGuard (syscall command);;
+	toGuard (syscall command);; 
 
 
 (** #4.3 SUBTRACT: CALLS PYTHON OPERATION '-' **)

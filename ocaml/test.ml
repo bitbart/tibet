@@ -306,6 +306,15 @@ equivalence g1 gA;;
 equivalence g1 gB;;
 
 
+let pythonOutput = "(1<c.s & c.s<=6 & c.s-c.x==1) | (2<=c.s & c.s<=6 & c.s-c.t==2)\n";;
+let guard1 = String.sub pythonOutput 0 ((String.length pythonOutput)-1);;
+let guard2 = remove_context guard1;;
+let guard3 = replacing_uncomfortable guard2;;
+let guard4 = reverse_guard guard3;;
+let guard5 = python_infix_to_prefix guard4;;
+let guard6 = adding_guard_separator guard5;;
+let result = python_parser (Stream.of_string guard6);;
+
 
 (********************************************************)
 (*                                                      *)
