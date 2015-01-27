@@ -244,6 +244,108 @@ let lta = tsb_mapping  p q;;
 writeToFile lta "ex23";;
 
 
+(********************************************************)
+(*                                                      *)
+(*              Handling Monitor Errors                 *) 
+(*               									                      *)
+(*                                                      *)
+(*                                                      *)
+(********************************************************)
+let p =  IntChoice[(TSBAction "a",  TSBGuard [], TSBReset[] , Success)];;
+let q =  ExtChoice[(TSBAction "a",  TSBGuard [], TSBReset[] , Success)];;
+
+(*correct interaction*)
+let net1 = m_start p q;;
+
+let net2 = m_step net1  (Fire ("A", Int (TSBAction "a" )));;
+m_culpable net2;;
+m_onDuty net1;;
+let net3 = m_step net2  (Fire ("B", Ext (TSBAction "a" )));;
+m_culpable net3;;
+m_onDuty net3;;
+let net4 = m_step net3  (Fire ("A", Ext (TSBAction "a" )));;
+(*incorrect interaction*)
+let c1 = m_step net1  (Fire ("B", Int (TSBAction "a" )));;
+m_culpable c1;;
+
+let c2 = m_step net1  (Fire ("B", Ext (TSBAction "a" )));;
+m_culpable c2;;
+
+let c3 = m_step net2  (Fire ("B", Ext (TSBAction "b" )));;
+m_culpable c3;;
+
+(********************************************************************)
+(*                 Testing     Recursion                            *)
+(********************************************************************)
+let p = Rec ("x", IntChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Call "x");
+                             (TSBAction "b", TSBGuard[], TSBReset[] , Success)]);;
+let q = Rec ("x", ExtChoice [(TSBAction "a", TSBGuard[], TSBReset[] , Call "x");
+                             (TSBAction "b", TSBGuard[], TSBReset[] , Success)]);;
+
+
+let net1 = m_start p q;;
+
+let net2 = m_step net1  (Fire ("A", Int (TSBAction "a" )));;
+m_culpable net2;;
+m_onDuty net2;;
+
+let net3 = m_step net2  (Fire ("B", Ext (TSBAction "a" )));;
+m_culpable net3;;
+m_onDuty net3;;
+
+let net4 = m_step net3  (Fire ("A", Int (TSBAction "a" )));;
+m_culpable net4;;
+m_onDuty net4;;
+
+let net5 = m_step net4  (Fire ("B", Ext (TSBAction "a" )));;
+m_onDuty net5;;
+
+let net6 = m_step net5  (Fire ("A", Int (TSBAction "b" )));;
+m_onDuty net6;;
+
+let net7 = m_step net6  (Fire ("B", Ext (TSBAction "b" )));;
+m_onDuty net7;;
+
+(********************************************************************)
+(*                 Testing     Time                            *)
+(********************************************************************)
+let p =  IntChoice[(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 3)], TSBReset[TSBClock "t"] , 
+										IntChoice[(TSBAction "b",  TSBGuard [(TSBClock "t", Less, 5)], TSBReset[TSBClock "t"] , Success)])];;
+let q =  ExtChoice[(TSBAction "a",  TSBGuard [(TSBClock "tt", Less, 3)], TSBReset[] , 
+                    ExtChoice[(TSBAction "b",  TSBGuard [(TSBClock "tt", Less, 8)], TSBReset[TSBClock "tt"] , Success)])];;
+
+(* test interaction (updated) *)
+let net1 = m_start p q;;
+m_culpable net1;;
+m_onDuty net1;;
+
+let net2 = m_step net1 (Delay 2.);;
+m_culpable net2;;
+m_onDuty net2;;
+
+let net3 = m_step net2  (Fire ("A", Int (TSBAction "a" )));;
+m_culpable net3;;
+m_onDuty net3;;
+
+
+let net4 = m_step net3  (Fire ("B", Ext (TSBAction "a" )));;
+m_culpable net4;;
+m_onDuty net4;;
+
+let net5 = m_step net4 (Delay 4.);;
+m_culpable net5;;
+m_onDuty net5;;
+
+
+let net6 = m_step net5  (Fire ("A", Ext (TSBAction "a" )));;
+
+let t0 = startTime;;
+let t1 = incrTime t0 4.;;
+applyTime t1 (TSBClock "x");;
+let t2 = resetTime t1 [TSBClock "x";TSBClock "y" ];;
+let t3 = incrTime t2 1.;;
+applyTime t3 (TSBClock "x");;
+
 
 (********************************************************)
 (*                                                      *)
@@ -314,6 +416,68 @@ let guard4 = reverse_guard guard3;;
 let guard5 = python_infix_to_prefix guard4;;
 let guard6 = adding_guard_separator guard5;;
 let result = python_parser (Stream.of_string guard6);;
+
+
+(********************************************************)
+(*                                                      *)
+(*              Handling Kindsystem Errors              *) 
+(*               									                      *)
+(*                                                      *)
+(*                                                      *)
+(********************************************************)
+let a = TSBAction "a";;
+let b = TSBAction "b";;
+let emptyR = TSBReset[];;
+
+let p1 = ExtExtChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 2)),emptyR,
+ExtExtChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 1)),emptyR,ExtSuccess)])
+];;
+
+kindof p1;;
+dualof p1;;
+admitsCompliant p1;;(*should be true*)
+
+let p2 = ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 2)),emptyR,
+ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 1)),emptyR,ExtSuccess)])
+];;
+
+kindof p2;;
+dualof p2;;
+admitsCompliant p2;;(*should be false*)
+
+let p3 = ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 1)),emptyR,
+ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 1)),emptyR,ExtSuccess)])
+];;
+
+kindof p3;;
+dualof p3;;
+admitsCompliant p3;;(*should be true*)
+
+let p4 = ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 2)),emptyR,ExtSuccess);
+(b,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 1)),emptyR,
+ExtExtChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLess, 0)),emptyR,ExtSuccess)])
+];;
+
+kindof p4;;
+dualof p4;;
+admitsCompliant p4;;(*should be false*)
+
+let p5 = ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x", ExtLessEq, 2)),TSBReset[TSBClock "y"],
+ExtExtChoice[(a,TSBExtGuard(And(SC(TSBClock "x", ExtGreatEq, 5),SC(TSBClock "y",ExtLessEq,2))),emptyR,ExtSuccess)])
+];;
+
+kindof p5;;
+dualof p5;;
+admitsCompliant p5;;(*should be false*)
+
+let p6 = ExtRec ("X",
+ExtExtChoice[(a,TSBExtGuard(And(SC(TSBClock "x", ExtLessEq, 1),SC(TSBClock "y",ExtLessEq,1))),emptyR,
+ExtIntChoice[(a,TSBExtGuard(SC(TSBClock "x",ExtLessEq,1)),TSBReset[TSBClock "x"],ExtCall "X");
+(b,TSBExtGuard(True),TSBReset[TSBClock "x";TSBClock "y"],ExtCall "X")])]);;
+
+kindof p6;;
+dualof p6;;
+admitsCompliant p6;;(*should be false*)
 
 
 (********************************************************)

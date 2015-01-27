@@ -9,11 +9,11 @@
 (* Inclusions to be used when compiling with makefile - DO NOT COMPILE THIS FILE IN OCAML TOPLEVEL! *)
 open Tipi;;
 open Mapping;;
+open Kindsystem;;
 open ToXML;;
 open FromXML;;
 open Cparser;;
 open Monitor;;
-
 
 
 
@@ -73,7 +73,14 @@ let main =
             start_mon (List.hd rc) (List.hd (List.rev rc)) (Sys.argv.(2))
 			| "-ie" ->
 						if (isEnded (Sys.argv.(2))) then print_string("yes") else print_string("no")
-      | _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
+			| "-da" ->
+						if (admitsCompliant (toExtTsb (readXmlContract (Sys.argv.(2))))) then print_string("yes") else print_string("no")
+			| "-dk" ->
+						print_string(kindof (toExtTsb (readXmlContract (Sys.argv.(2)))))
+			| "-dd" ->
+						print_string(dualof (toExtTsb (readXmlContract (Sys.argv.(2)))))
+      | _ -> 
+					print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
       )
 		| 4 -> 
 			(
