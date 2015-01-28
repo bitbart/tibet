@@ -185,6 +185,3 @@ let delay_net d fn fn' =
     let net2 = m_step net1 (Delay d) in
 		serialize_net net2 fn'
 ;;
-
-let p = "<contract><intaction id=\"a\"><guards><guard id=\"x\" op=\"less\" value=\"5\"/></guards></intaction><extaction id=\"b\"/></contract>";;
-let q = "<contract><extaction id=\"a\" /><inttaction id=\"b\"/></contract>";;

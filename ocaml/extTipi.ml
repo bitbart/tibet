@@ -6,6 +6,10 @@
 *******************************************************
 **)
 
+(*-------------------------------------------------- 
+#load "str.cma";;
+--------------------------------------------------*)
+
 
 (* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES*) 
 open Tipi;;
@@ -75,6 +79,8 @@ and toExtTsb standardTsb =
 
 (** 										SECTION #3												**)
 (** CONVERT A CONTRACT THAT SUPPORTS OR INTO A STRING. 		**)
+
+(** #3.1 CONVERT CONTRACT. **)
 (**)
 let actionToString action =
 	match action with
@@ -89,7 +95,7 @@ let clockToString clock =
 let rec resetToString reset = 
 	match reset with
 	| [] -> ""
-	| x::l -> (clockToString x) ^ " " ^ (resetToString l);;
+	| x::l -> (clockToString x) ^ "," ^ (resetToString l);;
 
 (**)
 let extRelationToString extRelation = 
@@ -105,46 +111,87 @@ let rec extGuardToString guard =
 	match guard with 
 	| SC(x, y, z) -> (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
 	| DC(w, x, y, z) -> (clockToString w) ^ "-" ^ (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
-	| And(x, y) -> (extGuardToString x) ^ "," ^ (extGuardToString y)
-	| Or(x, y) -> (extGuardToString x) ^ "|" ^ (extGuardToString y)
+	| And(x, y) -> "(" ^ (extGuardToString x) ^ (
+			let temp = extGuardToString y in
+			match temp with
+			| "True" -> ")"
+			| _ -> "," ^ temp ^ ")" 
+		)
+	| Or(x, y) -> "(" ^ (extGuardToString x) ^ "|" ^ (extGuardToString y) ^ ")"
 	| Not(x) -> "NOT (" ^ (extGuardToString x) ^ ")"
-	| True -> ""
-	| False -> "";;
+	| True -> "True"
+	| False -> "False";;
 
 (**)
 let rec extChoiceToString extChoice typeChoice =
 	(match extChoice with
 	| [] -> ""
-	| (w, TSBExtGuard x, TSBReset y, z)::l' -> (actionToString w) ^ "{" ^ (extGuardToString x) ^ "}" ^ (resetToString y) ^ (extTsbToString z) ^ typeChoice ^ (extChoiceToString l' typeChoice))
+	| (w, TSBExtGuard x, TSBReset y, z)::l' -> (actionToString w) ^ "{" ^ (extGuardToString x) ^ ";" ^ (resetToString y) ^ "}" ^ typeChoice ^ (extTsbToString z) ^ (extChoiceToString l' typeChoice))
 and extTsbToString extTsbContract =
 	match extTsbContract with
 	| ExtNil -> ""
-	| ExtSuccess -> "1"
+	| ExtSuccess -> ""
 	| ExtIntChoice x -> (extChoiceToString x "+")
-(*	| ExtExtChoice x -> (extChoiceToString x "&") *)
+	| ExtExtChoice x -> (extChoiceToString x "&")
 	| ExtRec (x, y) -> "REC 'x' [" ^ (extTsbToString y) ^ "]"
 	| ExtCall x -> "'x'";;
 
 
+(** #3.2 POSTPROCESSING: STRING MUST BE CLEANED. **)
+(**)
+let testSearching stringInput regExp =
+  try Str.search_forward regExp stringInput 0 with Not_found -> -1;;
 
+(**)
+let add_star stringInput = 
+	stringInput ^ "*";;
 
+(**)
+let rec remove_comma stringInput = 
+	let regExp = (Str.regexp "[0-9]+,;") in
+	if ((testSearching stringInput regExp) == -1) then stringInput else
+		let matched = (Str.matched_string stringInput) in 
+		let temp = (String.sub matched 0 ((String.length matched) - 2))^";" in 
+		let stringUpdated = Str.replace_first regExp temp stringInput in
+		remove_comma stringUpdated;;
 
-let p = Rec("x", IntChoice [(TSBAction "a", TSBGuard[], TSBReset[], Success);
-                            (TSBAction "b", TSBGuard[(TSBClock "t", Less, 2)], TSBReset[], 
-                               ExtChoice [(TSBAction "c", TSBGuard[], TSBReset[], Call "x") ]    )]);;
+(**)
+let rec remove_semicolon stringInput = 
+	let regExp = (Str.regexp "{;}") in
+	if ((testSearching stringInput regExp) == -1) then stringInput else
+		let matched = (Str.matched_string stringInput) in 
+		let temp = (String.sub matched 0 ((String.length matched) - 2))^"}" in 
+		let stringUpdated = Str.replace_first regExp temp stringInput in
+		remove_semicolon stringUpdated;;
 
-let q = ExtChoice [(TSBAction "a", TSBGuard[], TSBReset[], Success);
-                   (TSBAction "b", TSBGuard[(TSBClock "t", Less, 2)], TSBReset[], 
-                        IntChoice[(TSBAction "c", TSBGuard[(TSBClock "t", Great, 2)], TSBReset[],
-                           ExtChoice[(TSBAction "a", TSBGuard[], TSBReset[], Success   )]  )]  )];;
+(**)
+let rec remove_empty_spaces stringInput = 
+	let regExp = (Str.regexp "[a-z]+,}") in
+	if ((testSearching stringInput regExp) == -1) then stringInput else
+		let matched = (Str.matched_string stringInput) in
+		let temp = (String.sub matched 0 ((String.length matched) - 2))^"}" in 
+		let stringUpdated = Str.replace_first regExp temp stringInput in
+		remove_empty_spaces stringUpdated;;
 
-let r = IntChoice [(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 10); (TSBClock "x", Less, 12)], TSBReset[] , Success);
-                   (TSBAction "b",  TSBGuard [(TSBClock "t", Less, 10)], TSBReset[] , Success)];;
+(**)
+let rec remove_wrong_choices stringInput = 
+	let regExp = (Str.regexp "[\\+&][^a-z]") in
+	if ((testSearching stringInput regExp) == -1) then stringInput else
+		let matched = (Str.matched_string stringInput) in
+		let temp = (String.sub matched 0 ((String.length matched) - 2))^(String.sub matched ((String.length matched) - 1) 1) in 
+		let stringUpdated = Str.replace_first regExp temp stringInput in
+		remove_wrong_choices stringUpdated;;
 
-let p' = toExtTsb p;;
-let q' = toExtTsb q;;
-let r' = toExtTsb r;;
+(**)
+let remove_star stringInput =
+	String.sub stringInput 0 ((String.length stringInput) - 1);;
 
-extTsbToString p';;
-extTsbToString q';;
-extTsbToString r';;
+(**)
+let postprocessingTsbString stringInput = 
+	let s = extTsbToString stringInput in
+	let s = add_star s in
+	let s = remove_comma s in
+	let s = remove_semicolon s in
+	let s = remove_empty_spaces s in
+	let s = remove_wrong_choices s in
+	remove_star s;;

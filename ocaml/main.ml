@@ -76,9 +76,9 @@ let main =
 			| "-da" ->
 						if (admitsCompliant (toExtTsb (readXmlContract (Sys.argv.(2))))) then print_string("yes") else print_string("no")
 			| "-dk" ->
-						print_string(kindof (toExtTsb (readXmlContract (Sys.argv.(2)))))
+						print_string(extGuardToString (kindof (toExtTsb (readXmlContract (Sys.argv.(2))))))
 			| "-dd" ->
-						print_string(dualof (toExtTsb (readXmlContract (Sys.argv.(2)))))
+						print_string(postprocessingTsbString (dualof (toExtTsb (readXmlContract (Sys.argv.(2))))))
       | _ -> 
 					print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
       )
