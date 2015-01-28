@@ -8,6 +8,7 @@
 
 (* Inclusions to be used when compiling with makefile - DO NOT COMPILE THIS FILE IN OCAML TOPLEVEL! *)
 open Tipi;;
+open ExtTipi;;
 open Mapping;;
 open Kindsystem;;
 open ToXML;;

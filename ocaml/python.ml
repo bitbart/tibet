@@ -15,6 +15,7 @@
 open Unix;;
 open Errors;;
 open Tipi;;
+open ExtTipi;;
 
 (** 									SECTION #1								**)
 (** GENERAL TOOLS USED BY DIFFERENT FUNCTIONS. 	**)
