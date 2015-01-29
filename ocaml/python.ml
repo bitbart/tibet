@@ -72,13 +72,6 @@ let rec compress clocksList =
 	| a :: (b :: _ as t) -> if a = b then compress t else a :: compress t
   | smaller -> smaller;;
 
-(* It is used to substitute the '-' used to indicate a Diagonal Constraint: (eg. x-y<10). *)
-(* In this way '-' it is not confused with '-' used for negative numbers. *)
-let substitute_minus_char char =
-	match char with
-	| '-' -> '@'
-	| _ -> char;;
-
 (* It is the same of cparser, it is used for remove spaces, in order to simplify parsing operations. *)
 let rec python_remove_spaces s = 
     if String.compare s "" == 0 then "" else
@@ -156,12 +149,20 @@ let pythonGuardDeclaration guardName guard =
 
 
 
-(** 						SECTION #3										**)
-(** PARSER FROM PYTHON DELCARATION TO GUARD. 	**)
+(** 										SECTION #3											**)
+(** PARSER FROM PYTHON TO EXTENDED GUARD. PYTHON 				**)
+(** RETURNS A STRING THAT REPRESENTS A GUARD:  THE 			**)
+(** RESULT MUST BE TRANSLATED IN AN EXTENDED GUARD. 		**)
+(** THE FOLLOWING CODE SEMPLIFIES THE PARSING PROCEDURE **)
+(** WITH A LONG PREPROCESSING, THEN PARSES RETURNING 		**)
+(** THE REQUESTED GUARD.																**)
 
 
 (** #3.1 PREPROCESSING: REMOVE CONTEXT NAME FROM PYTHON OUTPUT AND DIVIDE CLOCK NAMES. **)
-(**)
+(* Each clock returned by Python is expressed in the form 'c.x' where 'c' is the *)
+(* context name and 'x' is the name of the clock. This function removes the *)
+(* context name and appends a semicolon to simplify parsing by showing *)
+(* clearly the end of a clock name. *)
 let rec remove_context stringInput = 
 	let regExp = (Str.regexp "c.[a-z]+") in
 	if ((testSearching stringInput regExp) == -1) then stringInput else
@@ -172,18 +173,22 @@ let rec remove_context stringInput =
 
 
 (** #3.2 REPLACE UNCOMFORTABLE SYMBOLS **)
-(**)
+(* True and False are replaced respectively with  '!' and '?' so the parser can easly distinguish them from the clock names. *)
+(* Final python parser will replace '!' and '?' with the types True and False. *)
 let replacing_bool stringGuard = 
 	let stringUpdated = Str.global_replace (Str.regexp "true") "?" stringGuard in
 	Str.global_replace (Str.regexp "false") "!" stringUpdated;;
 
-(**)
+(* To simplify parsing, all guards with two symbols ('<=', '>=' and '==') are replaced with a guard with only one symbol: respectively '$', '%', and '='. *)
+(* Now all guards have only one symbol and are parsed with only one step: ('<', '>', '=', '$', '%', '='). *)
 let replacing_equal stringGuard = 
 	let stringUpdated = Str.global_replace (Str.regexp "<=") "$" stringGuard in
 	let stringUpdated = Str.global_replace (Str.regexp ">=") "%" stringUpdated in
 	Str.global_replace (Str.regexp "==") "=" stringUpdated;;
 
-(**)
+(* Python represents diagonal constraints in the form like 'z<=t' (after preceding steps becomes 'z;$t;). *)
+(* To semplify the creation of Ocaml diagonal constraints (during parsing), the form becomes 'z;@t;$0'. *)
+(* The '@' indicates a difference between two guards, in order to use '-' symbol for negative numbers only. *) 
 let rec replacing_difference_variables stringGuard =
 	let regExp1 = (Str.regexp "[a-z]+;[\\$%=<>][a-z]+;") in															(* 		(y;<4 & y;<x;) 	*)
 	if ((testSearching stringGuard regExp1) == -1) then stringGuard else
@@ -191,23 +196,14 @@ let rec replacing_difference_variables stringGuard =
 		let regExp2 = (Str.regexp "[\\$%=<>]") in
 			if ((testSearching stringMatched regExp2) == -1) then stringGuard else
 				let sign = Str.matched_string stringMatched in																(*		<								*)				
-				let replace = Str.replace_first regExp2 "-" stringMatched in									(*		y;-x;						*)				
-				let replace = replace ^ sign ^ "0" in 																				(*		y;-x;<0					*)
-				let stringUpdated = Str.replace_first regExp1 replace stringGuard in					(*		y;<4 & y;-x;<0	*)
+				let replace = Str.replace_first regExp2 "-" stringMatched in									(*		y;@x;						*)				
+				let replace = replace ^ sign ^ "0" in 																				(*		y;@x;<0					*)
+				let stringUpdated = Str.replace_first regExp1 replace stringGuard in					(*		y;<4 & y;@x;<0	*)
 				replacing_difference_variables stringUpdated;;
 
-(**)
-let rec replacing_minus stringGuard =
-	let regExp = (Str.regexp "[a-z]+;-[a-z]+") in
-	if ((testSearching stringGuard regExp) == -1) then stringGuard else
-		let stringMatched = Str.matched_string stringGuard in
-		let stringSubstituted = String.map substitute_minus_char stringMatched in
-		let stringUpdated = Str.replace_first regExp stringSubstituted stringGuard in
-		replacing_minus stringUpdated;;
-
-(**)
+(* Main function to replace uncomfortable symbols in the Python output. *)
 let replacing_uncomfortable stringGuard =
-	replacing_minus (replacing_difference_variables (replacing_equal (replacing_bool stringGuard)));;
+	 replacing_difference_variables (replacing_equal (replacing_bool stringGuard));;
 
 
 (** #3.3 INFIX TO PREFIX. **)
@@ -269,6 +265,7 @@ let python_infix_to_prefix s = python_reverse(python_infix_to_prefix' (python_re
 
 
 (** #3.4 REVERSE GUARD **)
+(**)
 let reverse_guard_type guardType = 
 	match guardType with
 	| "<" -> ">"

@@ -9,7 +9,6 @@
 (*-------------------------------------------------- 
    OCAML TOPLEVEL IMPORTS (for Eclipse )
 
-		#load "str.cma";;
 		#load "xml-light.cma";;
 		#load "dynlink.cma";;
 		#load "camlp4o.cma";;
