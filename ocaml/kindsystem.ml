@@ -1,6 +1,6 @@
 (** ************************************************************************** **)
 (**                                                                            **)
-(**  	KINDSYSTEM (5): Offers functions to calculate the dual of a contract     **)
+(**  	KINDSYSTEM (6): Offers functions to calculate the dual of a contract.    **)
 (**									     																										   **)
 (** ************************************************************************** **)
 

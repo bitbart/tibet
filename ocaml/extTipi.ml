@@ -1,20 +1,15 @@
 (**
-*******************************************************
-**                                                   **
-**      2) Extended Timed TSB - Extended static      **
-**                                                   **
-*******************************************************
+****************************************************************
+**                                                            **
+**      EXTTIPI (3): Extended Timed TSB - Extended static.    **
+**                                                            **
+****************************************************************
 **)
-
-(*--------------------------------------------------
-    OCAML TOPLEVEL IMPORTS (for Eclipse )
-
-#load "str.cma";;
---------------------------------------------------*)
 
 
 (* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES*) 
 open Tipi;;
+open Tools;;
 
 
 
@@ -44,9 +39,9 @@ type extTsb = ExtNil | ExtSuccess |
 
 
 
-(** 										SECTION #2												**)
-(** CONVERT A CONTRACT INTO A CONTRACT THAT SUPPORTS OR. 	**)
-(**)
+(** 										SECTION #2																**)
+(** IT CONVERTS FROM STANDARD CONTRACT INTO AN EXTENDED CONTRACT	**)
+(* It Converts from tsb relation to extended tsb relation. *)
 let toExtRelation tsbRelation = 
 	match tsbRelation with
 	| Less -> ExtLess
@@ -55,17 +50,19 @@ let toExtRelation tsbRelation =
 	| GreatEq -> ExtGreatEq
 	| Eq -> ExtEq;;
 
-(**)
+(* It Converts from tsb guard to extended tsb guard (a guard that supports OR). *)
 let rec toExtGuard tsbGuard =
 	match tsbGuard with 
 	| (x, y, z)::l' -> And (SC(x, (toExtRelation y), z), (toExtGuard l')) 
 	| [] -> True;;
 
-(**)
+(* It Converts from tsb choice to extended tsb choice. *)
 let rec toExtChoice tsbIntChoice =
 	(match tsbIntChoice with
 	| [] -> []
 	| (w, TSBGuard x, y, z)::l' -> (w, TSBExtGuard(toExtGuard x), y, (toExtTsb z))::(toExtChoice l'))
+
+(* Main function that converts from tsb contract to extended tsb contract. *)
 and toExtTsb standardTsb = 
 	match standardTsb with
 	| Nil -> ExtNil
@@ -82,24 +79,29 @@ and toExtTsb standardTsb =
 (** 										SECTION #3												**)
 (** CONVERT A CONTRACT THAT SUPPORTS OR INTO A STRING. 		**)
 
-(** #3.1 CONVERT CONTRACT. **)
-(**)
+
+(** #3.1 CONTRACT CONVERTER. **)
+(* Given an action, it returns the action name. *)
 let actionToString action =
 	match action with
 	| TSBAction x -> x;;
 
-(**)
+(* Given a clock, it returns the action name. *)
 let clockToString clock =
 	match clock with
 	| TSBClock x -> x;;
 
-(**)
+(* Given a reset, it returns a string with the list of clocks names. *)
 let rec resetToString reset = 
 	match reset with
 	| [] -> ""
-	| x::l -> (clockToString x) ^ "," ^ (resetToString l);;
+	| x::l -> (clockToString x) ^ (
+		let temp = resetToString l in
+		match temp with
+		| "" -> ""
+		| _ -> "," ^ temp);;
 
-(**)
+(* It returns a string that represent an extended relation. *)
 let extRelationToString extRelation = 
 	match extRelation with
 	| ExtLess -> "<"
@@ -108,7 +110,7 @@ let extRelationToString extRelation =
 	| ExtGreatEq -> ">="
 	| ExtEq -> "=";;
 
-(**)
+(* It returns a string that represent an extended guard. *)
 let rec extGuardToString guard =
 	match guard with 
 	| SC(x, y, z) -> (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
@@ -124,76 +126,44 @@ let rec extGuardToString guard =
 	| True -> "True"
 	| False -> "False";;
 
-(**)
+(* It returns a string that represent an extended choice. *)
 let rec extChoiceToString extChoice typeChoice =
 	(match extChoice with
 	| [] -> ""
-	| (w, TSBExtGuard x, TSBReset y, z)::l' -> (actionToString w) ^ "{" ^ (extGuardToString x) ^ ";" ^ (resetToString y) ^ "}" ^ typeChoice ^ (extTsbToString z) ^ (extChoiceToString l' typeChoice))
-and extTsbToString extTsbContract =
+	| (w, TSBExtGuard x, TSBReset y, z)::l' -> (actionToString w) ^ "{" ^ (extGuardToString x) ^ ";" ^ (resetToString y) ^ "}" ^ typeChoice ^ (extTsbToString' z) ^ (extChoiceToString l' typeChoice))
+
+(* Function that converts from extended tsb contract to a string: result must be postprocessed. *)
+and extTsbToString' extTsbContract =
 	match extTsbContract with
 	| ExtNil -> ""
 	| ExtSuccess -> ""
 	| ExtIntChoice x -> (extChoiceToString x "+")
 	| ExtExtChoice x -> (extChoiceToString x "&")
-	| ExtRec (x, y) -> "REC 'x' [" ^ (extTsbToString y) ^ "]"
+	| ExtRec (x, y) -> "REC 'x' [" ^ (extTsbToString' y) ^ "]"
 	| ExtCall x -> "'x'";;
 
 
 (** #3.2 POSTPROCESSING: STRING MUST BE CLEANED. **)
-(**)
-let testSearching stringInput regExp =
-  try Str.search_forward regExp stringInput 0 with Not_found -> -1;;
-
-(**)
+(* It adds a special character to support search with regular expression. *)
 let add_star stringInput = 
 	stringInput ^ "*";;
 
-(**)
-let rec remove_comma stringInput = 
-	let regExp = (Str.regexp "[0-9]+,;") in
-	if ((testSearching stringInput regExp) == -1) then stringInput else
-		let matched = (Str.matched_string stringInput) in 
-		let temp = (String.sub matched 0 ((String.length matched) - 2))^";" in 
-		let stringUpdated = Str.replace_first regExp temp stringInput in
-		remove_comma stringUpdated;;
-
-(**)
-let rec remove_semicolon stringInput = 
-	let regExp = (Str.regexp "{;}") in
-	if ((testSearching stringInput regExp) == -1) then stringInput else
-		let matched = (Str.matched_string stringInput) in 
-		let temp = (String.sub matched 0 ((String.length matched) - 2))^"}" in 
-		let stringUpdated = Str.replace_first regExp temp stringInput in
-		remove_semicolon stringUpdated;;
-
-(**)
-let rec remove_empty_spaces stringInput = 
-	let regExp = (Str.regexp "[a-z]+,}") in
-	if ((testSearching stringInput regExp) == -1) then stringInput else
-		let matched = (Str.matched_string stringInput) in
-		let temp = (String.sub matched 0 ((String.length matched) - 2))^"}" in 
-		let stringUpdated = Str.replace_first regExp temp stringInput in
-		remove_empty_spaces stringUpdated;;
-
-(**)
+(* It removes choices symbols that appear at the end of the string. *)
 let rec remove_wrong_choices stringInput = 
-	let regExp = (Str.regexp "[\\+&][^a-z]") in
+	let regExp = (Str.regexp "[\\+&][^a-z\\']") in
 	if ((testSearching stringInput regExp) == -1) then stringInput else
 		let matched = (Str.matched_string stringInput) in
 		let temp = (String.sub matched 0 ((String.length matched) - 2))^(String.sub matched ((String.length matched) - 1) 1) in 
 		let stringUpdated = Str.replace_first regExp temp stringInput in
 		remove_wrong_choices stringUpdated;;
 
-(**)
+(* It removes the special character added at the end of the string. *)
 let remove_star stringInput =
 	String.sub stringInput 0 ((String.length stringInput) - 1);;
 
-(**)
-let postprocessingTsbString stringInput = 
-	let s = extTsbToString stringInput in
+(* Main function to perform the translation from extended tsb to string, and then to postprocess the result. *)
+let extTsbToString stringInput = 
+	let s = extTsbToString' stringInput in
 	let s = add_star s in
-	let s = remove_comma s in
-	let s = remove_semicolon s in
-	let s = remove_empty_spaces s in
 	let s = remove_wrong_choices s in
 	remove_star s;;

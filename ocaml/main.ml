@@ -1,7 +1,7 @@
 (** 
  ********************************************************************************
  **																																						 **
- **				MAIN (10): Contains a simple interface to run CTU converter          **
+ **				MAIN (11): Contains a simple interface to run CTU converter.         **
  **																																						 **
  ********************************************************************************
  **)
@@ -79,7 +79,7 @@ let main =
 			| "-dk" ->
 						print_string(extGuardToString (kindof (toExtTsb (readXmlContract (Sys.argv.(2))))))
 			| "-dd" ->
-						print_string(postprocessingTsbString (dualof (toExtTsb (readXmlContract (Sys.argv.(2))))))
+						print_string(extTsbToString (dualof (toExtTsb (readXmlContract (Sys.argv.(2))))))
       | _ -> 
 					print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
       )

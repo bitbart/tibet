@@ -1,7 +1,7 @@
 (** 
  ********************************************************************************
  **																																						 **
- **				PYTHON (4): Offers functions to use python libraries      					 **
+ **				PYTHON (5): Offers functions to use python libraries.     					 **
  **																																						 **
  ********************************************************************************
  **)
@@ -16,6 +16,7 @@ open Unix;;
 open Errors;;
 open Tipi;;
 open ExtTipi;;
+open Tools;;
 
 (** 									SECTION #1								**)
 (** GENERAL TOOLS USED BY DIFFERENT FUNCTIONS. 	**)
@@ -90,10 +91,6 @@ let rec python_remove_spaces s =
     | '\r' -> "" ^ python_remove_spaces s' 
     | '\t' -> "" ^ python_remove_spaces s'
   | _ -> (String.make 1 c) ^ python_remove_spaces s';;
-
-(* It looks for a regular expression in a string: if there is no match, function returns -1, else it returns the position of the first result in the string. *)
-let testSearching stringInput regExp =
-  try Str.search_forward regExp stringInput 0 with Not_found -> -1;;
 
 
 
@@ -410,6 +407,7 @@ let toGuard pythonOutput =
 
 (** 						SECTION #4								**)
 (** OCAML INTERFACE TO PYTHON LIBRARIES. 	**)
+
 
 (** #4.1 PAST: CALLS PYTHON FUNCTION 'DOWN' **)
 (* It takes a guard, then calls python libraries and executes the 'down' function. It returns a new guard. *)
