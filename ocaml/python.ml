@@ -190,20 +190,30 @@ let replacing_equal stringGuard =
 (* To semplify the creation of Ocaml diagonal constraints (during parsing), the form becomes 'z;@t;$0'. *)
 (* The '@' indicates a difference between two guards, in order to use '-' symbol for negative numbers only. *) 
 let rec replacing_difference_variables stringGuard =
-	let regExp1 = (Str.regexp "[a-z]+;[\\$%=<>][a-z]+;") in															(* 		(y;<4 & y;<x;) 	*)
+	let regExp1 = (Str.regexp "[a-z]+;[\\$%=<>][a-z]+;") in														  (* 		(y;<4 & y;<x;) 	*)
 	if ((testSearching stringGuard regExp1) == -1) then stringGuard else
 		let stringMatched = Str.matched_string stringGuard in															(*		y;<x;						*)
 		let regExp2 = (Str.regexp "[\\$%=<>]") in
 			if ((testSearching stringMatched regExp2) == -1) then stringGuard else
 				let sign = Str.matched_string stringMatched in																(*		<								*)				
-				let replace = Str.replace_first regExp2 "-" stringMatched in									(*		y;@x;						*)				
-				let replace = replace ^ sign ^ "0" in 																				(*		y;@x;<0					*)
-				let stringUpdated = Str.replace_first regExp1 replace stringGuard in					(*		y;<4 & y;@x;<0	*)
+				let replace = Str.replace_first regExp2 "-" stringMatched in									(*		y;-x;						*)				
+				let replace = replace ^ sign ^ "0" in 																				(*		y;-x;<0					*)
+				let stringUpdated = Str.replace_first regExp1 replace stringGuard in					(*		y;<4 & y;-x;<0	*)
 				replacing_difference_variables stringUpdated;;
+
+(**)
+let rec replacing_minus stringGuard =
+	let regExp1 = (Str.regexp "[a-z]+;-[a-z]+") in
+	if ((testSearching stringGuard regExp1) == -1) then stringGuard else
+		let stringMatched = Str.matched_string stringGuard in
+		let regExp2 = (Str.regexp "-") in
+		let replace = Str.replace_first regExp2 "@" stringMatched in
+		let stringUpdated = Str.replace_first regExp1 replace stringGuard in
+		replacing_minus stringUpdated;;
 
 (* Main function to replace uncomfortable symbols in the Python output. *)
 let replacing_uncomfortable stringGuard =
-	 replacing_difference_variables (replacing_equal (replacing_bool stringGuard));;
+	 replacing_minus (replacing_difference_variables (replacing_equal (replacing_bool stringGuard)));;
 
 
 (** #3.3 INFIX TO PREFIX. **)
