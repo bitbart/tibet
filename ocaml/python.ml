@@ -186,9 +186,10 @@ let replacing_equal stringGuard =
 	let stringUpdated = Str.global_replace (Str.regexp ">=") "%" stringUpdated in
 	Str.global_replace (Str.regexp "==") "=" stringUpdated;;
 
-(* Python represents diagonal constraints in the form like 'z<=t' (after preceding steps becomes 'z;$t;). *)
-(* To semplify the creation of Ocaml diagonal constraints (during parsing), the form becomes 'z;@t;$0'. *)
-(* The '@' indicates a difference between two guards, in order to use '-' symbol for negative numbers only. *) 
+(* Python represents diagonal constraints in two possible forms: 'z<=t' or 'z-t<=5' *)
+(* Diagonal constraints in the first form, after preceding steps, becomes 'z;$t;'. *)
+(* To semplify the creation of Ocaml diagonal constraints (during parsing), this form becomes 'z;-t;$0'. *)
+(* Now the first form is converted to the second form and exists only one form for represent a diagonal constraint. *)
 let rec replacing_difference_variables stringGuard =
 	let regExp1 = (Str.regexp "[a-z]+;[\\$%=<>][a-z]+;") in														  (* 		(y;<4 & y;<x;) 	*)
 	if ((testSearching stringGuard regExp1) == -1) then stringGuard else
@@ -201,7 +202,9 @@ let rec replacing_difference_variables stringGuard =
 				let stringUpdated = Str.replace_first regExp1 replace stringGuard in					(*		y;<4 & y;-x;<0	*)
 				replacing_difference_variables stringUpdated;;
 
-(**)
+(* The '@' indicates a difference between two guards, in order to use '-' symbol for negative numbers only. *) 
+(* All diagonal constraints are (after preceding steps) in the form: 'z;-t;$0'. *)
+(* Now diagonal constraints become in the form: 'z;@t;$0'. *)
 let rec replacing_minus stringGuard =
 	let regExp1 = (Str.regexp "[a-z]+;-[a-z]+") in
 	if ((testSearching stringGuard regExp1) == -1) then stringGuard else
@@ -217,16 +220,7 @@ let replacing_uncomfortable stringGuard =
 
 
 (** #3.3 INFIX TO PREFIX. **)
-
-(**)
-let rec python_reverse s =
-	match s with
-	| "" -> ""
-	| _ ->
-		let new_len =  (String.length s) - 1 in
-		(String.make 1 (String.get s new_len)) ^ (python_reverse (String.sub s 0 new_len));;
-
-(**) 
+(* It shows the priority of python operators. *) 
 let python_getOp_prio op =
 	match op with
 	| '@' -> 6
@@ -236,7 +230,7 @@ let python_getOp_prio op =
 	| '(' -> 2
 	| _ -> 0;;
 
-(* Algorithm for conversion from infix to prefix notation *)
+(* Algorithm for handle the stack. *)
 let rec python_update_stack res pr =
 	let (s, l) = res in
 		match l with
@@ -246,7 +240,7 @@ let rec python_update_stack res pr =
 			else res
 		| [] -> res;;
 
-(**)
+(* Algorithm for conversion from infix to prefix notation *)
 let rec python_infix_to_prefix' s stack =
 	match s with
 	| "" -> 
@@ -270,12 +264,12 @@ let rec python_infix_to_prefix' s stack =
 			output ^ python_infix_to_prefix' s' ('@'::new_stack)
 	  | _ -> (String.make 1 c) ^ python_infix_to_prefix' s' stack;;
 
-(**)
+(* Main function to convert from infix to prefix notation. *)
 let python_infix_to_prefix s = python_reverse(python_infix_to_prefix' (python_reverse (python_remove_spaces (s))) []);;
 
 
 (** #3.4 REVERSE GUARD **)
-(**)
+(* Support to reverse guards*)
 let reverse_guard_type guardType = 
 	match guardType with
 	| "<" -> ">"
@@ -284,7 +278,9 @@ let reverse_guard_type guardType =
 	| ">" -> "<"
 	| _ -> "$";;
 
-(**)
+(* Python returns the guards in two forms: 'x>5' or '-3<t'. In order to simplify parsing, *)
+(* all guards are kept in only one form (the first). So the second form (that after *)
+(* preceding steps become '-3<t;') now become 't;>-3'. *)
 let rec reverse_guard stringGuard = 
 	let regExp = (Str.regexp "[-]*[0-9]+[\\$%=<>][a-z]+;") in
 	if ((testSearching stringGuard regExp) == -1) then stringGuard else
@@ -305,7 +301,7 @@ let rec reverse_guard stringGuard =
 
 
 (** #3.5 ADDING GUARD SEPARATOR **)
-(**)
+(* In order to semplify parsing, all guards are enclosed by braces. *)
 let rec adding_open_guard_separator stringGuard = 
 	let regExp = (Str.regexp "[^{]*[@]*[a-z]+") in
 	if ((testSearching stringGuard regExp) == -1) then stringGuard else
@@ -319,7 +315,7 @@ let rec adding_open_guard_separator stringGuard =
 		let nextFragment = String.sub stringUpdated position ((String.length stringUpdated)-position) in
 		thisFragment^(adding_open_guard_separator nextFragment);;
 
-(**)
+(* In order to semplify parsing, all guards are enclosed by braces. *)
 let rec adding_close_guard_separator stringGuard =
 	let regExp = (Str.regexp "[0-9]+[^}]*") in
 	if ((testSearching stringGuard regExp) == -1) then stringGuard else
@@ -333,19 +329,19 @@ let rec adding_close_guard_separator stringGuard =
 		let nextFragment = String.sub stringUpdated position ((String.length stringUpdated)-position) in
 		thisFragment^(adding_close_guard_separator nextFragment);;
 
-(**)
+(* In order to semplify parsing, all guards are enclosed by braces. *)
 let adding_guard_separator stringGuard =
 	adding_open_guard_separator (adding_close_guard_separator stringGuard);;
 
 
 (** #3.6 PYTHON MAIN PARSER **)
-(**)
+(* Guard-value parser. Values are at the end of the guard and guards are enclosed by braces. *)
 let rec python_parse_guardValue =
 	parser
   [< ''}' >] -> ""
   | [< 'x; y = python_parse_guardValue ?? "Error calculating value" >] -> (String.make 1 x ^ y);;
 
-(**)
+(* Guard-operator parser. Operators length is always 1 character. *)
 let python_parse_guardType =
 	parser
 	[< ''$' >] -> ExtLessEq					  (*  <=  *)
@@ -354,28 +350,29 @@ let python_parse_guardType =
 	| [< ''<' >] -> ExtLess					  (*  <  *)
 	| [< ''>' >] -> ExtGreat;; 				(*  >  *)
 
-(**)
+(* Guard-name parser. Names length is arbitrary but a semicolon shows the end of a name. *)
 let rec python_parse_name =
 	parser
 	[< '';' >] -> "" 
 	| [< 'x; y = python_parse_name ?? raise (Stream.Error "Missing variable name") >] -> (String.make 1 x ^ y) ;;
 
-(**)
+(* Main guard-parser. There are two types of guards: diagonal constraint (always marked by a '@') *)
+(* and simple constraint. According to the extended types syntax, guards are builded. *)
 let python_parse_guards =
 	parser
 	[< ''@'; 
-			w = python_parse_name ?? raise (Stream.Error "Missing diagonal first variable"); 
-			x = python_parse_name ?? raise (Stream.Error "Missing diagonal second variable"); 
-			y = python_parse_guardType ?? raise (Stream.Error "Missing diagonal operator"); 
-			z = python_parse_guardValue ?? raise (Stream.Error "Missing diagonal value") >] -> 
+			w = python_parse_name ?? raise (Stream.Error "Missing diagonal constraint first variable"); 
+			x = python_parse_name ?? raise (Stream.Error "Missing diagonal constraint second variable"); 
+			y = python_parse_guardType ?? raise (Stream.Error "Missing diagonal constraint operator"); 
+			z = python_parse_guardValue ?? raise (Stream.Error "Missing diagonal constraint value") >] -> 
 				DC (TSBClock w, TSBClock x, y, (int_of_string z))
 	| [< 'w;
-			x = python_parse_name ?? raise (Stream.Error "Missing diagonal second variable"); 
-			y = python_parse_guardType ?? raise (Stream.Error "Missing diagonal operator"); 
-			z = python_parse_guardValue ?? raise (Stream.Error "Missing diagonal value") >] ->
+			x = python_parse_name ?? raise (Stream.Error "Missing simple constraint second variable"); 
+			y = python_parse_guardType ?? raise (Stream.Error "Missing simple constraint operator"); 
+			z = python_parse_guardValue ?? raise (Stream.Error "Missing simple constraint value") >] ->
 				SC(TSBClock (String.make 1 w ^ x), y, (int_of_string z));;
 
-(**)
+(* Main guard parser from python output to extended guard. *)
 let rec python_parser =
 	parser
 	[< ''{'; 
@@ -391,22 +388,21 @@ let rec python_parser =
 
 
 (* It takes the output received by python libraries and converts it in a guard. *)
-(* 0) Take Python output. *)
-(* 1) Remove the final '\n' *)
-(* 1) Remove context name. *)
-(* 2) Replacing symbols uncomfortable: '<=' became '$', '>=' became '%' and '==' became '='. *)
-(* 3) Infix to Prefix. *)
-(* 4) Reverse guards. *)
-(* 5) Adding guard separator. *)
-(* 6) Parsing result. *)
+(* 0) Take Python output and remove the final '\n' *)
+(* 1) Remove context name and mark all variables with a semicolon. *)
+(* 2) Replacing symbols uncomfortable: '<=', '>=', '==', true, false and '-' (for guards only). *)
+(* 3) Reverse guards from '4<x' to 'x>4'. *)
+(* 4) Infix to Prefix. *)
+(* 5) Adding guard separator from 'x>4' to '{x>4}'. *)
+(* 6) Parsing result from string to extended guard. *)
 let toGuard pythonOutput =
-	let guard = String.sub pythonOutput 0 ((String.length pythonOutput)-1) in
-	let guard = remove_context guard in
-	let guard = replacing_uncomfortable guard in
-	let guard = reverse_guard guard in
-	let guard = python_infix_to_prefix guard in
-	let guard = adding_guard_separator guard in
-	python_parser (Stream.of_string guard);;
+	let guard0 = String.sub pythonOutput 0 ((String.length pythonOutput)-1) in
+	let guard1 = remove_context guard0 in
+	let guard2 = replacing_uncomfortable guard1 in
+	let guard3 = reverse_guard guard2 in
+	let guard4 = python_infix_to_prefix guard3 in
+	let guard5 = adding_guard_separator guard4 in
+	python_parser (Stream.of_string guard5);;
 
 
 
