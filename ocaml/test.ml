@@ -350,12 +350,9 @@ applyTime t3 (TSBClock "x");;
 (********************************************************)
 (*                                                      *)
 (*              Handling Python Errors                  *) 
-(*               									                      *)
-(*                                                      *)
 (*                                                      *)
 (********************************************************)
 
-(* Original examples by Tiziana *)
 let g1 = (And(SC(TSBClock "x", ExtLess, 4),DC (TSBClock "x", TSBClock "t", ExtLessEq, 7)));;
 let g2 = (Or(SC(TSBClock "x", ExtEq, 4),DC (TSBClock "x", TSBClock "t", ExtGreatEq, 7)));;
 let g3 = (Or(SC(TSBClock "t", ExtEq, 4), Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
@@ -363,18 +360,8 @@ let g4 = (Or(Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),S
 let g5 = (And(Or(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
 let g6 = (Or(And(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7)),SC(TSBClock "t", ExtEq, 4)));;
 let g7 = (Or(SC(TSBClock "t", ExtEq, 4), And(SC(TSBClock "x", ExtEq, 4), SC (TSBClock "x",  ExtGreatEq, 7))));;
-let gA = (Or(SC(TSBClock "t", ExtEq , 4), And(SC(TSBClock "x", ExtEq, 5), SC (TSBClock "s", ExtEq, 6))));;
-let gB = (And(Or(SC(TSBClock "t", ExtEq , 4),SC(TSBClock "x", ExtEq, 5)),  SC (TSBClock "s", ExtEq, 6)));;
-
-past g1;;
-past g2;;
-past g3;;
-past g4;;
-past g5;;
-past g6;;
-past g7;;
-past gA;;
-past gB;;
+let g8 = (Or(SC(TSBClock "t", ExtEq , 4), And(SC(TSBClock "x", ExtEq, 5), SC (TSBClock "s", ExtEq, 6))));;
+let g9 = (And(Or(SC(TSBClock "t", ExtEq , 4),SC(TSBClock "x", ExtEq, 5)),  SC (TSBClock "s", ExtEq, 6)));;
 
 let clockX = TSBClock "x";;
 
@@ -385,8 +372,8 @@ invReset g4 clockX;;
 invReset g5 clockX;;
 invReset g6 clockX;;
 invReset g7 clockX;;
-invReset gA clockX;;
-invReset gB clockX;;
+invReset g8 clockX;;
+invReset g9 clockX;;
 
 subtract g1 g2;;
 subtract g1 g3;;
@@ -394,8 +381,8 @@ subtract g1 g4;;
 subtract g1 g5;;
 subtract g1 g6;;
 subtract g1 g7;;
-subtract g1 gA;;
-subtract g1 gB;;
+subtract g1 g8;;
+subtract g1 g9;;
 
 equivalence g1 g1;;
 equivalence g1 g2;;
@@ -404,8 +391,8 @@ equivalence g1 g4;;
 equivalence g1 g5;;
 equivalence g1 g6;;
 equivalence g1 g7;;
-equivalence g1 gA;;
-equivalence g1 gB;;
+equivalence g1 g8;;
+equivalence g1 g9;;
 
 
 let pythonOutput = "(1<c.s & c.s<=6 & c.s-c.x==1) | (2<=c.s & c.s<=6 & c.s-c.t==2)\n";;

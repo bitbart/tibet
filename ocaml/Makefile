@@ -1,5 +1,6 @@
 .PHONY: clean
 
+
 all:
 	ocamlopt -c errors.ml
 	ocamlopt -c tools.ml
@@ -16,5 +17,12 @@ all:
 
 	ocamlopt -o ctu unix.cmxa str.cmxa xml-light.cmxa errors.cmx tools.cmx tipi.cmx extTipi.cmx mapping.cmx python.cmx kindsystem.cmx toXML.cmx fromXML.cmx cparser.cmx monitor.cmx main.cmx
 
+
+test:
+	make all
+	ocamlopt -c tests/testPython.ml
+
+
 clean:
 	@'rm' *.cmo *.cmi *.cmx *.o ctu 2>/dev/null || true
+	@'rm' tests/*.cmi tests/*.cmx tests/*.o 2>/dev/null || true 
