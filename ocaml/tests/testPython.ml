@@ -38,4 +38,6 @@ let rec test functionTest guardList  =
 	| h::t -> (test' functionTest h) && (test functionTest t);;
 
 (* Testing past. *)
-assert (test past guardList)
+let testPast =
+	let x = assert ((test past guardList) == true) in
+	ignore x; "Done";
