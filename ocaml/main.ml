@@ -64,6 +64,10 @@ let main =
 					print_string ("Contract is valid")
 				else
 					print_string ("Contract is not valid")
+			| "-da" -> let rc = read_one_contract stdin in
+          if (admitsCompliant (toExtTsb (readXmlContract rc))) then print_string("yes") else print_string("no")
+      | "-dk" -> let rc = read_one_contract stdin in print_string(extGuardToString (kindof (toExtTsb (readXmlContract rc))))
+      | "-dd" -> let rc = read_one_contract stdin in print_string(extTsbToString (dualof (toExtTsb (readXmlContract rc))))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
     | 3 -> 
@@ -74,12 +78,6 @@ let main =
             start_mon (List.hd rc) (List.hd (List.rev rc)) (Sys.argv.(2))
 			| "-ie" ->
 						if (isEnded (Sys.argv.(2))) then print_string("yes") else print_string("no")
-			| "-da" ->
-						if (admitsCompliant (toExtTsb (readXmlContract (Sys.argv.(2))))) then print_string("yes") else print_string("no")
-			| "-dk" ->
-						print_string(extGuardToString (kindof (toExtTsb (readXmlContract (Sys.argv.(2))))))
-			| "-dd" ->
-						print_string(extTsbToString (dualof (toExtTsb (readXmlContract (Sys.argv.(2))))))
       | _ -> 
 					print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
       )
