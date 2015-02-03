@@ -89,26 +89,6 @@ let rec envdualof env p = match p with
 IS PART OF THE API*)
 let dualof = envdualof emptyRecEnv;;
 
-(*conversion of tsb_ext_relation in the corresponding ocaml function*)
-let op_of_rel rel = match rel with
-    ExtLess -> (<)
-  | ExtGreat -> (>)
-  | ExtLessEq -> (<=)
-  | ExtGreatEq -> (>=)
-  | ExtEq -> (==);;
-
-(*checks if a clock evaluation nu satisfy the guard g. nu must be of type: tsb_clock -> float*)
-let rec satisfy nu g = match g with
-    False -> false
-  | True -> true
-  | SC(x,rel,d) -> (op_of_rel rel) (nu x) (float_of_int d)
-  | DC(x,y,rel,d) -> (op_of_rel rel) ((nu x) -. (nu y)) (float_of_int d)
-  | And(g,g') -> (satisfy nu g) && (satisfy nu g')
-  | Or(g,g') -> (satisfy nu g) || (satisfy nu g')
-  | Not(g) -> not (satisfy nu g);;
-
-(*the starting clock evaluation*)
-let nu0 (TSBClock s) = 0.;; 
 
 (*checks if p admits a compliant TST by verifing that nu0 satisfy the kind of p
 IS PART OF THE API*)

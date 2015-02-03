@@ -24,7 +24,6 @@ open Mapping;;
 open Printf;; 
 
 
-
 let escape g =
 	let ampregex = Str.regexp "&" in 
 	let g' = Str.global_replace ampregex "&amp;" g in

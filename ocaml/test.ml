@@ -522,3 +522,4 @@ parse_multiple_contracts "!a.!b!c";;												(* Error #2. The error occurred 
 
 
 (* To test. *)
+
