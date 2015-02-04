@@ -6,6 +6,9 @@
 ****************************************************************
 **)
 
+(*Emacs inclusions*)
+(*#use "tipi.ml";;*)
+(*#use "tools.ml";;*)
 
 (* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES*) 
 open Tipi;;
@@ -13,9 +16,7 @@ open Tools;;
 
 
 
-
-
-(** 						SECTION #1								**)
+(** 	SECTION #1								**)
 (** EXTGUARD: A GUARD THAT CAN HAVE 'OR'. **)
 type tsb_ext_relation = ExtLess | ExtGreat | ExtLessEq | ExtGreatEq | ExtEq;;
 
@@ -24,8 +25,8 @@ type extGuard =   SC of tsb_clock * tsb_ext_relation * int              (*simple
                 | And of extGuard * extGuard 
                 | Or of extGuard * extGuard 
                 | Not of extGuard
-								| True
-								| False;;
+		| True
+		| False;;
 
 type tsb_extGuard =  TSBExtGuard of extGuard;;
 
@@ -34,11 +35,6 @@ type extTsb = ExtNil | ExtSuccess |
            ExtExtChoice of (tsb_action *tsb_extGuard * tsb_reset * extTsb) list  |
            ExtRec of string * extTsb |
            ExtCall of string ;;
-
-
-
-
-
 (** 										SECTION #2																**)
 (** IT CONVERTS FROM STANDARD CONTRACT INTO AN EXTENDED CONTRACT	**)
 (* It Converts from tsb relation to extended tsb relation. *)
@@ -73,10 +69,7 @@ and toExtTsb standardTsb =
 	| Call x -> ExtCall x;;
 
 
-
-
-
-(** 										SECTION #3												**)
+(**	SECTION #3     **)
 (** CONVERT A CONTRACT THAT SUPPORTS OR INTO A STRING. 		**)
 
 
@@ -167,3 +160,4 @@ let extTsbToString stringInput =
 	let s = add_star s in
 	let s = remove_wrong_choices s in
 	remove_star s;;
+
