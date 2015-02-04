@@ -20,6 +20,8 @@ open ExtTipi;;
 open Mapping;;
 open ToXML;;
 open FromXML;;
+open Python;;
+open Kindsystem;;
 
 
 
