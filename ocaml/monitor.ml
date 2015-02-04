@@ -16,6 +16,7 @@
 
 open Errors;;
 open Tipi;;
+open ExtTipi;;
 open Mapping;;
 open ToXML;;
 open FromXML;;
