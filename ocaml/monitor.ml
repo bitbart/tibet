@@ -245,9 +245,24 @@ let deserialize_net f =
 	net
 ;;
 
-(*!!!!!!!!!!!! Fake function tmp_readXmlContract   !!!! TO BE IMPLEMENTED*)
-let tmp_readXmlContract p = if false then ExtNil 
-                            else failwith "Fake tmp_readXmlContract function in monitor.ml: to be implemented";;
+let rec findDualTag attrs =
+  match attrs with
+  | ("dual", "1")::l' -> true
+  | a::l' -> findDualTag l'
+  | [] -> false
+;;
+
+let is_dual xml =
+	let input = Xml.parse_string xml in
+  match input with
+  | Xml.Element ("contract", attrs, c) -> findDualTag attrs
+  | _ -> failwith _ERR_103
+;;
+
+let tmp_readXmlContract p = 
+	if (is_dual p) then dualof (toExtTsb (readXmlContract p)) 
+	else toExtTsb (readXmlContract p)
+;;
 
 let start_mon p q filename = 
 	let net1 = m_extStart (tmp_readXmlContract p) (tmp_readXmlContract q) in

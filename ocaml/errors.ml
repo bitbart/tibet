@@ -68,6 +68,7 @@ let _ERR_999 = "ERR_999: The contract contains an unhandled syntax error. Check 
 let _ERR_100 = "ERR_100: Action not found.";;
 let _ERR_101 = "ERR_101: Wrong pid.";;
 let _ERR_102 = "ERR_102: Unbound id: Call.";;
+let _ERR_103 = "ERR_103: Not a valid contract to dualize.";;
 
 
 (* LIST OF PYTHON ERRORS *)
