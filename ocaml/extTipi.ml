@@ -35,9 +35,31 @@ type extTsb = ExtNil | ExtSuccess |
            ExtExtChoice of (tsb_action *tsb_extGuard * tsb_reset * extTsb) list  |
            ExtRec of string * extTsb |
            ExtCall of string ;;
-(** 										SECTION #2																**)
-(** IT CONVERTS FROM STANDARD CONTRACT INTO AN EXTENDED CONTRACT	**)
-(* It Converts from tsb relation to extended tsb relation. *)
+
+(*************************************)
+(*                                   *)
+(*      Defining equations          *)
+(*                                   *)
+(*************************************)
+
+type de =  DENil | DESuccess |
+           DEIntChoice of (tsb_action * tsb_extGuard * tsb_reset * string) list | 
+           DEExtChoice of (tsb_action *tsb_extGuard * tsb_reset * string) list  
+;;
+
+type ide = string;;
+
+type def_eqn_nf = ide * (ide * de) list;;
+
+
+
+(******************************************************************)
+(*                                                                *)
+(** 	     SECTION #2	                                         **)
+(** IT CONVERTS FROM STANDARD CONTRACT INTO AN EXTENDED CONTRACT **)
+(* It Converts from tsb relation to extended tsb relation.        *)
+(*                                                                *)
+(******************************************************************)
 let toExtRelation tsbRelation = 
 	match tsbRelation with
 	| Less -> ExtLess

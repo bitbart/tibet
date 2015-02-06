@@ -42,7 +42,6 @@ type tsb = Nil | Success |
 
 
 
-
 (**********************************************************)
 (*                                                        *)
 (*         Timed Automata                                 *)
@@ -76,9 +75,9 @@ type automa =TimedAutoma of
                 (string * string) set;; (*procedure list*)
 
 (**************Constructors ********************)
-let emptyAutoma = TimedAutoma ("",[],Loc "",[],[],[], [], [], [], [], [],  []);;
+let emptyAutomaton = TimedAutoma ("",[],Loc "",[],[],[], [], [], [], [], [],  []);;
 
-let idleAutoma = TimedAutoma ("",[Loc "l"],Loc "l",[],[],[], [], [], [], [], [],  []);;
+
 
 (**************Getter for automa fields ********************)
 let getInit  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = init;; 
@@ -95,8 +94,15 @@ let getProcs  (TimedAutoma (name, locations, init, labels, edges, invariants, cl
 
 let getClocks  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = clocks;; 
 
+let getGlobalClocks  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = globalClocks;; 
+
 let getCommitted  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = committed;; 
 
+let getVariables  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = variables;; 
+
+let getGlobalVariables  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = globalVariables;; 
+
+let getProcedures  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) = procedures;; 
 (**************Setter for automa fields ********************)
 let setName   (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures)) name' = (TimedAutoma (name', locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures));; 
 
@@ -135,6 +141,7 @@ let rec print_clocks la = match la with
 let rec print_automataIds la = match la with
      []-> []
 |  (TimedAutoma (id, locations, init, labels, edges, invariants, clocks, globalClocks,  committed, variables, globalVariables,  procedures))::tl -> id::(print_automataIds tl);; 
+
 
 
 (*********Debugging utilities*********)
