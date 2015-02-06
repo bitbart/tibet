@@ -12,7 +12,7 @@ let p  = ExtIntChoice [(TSBAction "c", g1, TSBReset r1, ExtSuccess);
                        (TSBAction "d", g2, TSBReset r2, ExtSuccess)];;
 let q  = ExtExtChoice [(TSBAction "c", g1, TSBReset r1, ExtSuccess); 
                        (TSBAction "d", g2, TSBReset r2, ExtSuccess)];;
-let lta = tsb_mapping   p q;;
+let lta = extTsb_mapping   p q;;
 writeToFile lta "ex_prova";;
 
 

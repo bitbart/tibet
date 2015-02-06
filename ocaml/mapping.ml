@@ -42,8 +42,9 @@ open ExtTipi;;
 (* 2) let tsb_mapping p q  =  [ buildAutomatonMain ( toExtTsb  p) "p" ; buildAutomatonMain ( toExtTsb  q) "q"] ;;*)
 (* convert a tsb into  a  extTsb and transforms it into an automaton*)
 (* *)
+(* This mapping uses tsb in defining equations normal form (denf) *)
 (* Tsb are checked in order to:*)
-(* 1) normalize all the guards*)
+(* 1) normalize all the guards   -- this is done during the tranformation into denf*)
 (* 2) there are no free recursion variables*)
 (* 3) there are no rec in not guarded-sequeces*)
 (**)
@@ -57,8 +58,8 @@ open ExtTipi;;
 (*                                                                                                  *)
 (*                                                                                                  *)
 (****************************************************************************************************)
-(*We normalize guard and make sure that for every clock, there is one window frame to fire the action*)
-(* we need to trnsform t<4, t<7, t<10 into t<4   and t<4, t >7 into t <0 *)
+(* We normalize guard and make sure that for every clock, there is one window frame/Interval to fire the action*)
+(* We need to transform t<4, t<7, t<10 into t<4;   and t<4, t >7 into t <0 *)
 (* so that every clock a singlo interval of the form:*)
 (* t>d1 and t<d2  (with <= or >= as well) OR *)
 (* t< d OR *)
@@ -214,7 +215,7 @@ normalize_guard g2;;
 (****************************************************************************************************)
 (*                                                                                                  *)
 (*                    Omega invariant for internal choice:                                          *)
-(*            you  wait as long as  there is still  something you can do                            *)
+(*            "you  wait as long as  there is still  something you can do"                          *)
 (*                                                                                                  *)
 (****************************************************************************************************)
 
@@ -390,6 +391,14 @@ let t1  = ExtRec ("X",  ExtIntChoice [(TSBAction "a", TSBExtGuard True, TSBReset
 extTsbToDENF t1;;
 
 normalize_guard g1;;
+
+
+
+
+
+
+
+
 (****************************************************************************************************)
 (*                                                                                                  *)
 (*                   Patterns                                                                       *)
@@ -397,7 +406,7 @@ normalize_guard g1;;
 (****************************************************************************************************)
 (****************************************************************************************************)
 (*                                                                                                  *)
-(*                    Idle Automa                                                                   *)
+(*                    Idle Automaton                                                                *)
 (*                                                                                                  *)
 (****************************************************************************************************)
 (*The idle automaton does nothing*)
@@ -405,7 +414,7 @@ let idleAutomaton (Loc l) = TimedAutoma ("",[Loc l], Loc l,[],[],[], [], [], [l]
 
 (****************************************************************************************************)
 (*                                                                                                  *)
-(*                    Success Automa                                                                *)
+(*                    Success Automaton                                                             *)
 (*                                                                                                  *)
 (****************************************************************************************************)
 (*The success automaton  synchronize on self loop, to allow for the property not deadlock to be true*)
@@ -415,7 +424,7 @@ let successAutomaton (Loc l)  = let edges =  [ Edge ( Loc l, Label  (successSync
                        in TimedAutoma ("",[Loc l], Loc l,[Label successSync],edges,[], [], [], [], [], [],  []);;
 (****************************************************************************************************)
 (*                                                                                                  *)
-(*                    Prefix  Automa                                                                *)
+(*                    Prefix  Automaton                                                             *)
 (*                                                                                                  *)
 (****************************************************************************************************)
 (*The prefix automaton  prefixes a location to an automaton*)
@@ -470,7 +479,7 @@ let internalChoiceAutomaton (Loc l)  g lAut  =
                                     unionOfVariables f lAut, unionOfGlobalVariables f lAut, unionOfProcedures f lAut);;
 (****************************************************************************************************)
 (*                                                                                                  *)
-(*                    External Choice  Automa                                                       *)
+(*                    External Choice  Automaton                                                    *)
 (*                                                                                                  *)
 (****************************************************************************************************)
 let getAction (TSBAction a,b,c,d) = a;;
@@ -508,7 +517,7 @@ let externalChoiceAutomaton (Loc l)  g lAut  =
 
 (****************************************************************************************************)
 (*                                                                                                  *)
-(*                    Union of automata                                                             *)
+(*                    Union of automataton                                                          *)
 (*                                                                                                  *)
 (****************************************************************************************************)
 
@@ -540,14 +549,13 @@ let sumAutomata (Loc l)  lAut =  TimedAutoma ("", sumLocations_a lAut, Loc l , s
 (*                    Managing reset set                                                            *)
 (*                                                                                                  *)
 (****************************************************************************************************)
+(* Unfortunately UPPAAL doesnot allows for more than a single  resets on an edge, *)
+(* unless they are written in a procedure*)
+(* so we create a procedure (with name and body) if there is more han one clock, *)
+(*and the procedure name goes on the edge*)
+(* otherwise we put the clock on the edge with the string t = 0 *)
 
-
-(* creating a reset procedure only if there is more than 1 clock to reset*)
-(* if only one reset: we put it in the edge. If none, nothing done*)
-(* if the reset is only one, we put it on the edge*)
-(*We use the recursion variable to create a name for the procedure*)
-(*Unfortunately UPPAAL doesnot allows for more than a single  resets on an edge, unless they are written in a procedure*)
-(*so createResetProc create the reset procedure for more than one clock *)
+(* Create createProcFromReset creates the procedure body*)
 let createProcFromReset    l = 
        List.fold_right (fun (TSBClock c)  y -> c^"=0; "^y) l "" ;; 
 
@@ -557,9 +565,9 @@ let createResetStringForEdge  l = match l with
 | (TSBClock c)::tl -> c^"=0"
 ;;
 
-(*we return a couple: if reset is more than 1 we have (procedure name , (proc Name + procedure body))*)
+(* manageResetSet returns a couple: if reset set is more than 1 we have (procedure name , (proc Name + procedure body))*)
 (* if it is only one we have (string to put on the edge, nothing) *)
-(* either way the first is to be put on the edge, the second among the procedures*)
+(* either way the first item is to be put on the edge, the second --if not empty -- among the procedures*)
 let procHD = "res_";;
 let manageResetSet r rv = 
        let a = if List.length r >1 then procHD^rv^"()" 
@@ -567,10 +575,12 @@ let manageResetSet r rv =
        in let b = if List.length r >1 then (createProcFromReset r) else "" 
        in (a, if List.length r >1 then [(a,b)] else [])
 ;; 
+
 let addProcedure  (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, 
                    globalClocks,  committed, variables, globalVariables,  procedures))      p = 
                      (TimedAutoma (name, locations, init, labels, edges, invariants, clocks, 
                            globalClocks,  committed, variables, globalVariables,  p @procedures));;
+
 (****************************************************************************************************)
 (*                                                                                                  *)
 (*                    Mapping tsb into automaton                                                    *)
@@ -581,10 +591,11 @@ let addClocks  (TimedAutoma (name, locations, init, labels, edges, invariants, c
                      (TimedAutoma (name, locations, init, labels, edges, invariants,  addSetSet c clocks, 
                            globalClocks,  committed, variables, globalVariables,  procedures));;
 
-(*clocks for tsb and automata have different sonstructor*)
+(*clocks for tsb and automata have different constructor*)
 let getClocksList  rl = List.map (fun (TSBClock c)  -> Clock c) rl;;
 
 let tau = "t";;
+
 let rec generateInternalChoiceContinuation l = match l with 
 [] ->  []
 | (TSBAction a, TSBExtGuard g, TSBReset r, rv):: tl ->     let newClocks = addSetSet ( List.map  (fun c  -> Clock c) (getClockListFromGuard g)) (getClocksList r) in
@@ -602,7 +613,7 @@ let rec generateExternalChoiceContinuation l = match l with
                                                in  (TSBAction a, TSBExtGuard  g, n,   (addClocks  (addProcedure aut b)) newClocks)
                                                     :: generateExternalChoiceContinuation tl
 ;;
-(* eq is a list of couples*)
+
 let denfToUppaal (x,p) = match p with   
    DESuccess ->  successAutomaton (Loc x) 
 |  DEIntChoice  l -> let lAut = generateInternalChoiceContinuation l in
@@ -619,13 +630,24 @@ let rec buildAutomaton (x,d) =  let lAut = List.map (fun a -> denfToUppaal a) d
                                 in sumAutomata (Loc x) lAut;;
 
 
-(*buildAutomaMain is the main methode to convert a TSBprocess into an Uppaal automata*)
+(*buildAutomaMain is the main methode to convert a ExtTSBprocess into an Uppaal automata*)
 (*it needs the process p and a name/identifier for it*)
 (*First we transform a process into a denf AND we normalize all the guards*)
 let buildAutomatonMain t name = let (x, d)  = extTsbToDENF t  
                              in  let uppAut = buildAutomaton (x,d)
                              in  setName uppAut name
 ;;
+
+(*extTsb_mapping performs the conversion of two ExtTSBprocesses p and q into two Uppaal automata*)
+(*"p" and "q" are two simple names, used only in UPPAAL*) 
+let extTsb_mapping p q  =  [ buildAutomatonMain p "p" ; buildAutomatonMain q "q"] ;;
+
+(*tsb_mapping performs the conversion of two TSBprocesses p and q into two Uppaal automata*)
+(*"p" and "q" are two simple names, used only in UPPAAL*) 
+let tsb_mapping p q  =  [ buildAutomatonMain ( toExtTsb  p) "p" ; buildAutomatonMain ( toExtTsb  q) "q"] ;;
+
+
+(*DEBUG TESTS********************************************************************************************************)
 
 let r1 = [TSBClock "x";TSBClock "t"];;
 let r2 = [TSBClock "t"];;
@@ -639,14 +661,5 @@ let q  = ExtExtChoice [(TSBAction "c", g1, TSBReset r1, ExtSuccess);
                        (TSBAction "d", g2, TSBReset r2, ExtSuccess)];;
 
 buildAutomatonMain q "p";;
-(* no need o assign locations*)
-(*                             let locp = eliminateDuplicates(extractLocations(getEdges(tap))) *) 
-(*                             in setLocations(setName tap name)  locp *)
 
 
-(*tsb_mapping performs the conversion of two TSBprocesses p and q into two Uppaal automata*)
-(*"p" and "q" are two simple names given: it is useful only in UPPAAL*) 
-let extTsb_mapping p q  =  [ buildAutomatonMain p "p" ; buildAutomatonMain q "q"] ;;
-
-
-let tsb_mapping p q  =  [ buildAutomatonMain ( toExtTsb  p) "p" ; buildAutomatonMain ( toExtTsb  q) "q"] ;;
