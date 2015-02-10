@@ -15,7 +15,6 @@ open Tipi;;
 open Tools;;
 
 
-
 (** 	SECTION #1								**)
 (** EXTGUARD: A GUARD THAT CAN HAVE 'OR'. **)
 type tsb_ext_relation = ExtLess | ExtGreat | ExtLessEq | ExtGreatEq | ExtEq;;
@@ -138,8 +137,8 @@ let rec extGuardToString guard =
 		)
 	| Or(x, y) -> "(" ^ (extGuardToString x) ^ "|" ^ (extGuardToString y) ^ ")"
 	| Not(x) -> "NOT (" ^ (extGuardToString x) ^ ")"
-	| True -> "True"
-	| False -> "False";;
+	| True ->  "true"
+	| False -> "false";;
 
 (* It returns a string that represent an extended choice. *)
 let rec extChoiceToString extChoice typeChoice =
