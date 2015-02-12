@@ -39,4 +39,4 @@ test:
 
 clean:
 	@'rm' *.cmo *.cmi *.cmx *.o ctu 2>/dev/null || true
-	@'rm' tests/*.cmi tests/*.cmx tests/*.o 2>/dev/null || true 
+	@'rm' tests/*.cmi tests/*.cmx tests/*.o applicationTest 2>/dev/null || true 
