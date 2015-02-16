@@ -16,5 +16,53 @@ let lta = extTsb_mapping   p q;;
 writeToFile lta "ex_prova";;
 
 
+(*example*)
+let r1 = [TSBClock "x";TSBClock "t"];;
+let r2 = [TSBClock "t"];;
+let g1 = TSBExtGuard (And (SC(TSBClock "t",ExtLess,3), (SC(TSBClock "c",ExtGreat,6))));;
+let q  = ExtExtChoice [(TSBAction "c", g1, TSBReset [], ExtSuccess); 
+                       (TSBAction "d", g1, TSBReset [], ExtSuccess)];;
 
+getOmega [(TSBAction "c", g1, TSBReset [], ExtSuccess); 
+                       (TSBAction "d", g1, TSBReset [], ExtSuccess)];;
 
+let lta = extTsb_mapping   p q;;
+writeToFile lta "ex_prova";;
+
+(* !pay{x<4;x}.?ship{x>7}*)
+
+let r1 = [TSBClock "x"];;
+let g1 = TSBExtGuard  (SC(TSBClock "x",ExtLess,4));;
+let g2 = TSBExtGuard  (SC(TSBClock "x",ExtGreat,7));;
+let p  = ExtIntChoice [(TSBAction "p", g1, TSBReset [], ExtExtChoice [(TSBAction "s", g2, TSBReset [], ExtSuccess)] )];;
+
+let g3 = TSBExtGuard  (SC(TSBClock "x",ExtLess,5));;
+let g4 = TSBExtGuard  (SC(TSBClock "x",ExtGreat,8));;
+let q  = ExtExtChoice [(TSBAction "p", g3, TSBReset [], ExtIntChoice [(TSBAction "s", g4, TSBReset [], ExtSuccess)] )];;
+
+getOmega [(TSBAction "c", g1, TSBReset [], ExtSuccess); 
+                       (TSBAction "d", g1, TSBReset [], ExtSuccess)];;
+
+let lta = extTsb_mapping   p q;;
+getCommitted (List.nth lta 0);;
+
+writeToFile lta "ex_prova";;
+
+(* !pay{x<4;x}.?ship*)
+
+let r1 = [TSBClock "x"];;
+let g1 = TSBExtGuard  (SC(TSBClock "x",ExtLess,4));;
+let g2 = TSBExtGuard  (SC(TSBClock "x",ExtGreat,7));;
+let p  = ExtIntChoice [(TSBAction "p", g1, TSBReset [], ExtExtChoice [(TSBAction "s", TSBExtGuard True, TSBReset [], ExtSuccess)] )];;
+
+let g3 = TSBExtGuard  (SC(TSBClock "x",ExtLess,5));;
+let g4 = TSBExtGuard  (SC(TSBClock "x",ExtGreat,8));;
+let q  = ExtExtChoice [(TSBAction "p", g3, TSBReset [], ExtIntChoice [(TSBAction "s", TSBExtGuard True, TSBReset [], ExtSuccess)] )];;
+
+getOmega [(TSBAction "c", g1, TSBReset [], ExtSuccess); 
+                       (TSBAction "d", g1, TSBReset [], ExtSuccess)];;
+
+let lta = extTsb_mapping   p q;;
+getCommitted (List.nth lta 0);;
+
+writeToFile lta "ex_prova";;

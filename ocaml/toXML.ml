@@ -12,7 +12,7 @@
 (* 
   ----------------------------------------------------
    OCAML TOPLEVEL IMPORTS (for Emacs only)
-
+#use "tipi.ml";; 
     #use "mapping.ml";; 
     open Printf;;
   ----------------------------------------------------
@@ -22,7 +22,6 @@
 open Tipi;;
 open Mapping;;
 open Printf;; 
-
 
 let escape g =
 	let ampregex = Str.regexp "&" in 
