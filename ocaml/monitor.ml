@@ -24,7 +24,6 @@ open Python;;
 open Kindsystem;;
 
 
-
 (*************************************)
 (*                                   *)
 (*Types for monitor                  *)
@@ -233,6 +232,62 @@ let m_onDuty (ExtNetwork (p,q,b,  time)) = match ( (unfold p), (unfold q),b) wit
 |  ( ExtIntChoice l,  q', EmptyBuffer)-> if not (isCulpable p   time ) then [getId p] else []
 |  ( p',  ExtIntChoice l, EmptyBuffer)-> if not (isCulpable q   time ) then [getId q] else [] 
 |  _ ->  []  ;;
+
+ 
+let getProcessById p q id =  if getId p == id then p else q;;
+
+let getMoves p time =  match  (unfold p) with  
+   ExtIntChoice l ->  List.map (fun  (a,TSBExtGuard g,r,p) -> (Int a,TSBExtGuard g)) l
+|  ExtExtChoice l ->  List.map (fun  (a,TSBExtGuard g,r,p) -> (Ext a,TSBExtGuard g)) l
+|  _ ->  []  ;;
+
+
+let m_possibleActions (ExtNetwork (p,q,b,  time)) =  let l = m_onDuty (ExtNetwork (p,q,b,  time)) in 
+                           if List.length l = 0 then []
+                           else( if List.length l = 1 then 
+                                 let id = List.nth  l 0 
+                                 in [ (id, getMoves (getProcessById p q id) time)]
+                                 else   
+                                       let id1 = List.nth  l 0 in
+                                       let id2 = List.nth  l 1 
+                                       in [ (id1, getMoves (getProcessById p q id1) time);
+                                            (id2, getMoves (getProcessById p q id2) time) ]
+                           )
+                       ;;
+
+(*DEBUG*)
+
+let p =  ExtIntChoice[(TSBAction "a",  TSBExtGuard (SC(TSBClock "t", ExtLessEq, 1)), TSBReset[] , ExtSuccess);
+                   (TSBAction "b",  TSBExtGuard (SC(TSBClock "t", ExtLess, 2)), TSBReset[] , ExtSuccess)];;
+let q =  ExtExtChoice[(TSBAction "a",  TSBExtGuard (SC(TSBClock "t", ExtGreatEq, 1)), TSBReset[] , ExtSuccess);
+                   (TSBAction "b",  TSBExtGuard (SC(TSBClock "t", ExtLess, 2)), TSBReset[], ExtSuccess)];;
+
+(*correct interaction*)
+let net1 = m_extStart p q;;
+
+let net1 = m_extStart p p;;
+m_possibleActions net1 ;;
+
+let check n = ("On duty:", m_onDuty n), ("Culpable:", m_culpable n);;
+
+let net2 = m_extStep net1  (Delay 1.0 );;
+check net2;;
+m_possibleActions net2 ;;
+
+let net3 = m_extStep net2  (Fire ("A", Int (TSBAction "a" )));;
+check net3 ;;
+m_possibleActions net3 ;;
+
+let net4 = m_extStep net3  (Delay 6.0 );;
+check net4 ;;
+
+let net4Bis = m_extStep net3  (Fire ("B", Ext (TSBAction "a" )));;
+check net4Bis ;;
+
+
+let net5 = m_extStep net4Bis  (Delay 8.0 );;
+check net5 ;;
+
 
 (*************************************************)
 (*                SERIALIZATION                  *)
