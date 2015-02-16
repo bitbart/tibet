@@ -29,14 +29,19 @@ type performedAction = Int of tsb_action | Ext of tsb_action;;
 
 3) m_onDuty
    val m_onDuty : tsb_extNetwork -> process_name * tsb = <fun>
-Function m_onDuty takes a network and return a list with the names  of the participant which are on duty.
+Function m_onDuty takes a network and returns a list with the names  of the participant which are on duty.
 
 
 
 4) m_culpable  
  val m_culpable : tsb_extNetwork -> (process_name * tsb) list = <fun>
-Function m_culpable a network and return a list with the  names of the participants  which are culpable.
+Function m_culpable takes a network and returns a list with the  names of the participants  which are culpable.
 
+5) m_possibleActions
+ val m_possibleActions :
+  tsb_extNetwork ->
+  (process_name * (performedAction * tsb_extGuard) list) list 
+Function possibleActions takes a network and returns a list with : the id of the process,  a list of couples with possible actions and related guard.
 
 (********************************************************************)
 (*                          Example                                 *)
@@ -48,11 +53,14 @@ let q =  ExtExtChoice[(TSBAction "a",  TSBExtGuard (SC(TSBClock "t", ExtGreatEq,
 
 (*correct interaction*)
 let net1 = m_extStart p q;;
+m_possibleActions net1 ;;
 
 let check n = ("On duty:", m_onDuty n), ("Culpable:", m_culpable n);;
 
 let net2 = m_extStep net1  (Delay 1.0 );;
 check net2;;
+m_possibleActions net2 ;;
+
 
 let net3 = m_extStep net2  (Fire ("A", Int (TSBAction "a" )));;
 check net3 ;;
