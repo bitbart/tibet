@@ -339,6 +339,32 @@ let delay_net d fn fn' =
 		serialize_net net2 fn'
 ;;
 
+let rec extractActions b = 
+	match b with
+	| (Int (TSBAction a), c)::b' -> a :: (extractActions b')
+	| [] -> []
+	| _ -> failwith "Invalid element found in extractActions"
+;;
+
+let rec listOfActionNames l r = 
+	match l with
+	| (a, b)::l' -> if ((r == 0 && String.compare "A" a == 0) || (r == 1 && String.compare "B" a == 0)) then (extractActions b) @ (listOfActionNames l' r) else (listOfActionNames l' r) 
+	| [] -> []
+;;
+
+let rec formatActions' l =
+	match l with
+	| a::l' -> "\t<action name=\"" ^ a ^ "\" time=\"-1\" />\n" ^ formatActions' l'
+	| [] -> "</actionlist>"
+;; 
+
+let formatActions l = "<actionlist>\n" ^ formatActions' l;; 
+
+let get_actions fn r =
+    let net = deserialize_net fn in
+    formatActions (listOfActionNames (m_possibleActions net) r)
+;;
+
 (**************************************)
 (*       TESTING                      *)
 (**************************************)
