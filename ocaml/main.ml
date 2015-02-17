@@ -86,6 +86,7 @@ let main =
 			match (Sys.argv.(1)) with
 			| "-ic" -> print_string (isCulpab (int_of_string (Sys.argv.(2))) (Sys.argv.(3)))
       | "-id" -> print_string (isOnDuty (int_of_string (Sys.argv.(2))) (Sys.argv.(3)))
+			| "-pa" -> print_string (getActions (Sys.argv.(3)) (int_of_string (Sys.argv.(2))))
 			| "-ff" -> contractsToAutomata_fromFile (Sys.argv.(2)) (Sys.argv.(3))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
