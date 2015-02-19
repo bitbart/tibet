@@ -645,21 +645,3 @@ let extTsb_mapping p q  =  [ buildAutomatonMain p "p" ; buildAutomatonMain q "q"
 (*tsb_mapping performs the conversion of two TSBprocesses p and q into two Uppaal automata*)
 (*"p" and "q" are two simple names, used only in UPPAAL*) 
 let tsb_mapping p q  =  [ buildAutomatonMain ( toExtTsb  p) "p" ; buildAutomatonMain ( toExtTsb  q) "q"] ;;
-
-
-(*DEBUG TESTS********************************************************************************************************)
-
-let r1 = [TSBClock "x";TSBClock "t"];;
-let r2 = [TSBClock "t"];;
-let g1 = TSBExtGuard (And (SC(TSBClock "x",ExtLessEq,6), (SC(TSBClock "x",ExtLessEq,12))));;
-let g2 = TSBExtGuard (And (SC(TSBClock "x",ExtLessEq,10), (SC(TSBClock "x",ExtLessEq,22))));;
-let t  = ExtIntChoice [(TSBAction "c", g1, TSBReset r1, ExtSuccess); 
-                       (TSBAction "d", g2, TSBReset r2, ExtSuccess)];;
-buildAutomatonMain t "p";;
-
-let q  = ExtExtChoice [(TSBAction "c", g1, TSBReset r1, ExtSuccess); 
-                       (TSBAction "d", g2, TSBReset r2, ExtSuccess)];;
-
-buildAutomatonMain q "p";;
-
-

@@ -364,33 +364,3 @@ let get_actions fn r =
     let net = deserialize_net fn in
     formatActions (listOfActionNames (m_possibleActions net) r)
 ;;
-
-(**************************************)
-(*       TESTING                      *)
-(**************************************)
-
-let p =  ExtIntChoice[(TSBAction "a",  TSBExtGuard (SC(TSBClock "t", ExtLessEq, 1)), TSBReset[] , ExtSuccess);
-                   (TSBAction "b",  TSBExtGuard (SC(TSBClock "t", ExtLess, 2)), TSBReset[] , ExtSuccess)];;
-let q =  ExtExtChoice[(TSBAction "a",  TSBExtGuard (SC(TSBClock "t", ExtGreatEq, 1)), TSBReset[] , ExtSuccess);
-                   (TSBAction "b",  TSBExtGuard (SC(TSBClock "t", ExtLess, 2)), TSBReset[], ExtSuccess)];;
-
-(*correct interaction*)
-let net1 = m_extStart p q;;
-
-let check n = ("On duty:", m_onDuty n), ("Culpable:", m_culpable n);;
-
-let net2 = m_extStep net1  (Delay 1.0 );;
-check net2;;
-
-let net3 = m_extStep net2  (Fire ("A", Int (TSBAction "a" )));;
-check net3 ;;
-
-let net4 = m_extStep net3  (Delay 6.0 );;
-check net4 ;;
-
-let net4Bis = m_extStep net3  (Fire ("B", Ext (TSBAction "a" )));;
-check net4Bis ;;
-
-
-let net5 = m_extStep net4Bis  (Delay 8.0 );;
-check net5 ;;

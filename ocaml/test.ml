@@ -244,6 +244,22 @@ let lta = tsb_mapping  p q;;
 writeToFile lta "ex23";;
 
 
+(*DEBUG TESTS********************************************************************************************************)
+
+let r1 = [TSBClock "x";TSBClock "t"];;
+let r2 = [TSBClock "t"];;
+let g1 = TSBExtGuard (And (SC(TSBClock "x",ExtLessEq,6), (SC(TSBClock "x",ExtLessEq,12))));;
+let g2 = TSBExtGuard (And (SC(TSBClock "x",ExtLessEq,10), (SC(TSBClock "x",ExtLessEq,22))));;
+let t  = ExtIntChoice [(TSBAction "c", g1, TSBReset r1, ExtSuccess); 
+                       (TSBAction "d", g2, TSBReset r2, ExtSuccess)];;
+buildAutomatonMain t "p";;
+
+let q  = ExtExtChoice [(TSBAction "c", g1, TSBReset r1, ExtSuccess); 
+                       (TSBAction "d", g2, TSBReset r2, ExtSuccess)];;
+
+buildAutomatonMain q "p";;
+
+
 (********************************************************)
 (*                                                      *)
 (*              Handling Monitor Errors                 *) 
@@ -273,6 +289,33 @@ m_culpable c2;;
 
 let c3 = m_step net2  (Fire ("B", Ext (TSBAction "b" )));;
 m_culpable c3;;
+
+let p =  ExtIntChoice[(TSBAction "a",  TSBExtGuard (SC(TSBClock "t", ExtLessEq, 1)), TSBReset[] , ExtSuccess);
+                   (TSBAction "b",  TSBExtGuard (SC(TSBClock "t", ExtLess, 2)), TSBReset[] , ExtSuccess)];;
+let q =  ExtExtChoice[(TSBAction "a",  TSBExtGuard (SC(TSBClock "t", ExtGreatEq, 1)), TSBReset[] , ExtSuccess);
+                   (TSBAction "b",  TSBExtGuard (SC(TSBClock "t", ExtLess, 2)), TSBReset[], ExtSuccess)];;
+
+(*correct interaction*)
+let net1 = m_extStart p q;;
+
+let check n = ("On duty:", m_onDuty n), ("Culpable:", m_culpable n);;
+
+let net2 = m_extStep net1  (Delay 1.0 );;
+check net2;;
+
+let net3 = m_extStep net2  (Fire ("A", Int (TSBAction "a" )));;
+check net3 ;;
+
+let net4 = m_extStep net3  (Delay 6.0 );;
+check net4 ;;
+
+let net4Bis = m_extStep net3  (Fire ("B", Ext (TSBAction "a" )));;
+check net4Bis ;;
+
+
+let net5 = m_extStep net4Bis  (Delay 8.0 );;
+check net5 ;;
+
 
 (********************************************************************)
 (*                 Testing     Recursion                            *)

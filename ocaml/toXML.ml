@@ -13,8 +13,8 @@
   ----------------------------------------------------
    OCAML TOPLEVEL IMPORTS (for Emacs only)
 #use "tipi.ml";; 
-    #use "mapping.ml";; 
-    open Printf;;
+#use "mapping.ml";; 
+open Printf;;
   ----------------------------------------------------
 *)
 
