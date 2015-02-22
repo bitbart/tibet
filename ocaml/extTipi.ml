@@ -118,27 +118,27 @@ let rec resetToString reset =
 (* It returns a string that represent an extended relation. *)
 let extRelationToString extRelation = 
 	match extRelation with
-	| ExtLess -> "<"
-	| ExtGreat -> ">"
-	| ExtLessEq -> "<="
-	| ExtGreatEq -> ">="
-	| ExtEq -> "=";;
+	| ExtLess -> " < "
+	| ExtGreat -> " > "
+	| ExtLessEq -> " <= "
+	| ExtGreatEq -> " >= "
+	| ExtEq -> " == ";;
 
 (* It returns a string that represent an extended guard. *)
 let rec extGuardToString guard =
 	match guard with 
 	| SC(x, y, z) -> (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
-	| DC(w, x, y, z) -> (clockToString w) ^ "-" ^ (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
+	| DC(w, x, y, z) -> (clockToString w) ^ " - " ^ (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
 	| And(x, y) -> "(" ^ (extGuardToString x) ^ (
 			let temp = extGuardToString y in
 			match temp with
 			| "True" -> ")"
-			| _ -> "," ^ temp ^ ")" 
+			| _ -> " && " ^ temp ^ ")" 
 		)
-	| Or(x, y) -> "(" ^ (extGuardToString x) ^ "|" ^ (extGuardToString y) ^ ")"
-	| Not(x) -> "NOT (" ^ (extGuardToString x) ^ ")"
-	| True ->  "true"
-	| False -> "false";;
+	| Or(x, y) -> "(" ^ (extGuardToString x) ^ " || " ^ (extGuardToString y) ^ ")"
+	| Not(x) -> "!(" ^ (extGuardToString x) ^ ")"
+	| True ->  " true "
+	| False -> " false ";;
 
 (* It returns a string that represent an extended choice. *)
 let rec extChoiceToString extChoice typeChoice =
