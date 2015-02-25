@@ -170,7 +170,7 @@ let find_branches contract char =
 let check_branches contract' = 
     let contract = contract' ^ "*" in
 		let flag0 = try let res = Str.search_forward (Str.regexp "'[a-z]+'[^]\\[\\+\\&]") contract 0 in failwith (_ERR_052 ^ (String.sub contract 0 (res+3))) with Not_found -> false in
-		let flag1 = try let res = Str.search_forward (Str.regexp "\\}[^\\.\\+\\&\\*\\)]") contract 0 in failwith (_ERR_026 ^ (String.sub contract 0 (res+1))) with Not_found -> false in
+		let flag1 = try let res = Str.search_forward (Str.regexp "\\}[^]\\.\\+\\&\\*\\)]") contract 0 in failwith (_ERR_026 ^ (String.sub contract 0 (res+1))) with Not_found -> false in
 		let flag2 = try let res = Str.search_forward (Str.regexp "\\][^\\+\\&\\*\\)\\*]") contract 0 in failwith (_ERR_038 ^ (String.sub contract 0 (res+1))) with Not_found -> false in
     let flag3 = find_branches contract "?" in
     let flag4 = find_branches contract "!" in

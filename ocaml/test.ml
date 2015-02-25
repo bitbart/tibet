@@ -524,6 +524,7 @@ parse_multiple_contracts "!a{}.!b{}.!c{}";;
 parse_multiple_contracts "REC 'x'[!a+!b.'x']";;
 parse_multiple_contracts "REC 'x'[!a.'x'+!b]";;
 parse_multiple_contracts "REC 'x'[!a . 'x']";;
+parse_multiple_contracts "REC 'x'[!a{x<4}]";;
 
 
 (* Error is detected correctly. *)
@@ -565,4 +566,3 @@ parse_multiple_contracts "!a.!b!c";;												(* Error #2. The error occurred 
 
 
 (* To test. *)
-
