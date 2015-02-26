@@ -12,7 +12,6 @@
 		#load "xml-light.cma";;
 		#load "dynlink.cma";;
 		#load "camlp4o.cma";;
-    #use "python.ml";;
 *)
 (*
 ----------------------------------------------------
