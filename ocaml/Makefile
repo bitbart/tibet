@@ -15,7 +15,7 @@ all:
 	ocamlopt -c monitor.ml
 	ocamlopt -c main.ml
 
-	ocamlopt -o ctu unix.cmxa str.cmxa xml-light.cmxa errors.cmx tools.cmx tipi.cmx extTipi.cmx mapping.cmx python.cmx kindsystem.cmx toXML.cmx fromXML.cmx cparser.cmx monitor.cmx main.cmx
+	ocamlopt -o ctu unix.cmxa str.cmxa xml-light.cmxa errors.cmx tools.cmx tipi.cmx extTipi.cmx python.cmx kindsystem.cmx mapping.cmx toXML.cmx fromXML.cmx cparser.cmx monitor.cmx main.cmx
 
 
 test:
@@ -34,7 +34,7 @@ test:
 	ocamlopt -c tests/testPython.ml
 	ocamlopt -I tests -c tests/main.ml
 	
-	ocamlopt -o applicationTest unix.cmxa str.cmxa xml-light.cmxa errors.cmx tools.cmx tipi.cmx extTipi.cmx mapping.cmx python.cmx kindsystem.cmx toXML.cmx fromXML.cmx cparser.cmx monitor.cmx tests/testPython.cmx tests/main.cmx
+	ocamlopt -o applicationTest unix.cmxa str.cmxa xml-light.cmxa errors.cmx tools.cmx tipi.cmx extTipi.cmx python.cmx kindsystem.cmx  mapping.cmx toXML.cmx fromXML.cmx cparser.cmx monitor.cmx tests/testPython.cmx tests/main.cmx
 
 
 clean:
