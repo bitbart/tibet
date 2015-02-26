@@ -6,8 +6,8 @@ all:
 	ocamlopt -c tools.ml
 	ocamlopt -c tipi.ml
 	ocamlopt -c extTipi.ml
-    ocamlopt -c -pp camlp4o python.ml
-    ocamlopt -c kindsystem.ml
+	ocamlopt -c -pp camlp4o python.ml
+	ocamlopt -c kindsystem.ml
 	ocamlopt -c mapping.ml
 	ocamlopt -c toXML.ml
 	ocamlopt -c fromXML.ml
@@ -23,8 +23,8 @@ test:
 	ocamlopt -c tools.ml
 	ocamlopt -c tipi.ml
 	ocamlopt -c extTipi.ml
-    ocamlopt -c -pp camlp4o python.ml
-    ocamlopt -c kindsystem.ml
+	ocamlopt -c -pp camlp4o python.ml
+	ocamlopt -c kindsystem.ml
 	ocamlopt -c mapping.ml
 	ocamlopt -c toXML.ml
 	ocamlopt -c fromXML.ml
