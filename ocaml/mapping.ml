@@ -156,6 +156,7 @@ let extTsbToDENF t = if (not(checkIdesInTsb t))
 
 
 
+
 (****************************************************************************************************)
 (*                                                                                                  *)
 (*                   Patterns                                                                       *)
@@ -396,25 +397,26 @@ let rec getClockListFromGuard  g  = match g with
 
 (*restituisce piu' automi, uno per ogni disgiunto della lista lg,*)
 (* e la prima locazione ha invariante che e' il past della guardia*)
-let rec  manageInternalBranch   a  lg r rv count   = match lg with 
+let rec  manageInternalBranch  src  a  lg r rv count   = match lg with 
   [] -> []
 | hd::tl -> 
        let newClocks = addSetSet ( List.map  (fun c  -> Clock c) (getClockListFromGuard hd)) (getClocksList r) in
        let (n,b) =  manageResetSet r rv in 
-       let aut = prefixAutomatonModified  (Loc (a^rv^(string_of_int count))) (past hd) (hd) (Label ( a^bang))  n (idleAutomaton (Loc rv)) 
+       let aut = prefixAutomatonModified  (Loc (src^a^rv^(string_of_int count))) (past hd) (hd) (Label ( a^bang))  n (idleAutomaton (Loc rv)) 
        in  (addClocks  (addProcedure aut b) newClocks) :: 
-                          (manageInternalBranch a tl r rv (count+1))
+                          (manageInternalBranch src a tl r rv (count+1))
 ;;
 
 (*rv is the recursion variable of the following of the defining equation*)
 (*maps the branches of an internal choice, and manage all the dsjuncts of the guards*)
 (*1 is the counter...*)
-let rec mapInternalChoiceContinuation l = match l with 
+(*src is the neame of the previous node*)
+let rec mapInternalChoiceContinuation src l = match l with 
 [] ->  []
 | (TSBAction a, TSBExtGuard g, TSBReset r, rv):: tl ->     
        let count = 1 in
-       let autList = manageInternalBranch  a (getDisjunctList g)  r rv count
-       in  autList @ mapInternalChoiceContinuation tl
+       let autList = manageInternalBranch  src a (getDisjunctList g)  r rv count
+       in  autList @ mapInternalChoiceContinuation src tl
 ;;
 
 let rec manageExternalBranch a  (lg) r  rv  = match lg with 
@@ -436,7 +438,7 @@ let rec mapExternalChoiceContinuation l = match l with
 
 let denfToUppaal (x,p) = match p with   
    DESuccess ->  successAutomaton (Loc x) 
-|  DEIntChoice  l -> let lAut = mapInternalChoiceContinuation l in
+|  DEIntChoice  l -> let lAut = mapInternalChoiceContinuation x l in
                      internalChoiceAutomaton (Loc (x)) lAut 
 |  DEExtChoice  l -> let lAut = mapExternalChoiceContinuation  l in
                      let omega = ""  
