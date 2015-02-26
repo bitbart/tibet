@@ -12,7 +12,6 @@
 		#load "xml-light.cma";;
 		#load "dynlink.cma";;
 		#load "camlp4o.cma";;
-    #use "python.ml";;
 *)
 (*
 ----------------------------------------------------
@@ -259,10 +258,10 @@ let rec ic_generateAllTheBranches  (Loc l)  lAut = match lAut with
 [] -> []
 |  (TimedAutoma (name, locations, init, labels, edges, invariants, 
        clocks, globalClocks,  committed, variables, globalVariables,  procedures)):: tl 
-   ->   Edge ( Loc l, Label "", "","", init) :: ic_generateAllTheBranchesModified (Loc l) tl ;;
+   ->   Edge ( Loc l, Label "", "","", init) :: ic_generateAllTheBranches (Loc l) tl ;;
 
 let internalChoiceAutomaton (Loc l) lAut  = 
-            let edgs =   ic_generateAllTheBranchesModified ( Loc l ) lAut 
+            let edgs =   ic_generateAllTheBranches ( Loc l ) lAut 
             in TimedAutoma ("", Loc l :: unionOfLocations  lAut, Loc l , unionOfLabels  lAut, 
                        edgs@ unionOfEdges  lAut,  unionOfInvariants   lAut, 
                        unionOfClocks  lAut, unionOfGlobalClocks  lAut ,  l :: unionOfCommitted  lAut, 
