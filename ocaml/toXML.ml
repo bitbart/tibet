@@ -1,13 +1,8 @@
 (** ************************************************************************** **)
 (**                                                                            **)
-(**  	TOXML (5): Offers functions which generate xml uppaal templates.       **)
+(**  	TOXML (7): Offers functions which generate xml uppaal templates.         **)
 (**									     																										   **)
 (** ************************************************************************** **)
-
-(*-------------------------------------------------- 
-   OCAML TOPLEVEL IMPORTS (for Eclipse )
-    open Printf;;
-*)
 
 (* 
   ----------------------------------------------------
@@ -19,6 +14,7 @@ open Printf;;
 *)
 
 (* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
+open Errors;;
 open Tipi;;
 open Mapping;;
 open Printf;; 
@@ -226,7 +222,7 @@ let writeTA lta filename =
 let writeTAstd lta = 
   let message = aut_toXML lta in
   (* Write message to file *)
-  fprintf stdout "%s\n" message   (* write something *)   
+  fprintf Pervasives.stdout "%s\n" message   (* write something *)   
 ;;
 
 (* writeTA generates the query for compliance  of a list of timed automata and write them down in a file named  filename.q*)

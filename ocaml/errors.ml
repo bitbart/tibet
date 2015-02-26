@@ -6,6 +6,22 @@
  ********************************************************************************
  **)
 
+
+
+(*--------------------------------------------------
+    OCAML TOPLEVEL IMPORTS (for Eclipse only)
+
+#load "str.cma";;
+#load "unix.cma";;
+#load "xml-light.cma";;
+#load "dynlink.cma";;
+#load "camlp4o.cma";;
+--------------------------------------------------*)
+
+
+
+
+
 (* LIST OF PARSER ERRORS *)
 let _ERR_001 = "ERR_001: Invalid format for at least one action id or rec id  or clock id. Only a-z allowed.";;
 let _ERR_002 = "ERR_002: Invalid format for at least one clock value. Only integer values allowed.";;

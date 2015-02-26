@@ -1,18 +1,10 @@
 (** 
  ********************************************************************************
  **																																						 **
- **				PYTHON (8): Offers functions to use python libraries.     					 **
+ **				PYTHON (4): Offers functions to use python libraries.     					 **
  **																																						 **
  ********************************************************************************
  **)
-
-(*-------------------------------------------------- 
-   OCAML TOPLEVEL IMPORTS (for Eclipse )
-	#load "unix.cma"
-	#load "xml-light.cma";;
-  #load "dynlink.cma";;
-  #load "camlp4o.cma";;
---------------------------------------------------*)
 
 (* Inclusion to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE *)
 open Unix;;

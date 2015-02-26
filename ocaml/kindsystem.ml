@@ -1,6 +1,6 @@
 (** ************************************************************************** **)
 (**                                                                            **)
-(**  	KINDSYSTEM (9): Offers functions to calculate the dual of a contract.    **)
+(**  	KINDSYSTEM (5): Offers functions to calculate the dual of a contract.    **)
 (**									     																										   **)
 (** ************************************************************************** **)
 
@@ -18,6 +18,7 @@
 ----------------------------------------------------*)
 
 (* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
+open Errors;;
 open Tipi;;
 open ExtTipi;;
 open Python;; 

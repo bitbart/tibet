@@ -6,11 +6,7 @@
  ********************************************************************************
  **)
 
-(*--------------------------------------------------
-    OCAML TOPLEVEL IMPORTS (for Eclipse )
-
-#load "str.cma";;
---------------------------------------------------*)
+open Errors;;
 
 (* It looks for a regular expression in a string: if there is no match, function returns -1, *)
 (* else it returns the position of the first result in the string. It avoids warnings when calling *)

@@ -1,18 +1,11 @@
 (** 
  ********************************************************************************
  **                                                                            **
- **MAPPING (4): Offers functions which map contracts into automata.            **
+ **MAPPING (6): Offers functions which map contracts into automata.            **
  **																																						 **
  ********************************************************************************
  **)
 
-(*-------------------------------------------------- 
-   OCAML TOPLEVEL IMPORTS (for Eclipse )
-
-		#load "xml-light.cma";;
-		#load "dynlink.cma";;
-		#load "camlp4o.cma";;
-*)
 (*
 ----------------------------------------------------
 	 OCAML TOPLEVEL IMPORTS (for Emacs)
@@ -30,8 +23,10 @@
 
 
 (* Inclusion to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE *)
+open Errors;;
 open Tipi;;
 open ExtTipi;;
+open Python;;
 
 (****************************************************************************************************)
 (*                                                                                                  *)
