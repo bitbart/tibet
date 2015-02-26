@@ -554,11 +554,11 @@ parse_multiple_contracts "!a.b";;                           (* Partially fixed. 
 
 
 (* Error is not detected correctly. *)
-parse_multiple_contracts "REC 'x'[(!a . 'x')]";;						(* Error #1. Tailing tokens after ' must complain of round brackets. *)
+parse_multiple_contracts "REC 'x'[(!a . 'x')]";;						(* FIXED Error #1. Tailing tokens after ' must complain of round brackets. *)
 
 
 (* An error is detected but it is not the real error. *)
-parse_multiple_contracts "(((REC 'x')))[!y.'x']";;					(* Error #1. The error occurred is not correct, work in progress by Livio. *)
+parse_multiple_contracts "(((REC 'x')))[!y.'x']";;					(* NO ERROR Error #1. The error occurred is not correct, work in progress by Livio. *)
 parse_multiple_contracts "!a.!b!c";;												(* Error #2. The error occurred is not correct, work in progress by Sebastian. *)
 
 
