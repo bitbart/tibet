@@ -259,10 +259,10 @@ let rec ic_generateAllTheBranches  (Loc l)  lAut = match lAut with
 [] -> []
 |  (TimedAutoma (name, locations, init, labels, edges, invariants, 
        clocks, globalClocks,  committed, variables, globalVariables,  procedures)):: tl 
-   ->   Edge ( Loc l, Label "", "","", init) :: ic_generateAllTheBranchesModified (Loc l) tl ;;
+   ->   Edge ( Loc l, Label "", "","", init) :: ic_generateAllTheBranches (Loc l) tl ;;
 
 let internalChoiceAutomaton (Loc l) lAut  = 
-            let edgs =   ic_generateAllTheBranchesModified ( Loc l ) lAut 
+            let edgs =   ic_generateAllTheBranches ( Loc l ) lAut 
             in TimedAutoma ("", Loc l :: unionOfLocations  lAut, Loc l , unionOfLabels  lAut, 
                        edgs@ unionOfEdges  lAut,  unionOfInvariants   lAut, 
                        unionOfClocks  lAut, unionOfGlobalClocks  lAut ,  l :: unionOfCommitted  lAut, 
@@ -391,6 +391,14 @@ let getClocksList  rl = List.map (fun (TSBClock c)  -> Clock c) rl;;
 
 let tau = "t";;
 
+(*Get the clock list clocks from a set of clock constraints l*)
+let rec getClockListFromGuard  g  = match g with 
+  True -> []
+| False -> []
+| SC (TSBClock t, rel, d) ->  [t]
+| And (g1,g2) ->  addSetSet (getClockListFromGuard g1 ) (getClockListFromGuard g2) 
+| _ -> failwith "getClockListFromList: to be implemented" 
+;;
 
 (*restituisce piu' automi, uno per ogni disgiunto della lista lg,*)
 (* e la prima locazione ha invariante che e' il past della guardia*)
