@@ -6,9 +6,6 @@
  ********************************************************************************
  **)
 
-
-open Errors;;
-
 (* It looks for a regular expression in a string: if there is no match, function returns -1, *)
 (* else it returns the position of the first result in the string. It avoids warnings when calling *)
 (* Str.search_forward but the integer value returned is not intresting for the programmer: *)
