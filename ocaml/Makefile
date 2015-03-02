@@ -92,7 +92,7 @@ CAMLYACC = ocamlyacc
 # LIBS=$(WITHGRAPHICS) $(WITHUNIX) $(WITHSTR) $(WITHNUMS) $(WITHTHREADS)\
 # $(WITHDBM)
 
-LIBS= unix.cmxa str.cmxa xml-light.cmxa dynlink camlp4o
+LIBS= $(WITHUNIX) $(WITHSTR) 
 
 # Should be set to -custom if you use any of the libraries above
 # or if any C code have to be linked with your program
@@ -103,6 +103,8 @@ LIBS= unix.cmxa str.cmxa xml-light.cmxa dynlink camlp4o
 # Default setting of the WITH* variables. Should be changed if your
 # local libraries are not found by the compiler.
 WITHGRAPHICS =graphics.cma -cclib -lgraphics -cclib -L/usr/X11R6/lib -cclib -lX11
+
+WITHCAMLP4 = -pp camlp4o
 
 WITHUNIX =unix.cma -cclib -lunix
 
