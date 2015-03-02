@@ -7,12 +7,12 @@
  **)
 
 
-(* Inclusion to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE *)
+(* Inclusion to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE 
 open Unix;;
 open Errors;;
 open Tipi;;
 open ExtTipi;;
-open Tools;;
+open Tools;;*)
 
 (** 									SECTION #1								**)
 (** GENERAL TOOLS USED BY DIFFERENT FUNCTIONS. 	**)

@@ -5,11 +5,11 @@
 (** ************************************************************************** **)
 
 
-(* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
+(* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES 
 open Errors;;
 open Tipi;;
 open ExtTipi;;
-open Python;; 
+open Python;; *)
 
 type 'a partial = Some of 'a | None ;;
 

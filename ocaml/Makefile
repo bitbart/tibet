@@ -69,7 +69,7 @@
 #
 # The Caml sources (including camlyacc and camllex source files)
 
-SOURCES = errors.ml tools.ml
+SOURCES = errors.ml tools.ml tipi.ml extTipi.ml python.ml kindsystem.ml mapping.ml
 
 # The executable file to generate
 
