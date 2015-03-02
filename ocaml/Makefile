@@ -92,7 +92,7 @@ CAMLYACC = ocamlyacc
 # LIBS=$(WITHGRAPHICS) $(WITHUNIX) $(WITHSTR) $(WITHNUMS) $(WITHTHREADS)\
 # $(WITHDBM)
 
-LIBS= str unix xml-light dynlink camlp4o
+LIBS= unix.cmxa str.cmxa xml-light.cmxa dynlink camlp4o
 
 # Should be set to -custom if you use any of the libraries above
 # or if any C code have to be linked with your program
