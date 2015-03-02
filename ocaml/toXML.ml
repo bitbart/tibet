@@ -4,14 +4,6 @@
 (**									     																										   **)
 (** ************************************************************************** **)
 
-(* 
-  ----------------------------------------------------
-   OCAML TOPLEVEL IMPORTS (for Emacs only)
-#use "tipi.ml";; 
-#use "mapping.ml";; 
-open Printf;;
-  ----------------------------------------------------
-*)
 
 (* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
 open Errors;;

@@ -7,7 +7,6 @@
  **)
 
 
-
 (*--------------------------------------------------
     OCAML TOPLEVEL IMPORTS (for Eclipse only)
 
@@ -16,10 +15,8 @@
 #load "xml-light.cma";;
 #load "dynlink.cma";;
 #load "camlp4o.cma";;
+open Printf;;
 --------------------------------------------------*)
-
-
-
 
 
 (* LIST OF PARSER ERRORS *)

@@ -6,21 +6,6 @@
  ********************************************************************************
  **)
 
-(*
-----------------------------------------------------
-	 OCAML TOPLEVEL IMPORTS (for Emacs)
- 
-	 #load "str.cma";;
-   #use "tipi.ml";;
-   #use "extTipi.ml";; 
-  
-   #use "errors.ml";;
-   #load "dynlink.cma";;
-   #load "camlp4o.cma";;
-   #use "python.ml";;
-----------------------------------------------------
-*) 
-
 
 (* Inclusion to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE *)
 open Errors;;
@@ -466,7 +451,3 @@ let extTsb_mapping p q  =  [ buildAutomatonMain p "p" ; buildAutomatonMain q "q"
 (*tsb_mapping performs the conversion of two TSBprocesses p and q into two Uppaal automata*)
 (*"p" and "q" are two simple names, used only in UPPAAL*) 
 let tsb_mapping p q  =  [ buildAutomatonMain ( toExtTsb  p) "p" ; buildAutomatonMain ( toExtTsb  q) "q"] ;;
-
-
-
-

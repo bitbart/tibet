@@ -6,6 +6,7 @@
  ********************************************************************************
  **)
 
+
 open Errors;;
 
 (* It looks for a regular expression in a string: if there is no match, function returns -1, *)

@@ -6,9 +6,6 @@
 ****************************************************************
 **)
 
-(*Emacs inclusions*)
-(*#use "tipi.ml";;*)
-(*#use "tools.ml";;*)
 
 (* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES*) 
 open Tipi;;
@@ -181,4 +178,3 @@ let extTsbToString stringInput =
 	let s = add_star s in
 	let s = remove_wrong_choices s in
 	remove_star s;;
-

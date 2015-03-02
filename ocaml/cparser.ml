@@ -6,13 +6,6 @@
  *************************************************************************************
  **)
 
-(* ----------------------------------------------------
-	 OCAML TOPLEVEL IMPORTS (for Emacs)
-
- #load errors.ml
- #load fromXML.ml
-
----------------------------------------------------- *) 
 
 (* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
 open Errors;;

@@ -4,18 +4,6 @@
 (**									     																										   **)
 (** ************************************************************************** **)
 
-(*----------------------------------------------------
-   OCAML TOPLEVEL IMPORTS (for Emacs only)
-
-#use "errors.ml";;
-#use "tipi.ml";;
-#use "extTipi.ml";;
-#load "str.cma";;
-#load "dynlink.cma";;
-#load "camlp4o.cma";;
-#use "python.ml";;
-
-----------------------------------------------------*)
 
 (* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
 open Errors;;
