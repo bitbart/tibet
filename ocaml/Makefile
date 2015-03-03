@@ -11,7 +11,7 @@ all:
 	ocamlopt -c -pp camlp4o python.ml
 	sed -i '1iopen Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;' kindsystem.ml
 	ocamlopt -c kindsystem.ml
-	sed -i '1i' mapping.ml
+	sed -i '1iopen Errors;;open Tipi;;open ExtTipi;;open Python;;' mapping.ml
 	ocamlopt -c mapping.ml
 	sed -i '1iopen Errors;;open Tipi;;open Mapping;;open Printf;;' toXML.ml
 	ocamlopt -c toXML.ml
