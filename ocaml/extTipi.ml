@@ -123,7 +123,7 @@ let rec extGuardToString guard =
 	| And(x, y) -> (extGuardToString x) ^ (
 			let temp = extGuardToString y in
 			match temp with
-			| "True" -> ")"
+			| "True" -> ""
 			| _ -> " && " ^ temp
 		)
 	| Or(x, y) -> (extGuardToString x) ^ " || " ^ (extGuardToString y)
@@ -134,16 +134,16 @@ let rec extGuardToString guard =
 (* It returns a string that represent an extended choice. *)
 let rec extChoiceToString extChoice typeChoice typeAction =
 	(match extChoice with
-	| [] -> ""
-	| (w, TSBExtGuard x, TSBReset y, z)::l' -> typeAction ^ (actionToString w) ^ "{" ^ (extGuardToString x) ^ ";" ^ (resetToString y) ^ "} " ^ typeChoice ^ " (" ^ (extTsbToString' z) ^ (extChoiceToString l' typeChoice typeAction))
+	| [] -> ")"
+	| (w, TSBExtGuard x, TSBReset y, z)::l' -> typeAction ^ (actionToString w) ^ "{" ^ (extGuardToString x) ^ ";" ^ (resetToString y) ^ "}." ^ (extTsbToString' z) ^ " " ^ typeChoice ^ " " ^ (extChoiceToString l' typeChoice typeAction))
 
 (* Function that converts from extended tsb contract to a string: result must be postprocessed. *)
 and extTsbToString' extTsbContract =
 	match extTsbContract with
 	| ExtNil -> ""
 	| ExtSuccess -> "1"
-	| ExtIntChoice x -> (extChoiceToString x "+" "!") ^ ")"
-	| ExtExtChoice x -> (extChoiceToString x "&" "?") ^ ")"
+	| ExtIntChoice x -> (extChoiceToString x "+" "!")
+	| ExtExtChoice x -> (extChoiceToString x "&" "?")
 	| ExtRec (x, y) -> "REC 'x' [" ^ (extTsbToString' y) ^ "]"
 	| ExtCall x -> "'x'";;
 
@@ -153,14 +153,12 @@ and extTsbToString' extTsbContract =
 let add_star stringInput = 
 	stringInput ^ "*";;
 
-(* It removes choices symbols that appear at the end of the string. *)
-let rec remove_wrong_choices stringInput = 
-	let regExp = (Str.regexp "[\\+&][^ &?!\\']") in
+(* It removes success symbols that appear at the end of a sequence. *)
+let rec remove_success stringInput = 
+	let regExp = (Str.regexp "\\.1") in
 	if ((testSearching stringInput regExp) == -1) then stringInput else
-		let matched = (Str.matched_string stringInput) in
-		let temp = (String.sub matched 0 ((String.length matched) - 2))^(String.sub matched ((String.length matched) - 1) 1) in 
-		let stringUpdated = Str.replace_first regExp temp stringInput in
-		remove_wrong_choices stringUpdated;;
+		let stringUpdated = Str.replace_first regExp "" stringInput in
+		remove_success stringUpdated;;
 
 (* It removes semicolon symbols that appear when in the guard there are no resets. *)
 let rec remove_wrong_semicolon stringInput = 
@@ -169,6 +167,12 @@ let rec remove_wrong_semicolon stringInput =
 		let stringUpdated = Str.replace_first regExp "}" stringInput in
 		remove_wrong_semicolon stringUpdated;;
 
+(* It removes empty choices that appear. *)
+let rec remove_empty_choices stringInput = 
+	let regExp = (Str.regexp " [\\+&] )") in
+	if ((testSearching stringInput regExp) == -1) then stringInput else
+		let stringUpdated = Str.replace_first regExp "" stringInput in
+		remove_empty_choices stringUpdated;;
 
 (* It removes the special character added at the end of the string. *)
 let remove_star stringInput =
@@ -178,6 +182,7 @@ let remove_star stringInput =
 let extTsbToString stringInput = 
 	let s = extTsbToString' stringInput in
 	let s = add_star s in
-	let s = remove_wrong_choices s in
+	let s = remove_success s in 
   let s = remove_wrong_semicolon s in
+	let s = remove_empty_choices s in
 	remove_star s;;
