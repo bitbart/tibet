@@ -7,11 +7,8 @@
  **)
 
 
-(* Inclusion to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINE 
-open Errors;;
-open Tipi;;
-open ExtTipi;;
-open Python;;*)
+(* Inclusions to be used when compiling with makefile - PLEASE IGNORE THE FOLLOWING LINE 
+   open Errors;;open Tipi;;open ExtTipi;;open Python;;*)
 
 (****************************************************************************************************)
 (*                                                                                                  *)

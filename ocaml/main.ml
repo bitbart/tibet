@@ -6,15 +6,8 @@
  ********************************************************************************
  **)
 
-(* Inclusions to be used when compiling with makefile - DO NOT COMPILE THIS FILE IN OCAML TOPLEVEL! *)
-open Tipi;;
-open ExtTipi;;
-open Mapping;;
-open Kindsystem;;
-open ToXML;;
-open FromXML;;
-open Cparser;;
-open Monitor;;
+(* Inclusions to be used when compiling with makefile - PLEASE IGNORE THE FOLLOWING LINE
+   open Tipi;;open ExtTipi;;open Mapping;;open Kindsystem;;open ToXML;;open FromXML;;open Cparser;;open Monitor;; *)
 
 
 

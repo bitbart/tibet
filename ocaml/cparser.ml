@@ -7,9 +7,8 @@
  **)
 
 
-(* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
-open Errors;;
-open FromXML;;
+(* Inclusions to be used when compiling with makefile - PLEASE IGNORE THE FOLLOWING LINE
+   open Errors;;open FromXML;; *)
 
 
 (** PRINTC **)

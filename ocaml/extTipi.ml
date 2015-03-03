@@ -6,11 +6,8 @@
 ****************************************************************
 **)
 
-
-(* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES 
-open Tipi;;
-open Tools;;
-open Errors;;*)
+(* Inclusions to be used when compiling with makefile - PLEASE IGNORE THE FOLLOWING LINE 
+	 open Tipi;;open Tools;;open Errors;; *)
 
 (** 	SECTION #1								**)
 (** EXTGUARD: A GUARD THAT CAN HAVE 'OR'. **)

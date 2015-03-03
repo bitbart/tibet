@@ -7,14 +7,8 @@
  **)
 
 
-open Errors;;
-open Tipi;;
-open ExtTipi;;
-open Mapping;;
-open ToXML;;
-open FromXML;;
-open Python;;
-open Kindsystem;;
+(* Inclusions to be used when compiling with makefile - PLEASE IGNORE THE FOLLOWING LINE
+   open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;; *)
 
 
 (*************************************)

@@ -8,11 +8,8 @@
 
 (* Requires xml-light module - download it and exec 'make install' *)
 
-(* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
-open Tipi;;
-open Mapping;;
-open ToXML;;
-open Errors;;
+(* Inclusions to be used when compiling with makefile - PLEASE IGNORE THE FOLLOWING LINE
+   open Tipi;;open Mapping;;open ToXML;;open Errors;; *)
 
 
 let rec fromIntChoiceToList l =

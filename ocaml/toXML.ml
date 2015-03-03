@@ -5,11 +5,8 @@
 (** ************************************************************************** **)
 
 
-(* Inclusions to be used when compiling with makefile - DO NOT COMMENT THE FOLLOWING LINES *)
-open Errors;;
-open Tipi;;
-open Mapping;;
-open Printf;; 
+(* Inclusions to be used when compiling with makefile - PLEASE IGNORE THE FOLLOWING LINE
+   open Errors;;open Tipi;;open Mapping;;open Printf;; *)
 
 let escape g =
 	let ampregex = Str.regexp "&" in 
