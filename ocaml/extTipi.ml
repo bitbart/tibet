@@ -141,7 +141,7 @@ let rec extChoiceToString extChoice typeChoice typeAction =
 and extTsbToString' extTsbContract =
 	match extTsbContract with
 	| ExtNil -> ""
-	| ExtSuccess -> "true"
+	| ExtSuccess -> "1"
 	| ExtIntChoice x -> (extChoiceToString x "+" "!") ^ ")"
 	| ExtExtChoice x -> (extChoiceToString x "&" "?") ^ ")"
 	| ExtRec (x, y) -> "REC 'x' [" ^ (extTsbToString' y) ^ "]"
