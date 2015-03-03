@@ -149,10 +149,6 @@ and extTsbToString' extTsbContract =
 
 
 (** #3.2 POSTPROCESSING: STRING MUST BE CLEANED. **)
-(* It adds a special character to support search with regular expression. *)
-let add_star stringInput = 
-	stringInput ^ "*";;
-
 (* It removes success symbols that appear at the end of a sequence. *)
 let rec remove_success stringInput = 
 	let regExp = (Str.regexp "\\.1") in
@@ -174,15 +170,25 @@ let rec remove_empty_choices stringInput =
 		let stringUpdated = Str.replace_first regExp "" stringInput in
 		remove_empty_choices stringUpdated;;
 
-(* It removes the special character added at the end of the string. *)
-let remove_star stringInput =
-	String.sub stringInput 0 ((String.length stringInput) - 1);;
+(* Used to simplify AND, OR in guards *)
+let rec simplify_guards' stringInput oldValue newValue = 
+	let regExp = (Str.regexp oldValue) in
+	if ((testSearching stringInput regExp) == -1) then stringInput else
+		let stringUpdated = Str.replace_first regExp newValue stringInput in
+		simplify_guards' stringUpdated oldValue newValue;;
+
+(* It simplifies AND, OR in guards *)
+let simplify_guards stringInput =
+	let s = simplify_guards' stringInput "true && true" "true" in
+	let s = simplify_guards' s " && true" "" in
+	let s = simplify_guards' s "true &&" "" in
+	let s = simplify_guards' s " || false" "" in
+	simplify_guards' s "false || " "";;
 
 (* Main function to perform the translation from extended tsb to string, and then to postprocess the result. *)
 let extTsbToString stringInput = 
 	let s = extTsbToString' stringInput in
-	let s = add_star s in
 	let s = remove_success s in 
   let s = remove_wrong_semicolon s in
 	let s = remove_empty_choices s in
-	remove_star s;;
+	simplify_guards s;;
