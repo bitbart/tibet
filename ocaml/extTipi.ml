@@ -9,7 +9,7 @@
 (* Inclusions to be used when compiling with makefile - PLEASE IGNORE THE FOLLOWING LINE 
 	 open Tipi;;open Tools;;open Errors;; *)
 
-(** 	SECTION #1								**)
+(** 	           SECTION #1								**)
 (** EXTGUARD: A GUARD THAT CAN HAVE 'OR'. **)
 type tsb_ext_relation = ExtLess | ExtGreat | ExtLessEq | ExtGreatEq | ExtEq;;
 
@@ -46,13 +46,10 @@ type def_eqn_nf = ide * (ide * de) list;;
 
 
 
-(******************************************************************)
-(*                                                                *)
-(** 	     SECTION #2	                                         **)
+(** 	                   SECTION #2	                             **)
 (** IT CONVERTS FROM STANDARD CONTRACT INTO AN EXTENDED CONTRACT **)
+
 (* It Converts from tsb relation to extended tsb relation.        *)
-(*                                                                *)
-(******************************************************************)
 let toExtRelation tsbRelation = 
 	match tsbRelation with
 	| Less -> ExtLess
@@ -84,7 +81,7 @@ and toExtTsb standardTsb =
 	| Call x -> ExtCall x;;
 
 
-(**	SECTION #3     **)
+(**	                     SECTION #3                       **)
 (** CONVERT A CONTRACT THAT SUPPORTS OR INTO A STRING. 		**)
 
 
@@ -112,41 +109,41 @@ let rec resetToString reset =
 (* It returns a string that represent an extended relation. *)
 let extRelationToString extRelation = 
 	match extRelation with
-	| ExtLess -> " < "
-	| ExtGreat -> " > "
-	| ExtLessEq -> " <= "
-	| ExtGreatEq -> " >= "
-	| ExtEq -> " == ";;
+	| ExtLess -> "<"
+	| ExtGreat -> ">"
+	| ExtLessEq -> "<="
+	| ExtGreatEq -> ">="
+	| ExtEq -> "==";;
 
 (* It returns a string that represent an extended guard. *)
 let rec extGuardToString guard =
 	match guard with 
 	| SC(x, y, z) -> (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
 	| DC(w, x, y, z) -> (clockToString w) ^ " - " ^ (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
-	| And(x, y) -> "(" ^ (extGuardToString x) ^ (
+	| And(x, y) -> (extGuardToString x) ^ (
 			let temp = extGuardToString y in
 			match temp with
 			| "True" -> ")"
-			| _ -> " && " ^ temp ^ ")" 
+			| _ -> " && " ^ temp
 		)
-	| Or(x, y) -> "(" ^ (extGuardToString x) ^ " || " ^ (extGuardToString y) ^ ")"
-	| Not(x) -> "!(" ^ (extGuardToString x) ^ ")"
-	| True ->  " true "
-	| False -> " false ";;
+	| Or(x, y) -> (extGuardToString x) ^ " || " ^ (extGuardToString y)
+	| Not(x) -> "!" ^ (extGuardToString x)
+	| True ->  "true"
+	| False -> "false";;
 
 (* It returns a string that represent an extended choice. *)
-let rec extChoiceToString extChoice typeChoice =
+let rec extChoiceToString extChoice typeChoice typeAction =
 	(match extChoice with
 	| [] -> ""
-	| (w, TSBExtGuard x, TSBReset y, z)::l' -> (actionToString w) ^ "{" ^ (extGuardToString x) ^ ";" ^ (resetToString y) ^ "}" ^ typeChoice ^ (extTsbToString' z) ^ (extChoiceToString l' typeChoice))
+	| (w, TSBExtGuard x, TSBReset y, z)::l' -> typeAction ^ (actionToString w) ^ "{" ^ (extGuardToString x) ^ ";" ^ (resetToString y) ^ "} " ^ typeChoice ^ " (" ^ (extTsbToString' z) ^ (extChoiceToString l' typeChoice typeAction))
 
 (* Function that converts from extended tsb contract to a string: result must be postprocessed. *)
 and extTsbToString' extTsbContract =
 	match extTsbContract with
 	| ExtNil -> ""
-	| ExtSuccess -> ""
-	| ExtIntChoice x -> (extChoiceToString x "+")
-	| ExtExtChoice x -> (extChoiceToString x "&")
+	| ExtSuccess -> "true"
+	| ExtIntChoice x -> (extChoiceToString x "+" "!") ^ ")"
+	| ExtExtChoice x -> (extChoiceToString x "&" "?") ^ ")"
 	| ExtRec (x, y) -> "REC 'x' [" ^ (extTsbToString' y) ^ "]"
 	| ExtCall x -> "'x'";;
 
@@ -158,12 +155,20 @@ let add_star stringInput =
 
 (* It removes choices symbols that appear at the end of the string. *)
 let rec remove_wrong_choices stringInput = 
-	let regExp = (Str.regexp "[\\+&][^a-z\\']") in
+	let regExp = (Str.regexp "[\\+&][^ &?!\\']") in
 	if ((testSearching stringInput regExp) == -1) then stringInput else
 		let matched = (Str.matched_string stringInput) in
 		let temp = (String.sub matched 0 ((String.length matched) - 2))^(String.sub matched ((String.length matched) - 1) 1) in 
 		let stringUpdated = Str.replace_first regExp temp stringInput in
 		remove_wrong_choices stringUpdated;;
+
+(* It removes semicolon symbols that appear when in the guard there are no resets. *)
+let rec remove_wrong_semicolon stringInput = 
+	let regExp = (Str.regexp "[;][}]") in
+	if ((testSearching stringInput regExp) == -1) then stringInput else
+		let stringUpdated = Str.replace_first regExp "}" stringInput in
+		remove_wrong_semicolon stringUpdated;;
+
 
 (* It removes the special character added at the end of the string. *)
 let remove_star stringInput =
@@ -174,4 +179,5 @@ let extTsbToString stringInput =
 	let s = extTsbToString' stringInput in
 	let s = add_star s in
 	let s = remove_wrong_choices s in
+  let s = remove_wrong_semicolon s in
 	remove_star s;;
