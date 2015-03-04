@@ -135,7 +135,7 @@ let rec extGuardToString guard =
 let rec extChoiceToString extChoice typeChoice typeAction =
 	(match extChoice with
 	| [] -> ")"
-	| (w, TSBExtGuard x, TSBReset y, z)::l' -> typeAction ^ (actionToString w) ^ "{" ^ (extGuardToString x) ^ ";" ^ (resetToString y) ^ "}." ^ (extTsbToString' z) ^ " " ^ typeChoice ^ " " ^ (extChoiceToString l' typeChoice typeAction))
+	| (w, TSBExtGuard x, TSBReset y, z)::l' -> typeAction ^ (actionToString w) ^ "{" ^ (extGuardToString x) ^ ";" ^ (resetToString y) ^ "}.(" ^ (extTsbToString' z) ^ ") " ^ typeChoice ^ " " ^ (extChoiceToString l' typeChoice typeAction))
 
 (* Function that converts from extended tsb contract to a string: result must be postprocessed. *)
 and extTsbToString' extTsbContract =
@@ -151,7 +151,7 @@ and extTsbToString' extTsbContract =
 (** #3.2 POSTPROCESSING: STRING MUST BE CLEANED. **)
 (* It removes success symbols that appear at the end of a sequence. *)
 let rec remove_success stringInput = 
-	let regExp = (Str.regexp "\\.1") in
+	let regExp = (Str.regexp "\\.(1)") in
 	if ((testSearching stringInput regExp) == -1) then stringInput else
 		let stringUpdated = Str.replace_first regExp "" stringInput in
 		remove_success stringUpdated;;
@@ -183,7 +183,8 @@ let simplify_guards stringInput =
 	let s = simplify_guards' s " && true" "" in
 	let s = simplify_guards' s "true &&" "" in
 	let s = simplify_guards' s " || false" "" in
-	simplify_guards' s "false || " "";;
+	let s = simplify_guards' s "false || " "" in 
+	simplify_guards' s "{true}" "";;
 
 (* Main function to perform the translation from extended tsb to string, and then to postprocess the result. *)
 let extTsbToString stringInput = 
