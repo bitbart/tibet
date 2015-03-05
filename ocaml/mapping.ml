@@ -337,7 +337,7 @@ let createResetStringForEdge  l = match l with
 | (TSBClock c)::tl -> c^"=0"
 ;;
 
-(* manageResetSet returns a couple: if reset set is more than 1 we have (procedure name , (proc Name + procedure body))*)
+(*  returns a couple: if reset set is more than 1 we have (procedure name , (proc Name + procedure body))*)
 (* if it is only one we have (string to put on the edge, nothing) *)
 (* either way the first item is to be put on the edge, the second --if not empty -- among the procedures*)
 let procHD = "res_";;
@@ -383,7 +383,7 @@ let rec  manageInternalBranch  src  a  lg r rv count   = match lg with
   [] -> []
 | hd::tl -> 
        let newClocks = addSetSet ( List.map  (fun c  -> Clock c) (getClockListFromGuard hd)) (getClocksList r) in
-       let (n,b) =  manageResetSet r rv in 
+       let (n,b) =  manageResetSet r (src^a^rv^(string_of_int count)) in 
        let aut = prefixAutomatonModified  (Loc (src^a^rv^(string_of_int count))) (past hd) (hd) (Label ( a^bang))  n (idleAutomaton (Loc rv)) 
        in  (addClocks  (addProcedure aut b) newClocks) :: 
                           (manageInternalBranch src a tl r rv (count+1))
@@ -405,7 +405,7 @@ let rec manageExternalBranch a  (lg) r  rv  = match lg with
   [] -> []
 | hd::tl -> 
        let newClocks = addSetSet ( List.map  (fun c  -> Clock c) (getClockListFromGuard hd)) (getClocksList r) in
-       let (n,b) =  manageResetSet r rv in 
+       let (n,b) =  manageResetSet r (src^a^rv^(string_of_int count))  in 
        let aut =  (idleAutomaton (Loc rv))
        in  (TSBAction a, TSBExtGuard  hd, n, (addClocks  (addProcedure aut b) newClocks))
                :: (manageExternalBranch a tl r rv )

@@ -15,6 +15,15 @@ let q  = ExtExtChoice [(TSBAction "c", g1, TSBReset r1, ExtSuccess);
 let lta = extTsb_mapping   p q;;
 writeToFile lta "ex_prova";;
 
+let aut1 = buildAutomatonMain p "p";;
+getLabels aut1;;
+
+ta_to_string (aut1);;
+
+let aut2 = buildAutomatonMain q "q";;
+getLabels aut2;;
+
+ta_to_string (aut2);;
 
 (*example*)
 let r1 = [TSBClock "x";TSBClock "t"];;

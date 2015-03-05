@@ -52,7 +52,7 @@ let rec write_procs procs = match procs with
 ;;
 
 let write_declarations lta = 
-	"<declaration>// Place global declarations here.\n" ^
+	"<declaration>" ^
 	(write_vars (List.fold_right (fun  (TimedAutoma (name, locs, initial, labels, edges,  inv,  clocks, gClocks,  committed, vars, gVars, procs)) s -> addSetSet gVars s) lta []))^"\n"^
         (write_clocks (List.fold_right (fun  (TimedAutoma (name, locs, initial, labels, edges,  inv,  clocks, gClocks,  committed, vars, gVars, procs)) s -> addSetSet gClocks s) lta []))^"\n"^
         (write_chans (List.fold_right (fun  (TimedAutoma (name, locs, initial, labels, edges,  inv,  clocks, gClocks, committed, vars, gVars, procs)) s -> addSetSet  labels s) lta []))^"\n"^
@@ -60,7 +60,7 @@ let write_declarations lta =
 ;;
 
 let write_local_declarations  (TimedAutoma (name, locs, initial, labels, edges,  inv,  clocks, gClocks, committed, vars, gVars, procs)) = 
-	"<declaration>// Place local declarations here.\n" ^
+	"<declaration>\n" ^
         (write_vars  vars)^"\n"^
         (write_clocks clocks)^"\n"^
         (write_procs procs)^"\n"^
@@ -133,6 +133,14 @@ let write_template ta  =
 
 let witeTemplateName id = (String.uppercase id)^"Temp";;
 
+
+let ta_to_string ta  = 
+       	(*"<template>\n<name> Firing_"^ getTemplateName ta ^"</name>\n" ^*)
+	write_local_declarations ta  ^  
+	(write_locations ta) ^ (write_initLocation ta)  ^ (write_transitions ta) 
+	(*^ "</template>\n"*)
+     ;;
+
 (*******************Writing System Instantiation ********)
 (*                                                      *)
 (*                                                      *)
@@ -150,9 +158,9 @@ let rec write_systemUseRec lta = match lta with
 
 
 let write_system lta = 
-  "<system>\n// Place template instantiations here.//\n" ^
+  "<system>\n" ^
   (write_systemDecRec lta)^
-  "\n//List one or more processes to be composed into a system.\n"^
+  "\n"^
   "system "^ (write_systemUseRec lta)^
   "</system>\n</nta>\n"
 ;;
