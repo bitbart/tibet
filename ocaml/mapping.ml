@@ -47,9 +47,13 @@ let rec getDisjunctList g = match g with
 
 
 (*getDisjunctiveNormalForm of a guard*)
-let getDNForm (TSBExtGuard g) = (TSBExtGuard (subtract g False));;
+let getDNFormExtGuard (TSBExtGuard g) = (TSBExtGuard (subtract g False));;
+
+let getDNForm  g =  (subtract g False);;
 
 
+(*negation of a guard*)
+let negateGuard g = (subtract True g );;
 
 
 (****************************************************************************************************)
@@ -121,11 +125,11 @@ and
 choiceToDENF l count = match l with 
   []  -> failwith "Error in choiceToDENF"
 | (a,b,c,d)::[] ->   let (y2, l2 , newCount2) = extTsbToDENFRec d count
-                     in  ([(a, getDNForm b, c, y2)],  l2 , newCount2)    
+                     in  ([(a, getDNFormExtGuard b, c, y2)],  l2 , newCount2)    
                     (*we return a fragment for the choice, the set of equations, and the next free id*)
 | (a,b,c,d)::tl ->  let (y2, l2 , newCount2) = extTsbToDENFRec d count
                     in let ( lChoice ,  l3 , newCount3)  = choiceToDENF tl newCount2
-                    in     ( (a, getDNForm b,c,y2) :: lChoice,  l2 @ l3, newCount3 +1)
+                    in     ( (a, getDNFormExtGuard b,c,y2) :: lChoice,  l2 @ l3, newCount3 +1)
 ;;   
 
 (*Converting tsb into a DENF*)
@@ -267,23 +271,21 @@ let rec getLabelsFromEdges l = match l with
  
 
 (*lAut is a tuple ( a, g, r, aut) list*)
-let externalChoiceAutomaton (Loc l)  g lAut  = 
+let externalChoiceAutomaton (Loc l)   lAut  = 
     try
        let edgs =   ec_generateAllTheBranches ( Loc l ) lAut in 
        (*eliminating query char*) 
        let labs = List.map (fun (Label x) -> Label (if String.length x > 0 
                                                     then String.sub x 0  (String.length x -1 ) 
                                                     else "")) (getLabelsFromEdges edgs) in  
-        let lAut2  = List.map (fun (a,b,c,d) -> d)  lAut in
-        let inv =  (l, g) 
+        let lAut2  = List.map (fun (a,b,c,d) -> d)  lAut 
         in TimedAutoma ("", Loc l :: unionOfLocations  lAut2, Loc l , addSetSet labs (unionOfLabels  lAut2), 
-                   edgs@ unionOfEdges  lAut2, inv :: unionOfInvariants  lAut2, 
+                   edgs@ unionOfEdges  lAut2, unionOfInvariants  lAut2, 
                    unionOfClocks  lAut2, unionOfGlobalClocks lAut2,  unionOfCommitted lAut2, 
                    unionOfVariables  lAut2, unionOfGlobalVariables lAut2, unionOfProcedures lAut2)
      with 
        _-> failwith ("Errore qui: externalChoiceAutomaton.") 
 ;;
-
 
 (****************************************************************************************************)
 (*                                                                                                  *)
@@ -374,17 +376,20 @@ let rec getClockListFromGuard  g  = match g with
 | False -> []
 | SC (TSBClock t, rel, d) ->  [t]
 | And (g1,g2) ->  addSetSet (getClockListFromGuard g1 ) (getClockListFromGuard g2) 
-| _ -> failwith "getClockListFromList: to be implemented" 
+| DC (TSBClock t1, TSBClock t2, rel, d) ->  [t1; t2] 
+| _ -> failwith "getClockListFromGuard: to be implemented" 
 ;;
 
 (*restituisce piu' automi, uno per ogni disgiunto della lista lg,*)
 (* e la prima locazione ha invariante che e' il past della guardia*)
+
+
 let rec  manageInternalBranch  src  a  lg r rv count   = match lg with 
   [] -> []
 | hd::tl -> 
        let newClocks = addSetSet ( List.map  (fun c  -> Clock c) (getClockListFromGuard hd)) (getClocksList r) in
        let (n,b) =  manageResetSet r (src^a^rv^(string_of_int count)) in 
-       let aut = prefixAutomatonModified  (Loc (src^a^rv^(string_of_int count))) (past hd) (hd) (Label ( a^bang))  n (idleAutomaton (Loc rv)) 
+		   let aut = prefixAutomatonModified  (Loc (src^a^rv^(string_of_int count))) (past hd) (hd) (Label ( a^bang))  n (idleAutomaton (Loc rv)) 
        in  (addClocks  (addProcedure aut b) newClocks) :: 
                           (manageInternalBranch src a tl r rv (count+1))
 ;;
@@ -393,7 +398,9 @@ let rec  manageInternalBranch  src  a  lg r rv count   = match lg with
 (*maps the branches of an internal choice, and manage all the dsjuncts of the guards*)
 (*1 is the counter...*)
 (*src is the neame of the previous node*)
-let rec mapInternalChoiceContinuation src l = match l with 
+
+
+let rec mapInternalChoiceContinuation src l   =   match l with 
 [] ->  []
 | (TSBAction a, TSBExtGuard g, TSBReset r, rv):: tl ->     
        let count = 1 in
@@ -401,31 +408,36 @@ let rec mapInternalChoiceContinuation src l = match l with
        in  autList @ mapInternalChoiceContinuation src tl
 ;;
 
-let rec manageExternalBranch a  (lg) r  rv  = match lg with 
+
+let rec manageExternalBranch src a  lg r  rv  count = match lg with 
   [] -> []
 | hd::tl -> 
        let newClocks = addSetSet ( List.map  (fun c  -> Clock c) (getClockListFromGuard hd)) (getClocksList r) in
        let (n,b) =  manageResetSet r (src^a^rv^(string_of_int count))  in 
        let aut =  (idleAutomaton (Loc rv))
        in  (TSBAction a, TSBExtGuard  hd, n, (addClocks  (addProcedure aut b) newClocks))
-               :: (manageExternalBranch a tl r rv )
+               :: (manageExternalBranch src a tl r rv count)
 ;;
 
-let rec mapExternalChoiceContinuation l = match l with 
+let rec mapExternalChoiceContinuation src l = match l with 
 [] -> []
 | (TSBAction a, TSBExtGuard g, TSBReset r, rv):: tl ->   
-       let  autList = manageExternalBranch  a  (getDisjunctList g) r  rv
-       in   autList @ mapExternalChoiceContinuation tl
+	     let count = 1 in
+       let  autList = manageExternalBranch  src a  (getDisjunctList g) r  rv count
+       in   autList @ mapExternalChoiceContinuation src tl
 ;;
+
+
 
 let denfToUppaal (x,p) = match p with   
    DESuccess ->  successAutomaton (Loc x) 
 |  DEIntChoice  l -> let lAut = mapInternalChoiceContinuation x l in
                      internalChoiceAutomaton (Loc (x)) lAut 
-|  DEExtChoice  l -> let lAut = mapExternalChoiceContinuation  l in
-                     let omega = ""  
-                     in externalChoiceAutomaton (Loc x) omega  lAut 
+|  DEExtChoice  l -> let lAut = mapExternalChoiceContinuation  x l in
+                     externalChoiceAutomaton (Loc x)   lAut 
 | _ ->  failwith "denfToUppaal Error 2";;
+
+
 
 
 let rec buildAutomaton (x,d) =  let lAut = List.map (fun a -> denfToUppaal a) d

@@ -23,7 +23,7 @@ type extGuard =   SC of tsb_clock * tsb_ext_relation * int              (*simple
 
 type tsb_extGuard =  TSBExtGuard of extGuard;;
 
-type extTsb = ExtNil | ExtSuccess |
+type extTsb = ExtNil | ExtSuccess | 
            ExtIntChoice of (tsb_action * tsb_extGuard * tsb_reset * extTsb) list | 
            ExtExtChoice of (tsb_action *tsb_extGuard * tsb_reset * extTsb) list  |
            ExtRec of string * extTsb |

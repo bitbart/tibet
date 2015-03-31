@@ -32,7 +32,7 @@ let python_invReset_start = ".invReset(";;
 let python_invReset_end = "); ";;
 let python_subtract = "-";;
 let python_equivalence = "==";;
-
+let python_inclusion = "<=";;
 
 (** #1.2 SYSTEM CALLS **)
 (* System call to execute a Unix command. Returns a string with the command output. *)
@@ -451,6 +451,20 @@ let equivalence guard' guard'' =
 	let guardName'' = "b" in
 	let clocksNames = compress (List.sort comparatorStrings (clocksNames'@clocksNames'')) in
 	let command = python_command_start^(pythonContextDeclaration clocksNames)^(pythonGuardDeclaration guardName' guard')^(pythonGuardDeclaration guardName'' guard'')^python_print^guardName'^python_equivalence^guardName''^python_command_end in 
+	let result = (syscall command) in
+	if ((String.compare result "True\n") == 0) then true
+	else if ((String.compare result "False\n") == 0) then false
+	else failwith _ERR_201;;
+
+(** #4.5 INCLUSION: CALLS PYTHON OPERATION '<=' **)
+(* It takes two guards, then call python operation '<='. It returns true if guard' is included in guard'', false otherwise. *)
+let inclusion guard' guard'' =
+	let clocksNames' = clocksNamesFromGuard guard' in
+	let clocksNames'' = clocksNamesFromGuard guard'' in
+	let guardName' = "a" in
+	let guardName'' = "b" in
+	let clocksNames = compress (List.sort comparatorStrings (clocksNames'@clocksNames'')) in
+	let command = python_command_start^(pythonContextDeclaration clocksNames)^(pythonGuardDeclaration guardName' guard')^(pythonGuardDeclaration guardName'' guard'')^python_print^guardName'^python_inclusion^guardName''^python_command_end in 
 	let result = (syscall command) in
 	if ((String.compare result "True\n") == 0) then true
 	else if ((String.compare result "False\n") == 0) then false
