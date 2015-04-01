@@ -81,6 +81,14 @@ let main =
       | "-id" -> print_string (isOnDuty (int_of_string (Sys.argv.(2))) (Sys.argv.(3)))
 			| "-pa" -> print_string (get_actions (Sys.argv.(3)) (int_of_string (Sys.argv.(2))))
 			| "-ff" -> contractsToAutomata_fromFile (Sys.argv.(2)) (Sys.argv.(3))
+			| "-ba" ->
+						print_string (ta_to_string (buildAutomatonMain (toExtTsb (readXmlContract (Sys.argv.(2)))) (Sys.argv.(3))))
+ 			| "-gl" -> (
+						let set = getLabels (buildAutomatonMain (toExtTsb (readXmlContract (Sys.argv.(2)))) (Sys.argv.(3))) in
+						let rec printLabels l = (match l with
+						| [] -> ""
+						| (Label h)::t -> h^", "^(printLabels t)) in
+						print_string (printLabels set))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
 		| 5 -> 
@@ -97,3 +105,17 @@ let main =
       )
 		| _ -> print_string ("Wrong input!\n\nPlease use:\n\n\t'$ ./ctu -ff file1.txt file2.txt' to convert two xml contracts in Uppaal's xml\n\t'$ ./ctu -s < file.txt' to convert a string contract in a XML contract")
 ;;
+
+
+(**
+
+1) Per ogni TST  devi memorizzare: 
+     (i)  la lista dei canali usati
+     (ii) la sua rappresentazione a stringa
+  Es: dato p un TST: 
+    let aut = buildAutomatonMain p "p";;  --> crea l'automa
+    getLabels aut;;                       --> restituisce la lista dei canali  
+    - : label set = [Label "a"; Label "b"]
+    ta_to_string (aut);;                  --> restituisce la codifica xml
+
+*)
