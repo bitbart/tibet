@@ -61,6 +61,14 @@ let main =
           if (admitsCompliant (toExtTsb (readXmlContract rc))) then print_string("yes") else print_string("no")
       | "-dk" -> let rc = read_one_contract stdin in print_string(extGuardToString (kindof (toExtTsb (readXmlContract rc))))
       | "-dd" -> let rc = read_one_contract stdin in print_string(extTsbToString (dualof (toExtTsb (readXmlContract rc))))
+	    | "-ba" ->
+	                print_string (ta_to_string (buildAutomatonMain (toExtTsb (read_one_contract stdin)) "p"))
+	    | "-gl" -> (
+	                let set = getLabels (buildAutomatonMain (toExtTsb (read_one_contract stdin)) "p") in
+	                let rec printLabels l = (match l with
+	                | [] -> ""
+	                | (Label h)::t -> h^", "^(printLabels t)) in
+	                print_string (printLabels set))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
     | 3 -> 
@@ -81,14 +89,6 @@ let main =
       | "-id" -> print_string (isOnDuty (int_of_string (Sys.argv.(2))) (Sys.argv.(3)))
 			| "-pa" -> print_string (get_actions (Sys.argv.(3)) (int_of_string (Sys.argv.(2))))
 			| "-ff" -> contractsToAutomata_fromFile (Sys.argv.(2)) (Sys.argv.(3))
-			| "-ba" ->
-						print_string (ta_to_string (buildAutomatonMain (toExtTsb (readXmlContract (Sys.argv.(2)))) (Sys.argv.(3))))
- 			| "-gl" -> (
-						let set = getLabels (buildAutomatonMain (toExtTsb (readXmlContract (Sys.argv.(2)))) (Sys.argv.(3))) in
-						let rec printLabels l = (match l with
-						| [] -> ""
-						| (Label h)::t -> h^", "^(printLabels t)) in
-						print_string (printLabels set))
 			| _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
 			)
 		| 5 -> 
