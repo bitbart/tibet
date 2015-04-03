@@ -61,10 +61,11 @@ let main =
           if (admitsCompliant (toExtTsb (readXmlContract rc))) then print_string("yes") else print_string("no")
       | "-dk" -> let rc = read_one_contract stdin in print_string(extGuardToString (kindof (toExtTsb (readXmlContract rc))))
       | "-dd" -> let rc = read_one_contract stdin in print_string(extTsbToString (dualof (toExtTsb (readXmlContract rc))))
-	    | "-ba" ->
-	                print_string (ta_to_string (buildAutomatonMain (toExtTsb (read_one_contract stdin)) "p"))
-	    | "-gl" -> (
-	                let set = getLabels (buildAutomatonMain (toExtTsb (read_one_contract stdin)) "p") in
+	    | "-ba" -> let contract = readXmlContract (read_one_contract stdin) in
+			             print_string (ta_to_string (buildAutomatonMain (toExtTsb contract) "p"))
+	    | "-gl" -> let contract = readXmlContract (read_one_contract stdin) in
+				          (
+	                let set = getLabels (buildAutomatonMain (toExtTsb contract) "p") in
 	                let rec printLabels l = (match l with
 	                | [] -> ""
 	                | (Label h)::t -> h^", "^(printLabels t)) in
