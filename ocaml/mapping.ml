@@ -48,7 +48,7 @@ let rec getDisjunctList g = match g with
 
 (*getDisjunctiveNormalForm of a guard*)
 let getDNForm  g =  (subtract g False);;
-
+let getDNFormExtGuard (TSBExtGuard g) = TSBExtGuard (getDNForm g )
 
 (*negation of a guard*)
 let negateGuard g = (subtract True g );;
