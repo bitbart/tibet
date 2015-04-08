@@ -47,9 +47,8 @@ let rec getDisjunctList g = match g with
 
 
 (*getDisjunctiveNormalForm of a guard*)
-let getDNFormExtGuard (TSBExtGuard g) = (TSBExtGuard (subtract g False));;
-
 let getDNForm  g =  (subtract g False);;
+let getDNFormExtGuard (TSBExtGuard g) = (TSBExtGuard (getDNForm g));;
 
 
 (*negation of a guard*)
@@ -171,35 +170,26 @@ let successAutomaton (Loc l)  = let edges =  [ Edge ( Loc l, Label  (successSync
 (*                    Prefix  Automaton                                                             *)
 (*                                                                                                  *)
 (****************************************************************************************************)
-(*The prefix automaton  prefixes a location to an automaton*)
-let prefixAutomaton (Loc l) (Label lab) r (TimedAutoma (name, locations, init, labels, edges, invariants, 
-                                  clocks, globalClocks,  committed, variables, globalVariables,  procedures)) =
+
+(*inv and g are guards, lab is a! or a?, r is a string representing the  reset set or a preoedure call*)
+(*if urgent is true then Loc l is urgent*)
+let prefixAutomaton urgent (Loc l)  (inv) (g) (Label lab) r 
+                             (TimedAutoma (name, locations, init, labels, edges, invariants, 
+                                               clocks, globalClocks,  committed, variables, globalVariables,  procedures)) =
               try 
-                    let edg =   Edge ( Loc l, Label lab, "", r, init) in 
-                    let chans =  if (String.length lab>0) 
+                    let edg =   Edge ( Loc l, Label lab, (if g <> True then extGuardToString  g else ""), r, init) in 
+                    let chans =  if (String.length lab>0) (*se la label non e' vuota*)
                                  then addElSet (Label (String.sub lab 0  (String.length lab -1 )))  labels 
-                                 else labels
-                    in TimedAutoma (name, Loc l :: locations, Loc l , chans, edg :: edges, invariants, 
-                                    clocks, globalClocks,   l :: committed, variables, globalVariables, procedures)
+                                 else  labels
+                    in TimedAutoma (name, Loc l :: locations, Loc l , chans, edg :: edges, (l, extGuardToString inv) :: invariants, 
+                                    clocks, globalClocks,  
+																		(if urgent then l::committed else committed), variables, globalVariables, procedures)
               with 
                  _-> failwith ("Errore qui: prefixAutomaton. label:"^lab^".") 
 ;;
 
-(*Modified version of the mapping to support disjunctions in invariants*)
-(*inv and g are guards*)
-let prefixAutomatonModified (Loc l)  (inv) (g) (Label lab) r 
-                                 (TimedAutoma (name, locations, init, labels, edges, invariants, 
-                                               clocks, globalClocks,  committed, variables, globalVariables,  procedures)) =
-              try 
-                    let edg =   Edge ( Loc l, Label lab, extGuardToString  g, r, init) in 
-                    let chans =  if (String.length lab>0) 
-                                 then addElSet (Label (String.sub lab 0  (String.length lab -1 )))  labels 
-                                 else  labels
-                    in TimedAutoma (name, Loc l :: locations, Loc l , chans, edg :: edges, (l, extGuardToString inv) :: invariants, 
-                                    clocks, globalClocks,   committed, variables, globalVariables, procedures)
-              with 
-                 _-> failwith ("Errore qui: prefixAutomaton. label:"^lab^".") 
-;;
+
+
 
 (****************************************************************************************************)
 (*                                                                                                  *)
@@ -388,8 +378,10 @@ let rec  manageInternalBranch  src  a  lg r rv count   = match lg with
   [] -> []
 | hd::tl -> 
        let newClocks = addSetSet ( List.map  (fun c  -> Clock c) (getClockListFromGuard hd)) (getClocksList r) in
-       let (n,b) =  manageResetSet r (src^a^rv^(string_of_int count)) in 
-		   let aut = prefixAutomatonModified  (Loc (src^a^rv^(string_of_int count))) (past hd) (hd) (Label ( a^bang))  n (idleAutomaton (Loc rv)) 
+       let (procName,b) =  manageResetSet r (src^a^rv^(string_of_int count)) in 
+			 let labLoc =  (src^a^rv^(string_of_int count)) in
+		   let aut = prefixAutomaton false ( Loc labLoc) (past hd) (True) (Label (""))  ""  
+			              (prefixAutomaton true  ( Loc (labLoc^"_bis")) (True) (hd) (Label ( a^bang))  procName (idleAutomaton (Loc rv)) )
        in  (addClocks  (addProcedure aut b) newClocks) :: 
                           (manageInternalBranch src a tl r rv (count+1))
 ;;

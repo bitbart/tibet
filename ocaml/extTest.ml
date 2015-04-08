@@ -2,7 +2,19 @@
 #use "toXML.ml";;
 (*#use "cparser.ml";;*)
 
-(*example*)
+
+
+(*Ex: not compliant*)
+let g1 = TSBExtGuard (SC(TSBClock "x",ExtLess,10));;
+let g2 = TSBExtGuard (SC(TSBClock "y",ExtGreat,7));;
+let p  = ExtIntChoice [(TSBAction "a", g1, TSBReset [],ExtSuccess) ; (TSBAction "a", g1, TSBReset [],ExtSuccess)  ];; 
+let q  = ExtExtChoice [(TSBAction "a", g2, TSBReset [], ExtSuccess) ; (TSBAction "a", g2, TSBReset [],ExtSuccess) ];; 
+
+let lta = extTsb_mapping   p q;;
+writeToFile lta "ex_prova1";;
+
+
+(*Ex: complex guard*)
 let g1 = TSBExtGuard (SC(TSBClock "t",ExtEq,4));;
 let g12 = TSBExtGuard (SC(TSBClock "x",ExtEq,6));;
 let notg = TSBExtGuard ( (And (SC(TSBClock "t",ExtLess,4), (SC(TSBClock "x",ExtLess,4)))));;
@@ -15,32 +27,7 @@ let q  = ExtExtChoice [(TSBAction "a", g1, TSBReset [], ExtSuccess);
 let lta = extTsb_mapping   p q;;
 writeToFile lta "ex_prova1";;
 
-
-let 	l = 
-  [(TSBAction "a", TSBExtGuard (SC (TSBClock "t", ExtEq, 4)), TSBReset [], "XX1");
-   (TSBAction "c", TSBExtGuard (SC (TSBClock "x", ExtEq, 6)), TSBReset [], "XX2");];
-let dd = getDeadlineGuard  l ;;
-dd;;
-let lAut = mapInternalChoiceContinuation "XXAA" ( [(TSBAction deadlineAction, TSBExtGuard dd, TSBReset [], "XX999")] ) ;;
-let count = 1;;
-getDisjunctList dd;;
-
-let autList = manageInternalBranch  "XXAA" deadlineAction (getDisjunctList dd)  []  "XXBB" 1;;
-    
-			   in  autList @ mapInternalChoiceContinuation src tl
-			
-													                    internalChoiceAutomaton (Loc (x)) lAut 
-getDeadlineGuard l ;;
-let deadlineGuard = negateGuard(sumGuard l) ;;
-let lAut = mapInternalChoiceContinuation "XX88" ([(TSBAction deadlineAction, TSBExtGuard deadlineGuard, TSBReset [], "XX999")] );;
-let autList = manageInternalBranch  "XX88"  deadlineGuard (getDisjunctList g)  r rv count;;
-
-
-						getDisjunctList 		deadlineGuar
-						d;;				  
-writeToFile lta "ex_prova1";;
-
-(*example*)
+(*Ex: example*)
 let r1 = [TSBClock "x";TSBClock "t"];;
 let r2 = [TSBClock "t"];;
 let g1 = TSBExtGuard (And (SC(TSBClock "x",ExtGreatEq,6), (SC(TSBClock "x",ExtLessEq,12))));;
