@@ -48,7 +48,6 @@ let rec getDisjunctList g = match g with
 
 (*getDisjunctiveNormalForm of a guard*)
 let getDNForm  g =  (subtract g False);;
-let getDNFormExtGuard (TSBExtGuard g) = (TSBExtGuard (getDNForm g));;
 
 
 (*negation of a guard*)
@@ -380,7 +379,7 @@ let rec  manageInternalBranch  src  a  lg r rv count   = match lg with
        let newClocks = addSetSet ( List.map  (fun c  -> Clock c) (getClockListFromGuard hd)) (getClocksList r) in
        let (procName,b) =  manageResetSet r (src^a^rv^(string_of_int count)) in 
 			 let labLoc =  (src^a^rv^(string_of_int count)) in
-		   let aut = prefixAutomaton false ( Loc labLoc) (past hd) (True) (Label (""))  ""  
+		   let aut = prefixAutomaton false ( Loc labLoc) (past hd) (hd) (Label (""))  ""  
 			              (prefixAutomaton true  ( Loc (labLoc^"_bis")) (True) (hd) (Label ( a^bang))  procName (idleAutomaton (Loc rv)) )
        in  (addClocks  (addProcedure aut b) newClocks) :: 
                           (manageInternalBranch src a tl r rv (count+1))
