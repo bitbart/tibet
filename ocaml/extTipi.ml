@@ -120,16 +120,13 @@ let rec extGuardToString guard =
 	match guard with 
 	| SC(x, y, z) -> (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
 	| DC(w, x, y, z) -> (clockToString w) ^ " - " ^ (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
-	| And(x, y) -> (extGuardToString x) ^ (
-			let temp = extGuardToString y in
-			match temp with
-			| "True" -> ""
-			| _ -> " && " ^ temp
-		)
-	| Or(x, y) -> (extGuardToString x) ^ " || " ^ (extGuardToString y)
-	| Not(x) -> "!" ^ (extGuardToString x)
-	| True ->  "true"
-	| False -> "false";;
+	| And(x, y) ->  "(" ^ (extGuardToString x) ^ "," ^ (extGuardToString y) ^ ")"
+	| Or(x, y) -> "(" ^ (extGuardToString x) ^ "|" ^ (extGuardToString y) ^ ")"
+  | Not(x) -> "NOT (" ^ (extGuardToString x) ^ ")"
+  | True ->  "true"
+	| False -> "false"
+	;;
+
 
 (* It returns a string that represent an extended choice. *)
 let rec extChoiceToString extChoice typeChoice typeAction =

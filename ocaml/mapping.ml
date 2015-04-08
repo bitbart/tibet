@@ -54,6 +54,23 @@ let getDNFormExtGuard (TSBExtGuard g) = TSBExtGuard (getDNForm g )
 let negateGuard g = (subtract True g );;
 
 
+(* It returns a string-in-java-style that represent an extended guard. *)
+let rec extGuardToStringForMapping guard =
+	match guard with 
+	| SC(x, y, z) -> (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
+	| DC(w, x, y, z) -> (clockToString w) ^ " - " ^ (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
+	| And(x, y) -> (extGuardToStringForMapping x) ^ (
+			let temp = extGuardToStringForMapping y in
+			match temp with
+			| "True" -> ""
+			| _ -> " && " ^ temp
+		)
+	| Or(x, y) -> (extGuardToStringForMapping x) ^ " || " ^ (extGuardToStringForMapping y)
+	| Not(x) -> "!" ^ (extGuardToStringForMapping x)
+	| True ->  "true"
+	| False -> "false";;
+
+
 (****************************************************************************************************)
 (*                                                                                                  *)
 (*                   Transforming tsb into defining equation normal form                            *)
@@ -176,11 +193,11 @@ let prefixAutomaton urgent (Loc l)  (inv) (g) (Label lab) r
                              (TimedAutoma (name, locations, init, labels, edges, invariants, 
                                                clocks, globalClocks,  committed, variables, globalVariables,  procedures)) =
               try 
-                    let edg =   Edge ( Loc l, Label lab, (if g <> True then extGuardToString  g else ""), r, init) in 
+                    let edg =   Edge ( Loc l, Label lab, (if g <> True then extGuardToStringForMapping g else ""), r, init) in 
                     let chans =  if (String.length lab>0) (*se la label non e' vuota*)
                                  then addElSet (Label (String.sub lab 0  (String.length lab -1 )))  labels 
                                  else  labels
-                    in TimedAutoma (name, Loc l :: locations, Loc l , chans, edg :: edges, (l, extGuardToString inv) :: invariants, 
+                    in TimedAutoma (name, Loc l :: locations, Loc l , chans, edg :: edges, (l, extGuardToStringForMapping inv) :: invariants, 
                                     clocks, globalClocks,  
 																		(if urgent then l::committed else committed), variables, globalVariables, procedures)
               with 
@@ -252,7 +269,7 @@ let rec ec_generateAllTheBranches (Loc l)  lAut = match lAut with
 [] -> []
 | (TSBAction a, TSBExtGuard g, r,  (TimedAutoma (name, locations, init, labels, edges, invariants, 
        clocks, globalClocks,  committed, variables, globalVariables,  procedures))):: tl 
-   ->  Edge ( Loc l, Label ( a^query), extGuardToString  g, r , init) :: ec_generateAllTheBranches (Loc l) tl ;;
+   ->  Edge ( Loc l, Label ( a^query), extGuardToStringForMapping  g, r , init) :: ec_generateAllTheBranches (Loc l) tl ;;
 
 let rec getLabelsFromEdges l = match l with 
 [] -> []
