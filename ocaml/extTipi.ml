@@ -115,13 +115,23 @@ let extRelationToString extRelation =
 	| ExtGreatEq -> ">="
 	| ExtEq -> "==";;
 
-(* It returns a string that represent an extended guard. *)
-let rec extGuardToString guard =
+
+(* It returns a string that represent an extended guard. True clause in conjunctions are omitted *)
+(*i.e: True , x>4 -> x>4*) 
+let rec andClausetoString x y = match (x,y) with 
+| True, True -> ""
+| True, d -> extGuardToString d
+| d, True -> extGuardToString d
+| d, e -> "(" ^ (extGuardToString d) ^ "," ^ (extGuardToString e) ^ ")"
+
+and
+
+extGuardToString guard =
 	match guard with 
 	| SC(x, y, z) -> (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
 	| DC(w, x, y, z) -> (clockToString w) ^ " - " ^ (clockToString x) ^ (extRelationToString y) ^ (string_of_int z)
-	| And(x, y) ->  "(" ^ (extGuardToString x) ^ "," ^ (extGuardToString y) ^ ")"
-	| Or(x, y) -> "(" ^ (extGuardToString x) ^ "|" ^ (extGuardToString y) ^ ")"
+	| And(x, y) ->   andClausetoString x y 
+	| Or(x, y) ->    "(" ^ (extGuardToString x) ^ "|" ^ (extGuardToString y) ^ ")"
   | Not(x) -> "NOT (" ^ (extGuardToString x) ^ ")"
   | True ->  "true"
 	| False -> "false"

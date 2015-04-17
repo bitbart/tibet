@@ -289,20 +289,25 @@ m_culpable c2;;
 let c3 = m_step net2  (Fire ("B", Ext (TSBAction "b" )));;
 m_culpable c3;;
 
-let p =  ExtIntChoice[(TSBAction "a",  TSBExtGuard (SC(TSBClock "t", ExtLessEq, 1)), TSBReset[] , ExtSuccess);
-                   (TSBAction "b",  TSBExtGuard (SC(TSBClock "t", ExtLess, 2)), TSBReset[] , ExtSuccess)];;
-let q =  ExtExtChoice[(TSBAction "a",  TSBExtGuard (SC(TSBClock "t", ExtGreatEq, 1)), TSBReset[] , ExtSuccess);
-                   (TSBAction "b",  TSBExtGuard (SC(TSBClock "t", ExtLess, 2)), TSBReset[], ExtSuccess)];;
+
+let g =  TSBExtGuard (And (SC(TSBClock "x", ExtLess, 20), SC(TSBClock "x", ExtGreat, 10)));;
+let g =  TSBExtGuard (SC(TSBClock "x", ExtLess, 20));;
+let p =  ExtIntChoice[(TSBAction "a",  g, TSBReset[] , ExtSuccess)];;
+let q =  ExtExtChoice[(TSBAction "a",  g, TSBReset[] , ExtSuccess)];;
 
 (*correct interaction*)
 let net1 = m_extStart p q;;
 
-let check n = ("On duty:", m_onDuty n), ("Culpable:", m_culpable n);;
+
+isCulpable ("A",p,emptyEnv)  startTime;;
+ (actionIsPossible [(TSBAction "a",  g, TSBReset[] , ExtSuccess)] startTime) ;;
+ (actionIsOrWillBePossible [(TSBAction "a",  g, TSBReset[] , ExtSuccess)] startTime) ;;
+
 
 let net2 = m_extStep net1  (Delay 1.0 );;
 check net2;;
 
-let net3 = m_extStep net2  (Fire ("A", Int (TSBAction "a" )));;
+let net3 = m_extStep net1  (Fire ("A", Int (TSBAction "a" )));;
 check net3 ;;
 
 let net4 = m_extStep net3  (Delay 6.0 );;
