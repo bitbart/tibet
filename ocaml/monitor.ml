@@ -193,13 +193,19 @@ let rec unfold (id, p, rho) = match p with
 | ExtCall id -> let p' =  applyEnv rho id in if p' == ExtNil then  failwith (_ERR_102^id) else p'
 | _ -> p ;;
 
+(*returns true if an action is possible at the current moment*)
 let rec actionIsPossible l time = match l with 
   [] -> false
 | (a,TSBExtGuard g,r,p)::tl ->  (evaluate g time) || (actionIsPossible tl time);;
- 
+
+(*returns true if an action is possible at the current moment or will be at some time*)
+let rec actionIsOrWillBePossible l time = match l with 
+  [] -> false
+| (a,TSBExtGuard g,r,p)::tl ->  (evaluate (past g) time) || (actionIsOrWillBePossible tl time);; 
+
 let isCulpable p  time = match (unfold  p) with 
   ExtNil -> true
-| ExtIntChoice l -> if not (actionIsPossible l time) then true else false 
+| ExtIntChoice l ->  not (actionIsOrWillBePossible l time)  
 | _ -> false;;
 
 let m_culpable (ExtNetwork (p, q, b, time)) =  
@@ -208,6 +214,7 @@ let m_culpable (ExtNetwork (p, q, b, time)) =
 
 let getId (a,b,c) = a;;
 
+(*return the pid of the process which is onDuty*)
 let m_onDuty (ExtNetwork (p,q,b,  time)) = match ( (unfold p), (unfold q),b) with 
     ( p', q', Buffer(idb, actb)) -> if not (isCulpable p  time ) &&  (getId p) != idb 
                                     then [getId p]
