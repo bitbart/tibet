@@ -15,17 +15,38 @@ writeToFile lta "ex_prova1";;
 
 
 (*Ex: complex guard*)
-let g1 = TSBExtGuard (SC(TSBClock "t",ExtEq,4));;
-let g12 = TSBExtGuard (SC(TSBClock "x",ExtEq,6));;
-let notg = TSBExtGuard ( (And (SC(TSBClock "t",ExtLess,4), (SC(TSBClock "x",ExtLess,4)))));;
-let g2 = TSBExtGuard (SC(TSBClock "t",ExtLess,6));; 
+let g1 = TSBExtGuard (SC(TSBClock "t",ExtLess,4));;
+let g2 = TSBExtGuard (SC(TSBClock "x",ExtLess,6));; 
 let p  = ExtIntChoice [(TSBAction "a", g1, TSBReset [],ExtSuccess);
-                       (TSBAction "c", g12, TSBReset [],ExtSuccess)   ];; 
+                       (TSBAction "c", g2, TSBReset [],ExtSuccess)   ];; 
 let q  = ExtExtChoice [(TSBAction "a", g1, TSBReset [], ExtSuccess);
-                       (TSBAction "c", g12, TSBReset [],ExtSuccess)    ];; 
+                       (TSBAction "c", g2, TSBReset [],ExtSuccess)    ];; 
 
 let lta = extTsb_mapping   p q;;
 writeToFile lta "ex_prova1";;
+
+let net1 = m_extStart p q;;
+let movesListA = getMoves ("A",p,emptyEnv) startTime;;
+let movesListB = getMoves ("B",q,emptyEnv) startTime;;
+
+
+m_actionIsAllowed net1 (Fire ("A", Int (TSBAction "a" )));;
+
+find (Int (TSBAction "a" )) (List.map fst (List.filter ( fun (act,TSBExtGuard guard) -> evaluate (past guard) startTime )  (getMoves (getProcessById ("A",p,emptyEnv) ("B",q,emptyEnv) "A") startTime)));;
+
+isCulpable ("A",p,emptyEnv)  startTime;;
+(actionIsPossible [(TSBAction "a",  g, TSBReset[] , ExtSuccess)] startTime) ;;
+(actionIsOrWillBePossible [(TSBAction "a",  g, TSBReset[] , ExtSuccess)] startTime) ;;
+
+let movesList = getMoves ("A",p,emptyEnv) startTime;;
+(List.map fst movesList) ;;
+
+let l = [(Int (TSBAction "a"), TSBExtGuard (SC (TSBClock "t", ExtEq, 4)));
+ (Int (TSBAction "c"), TSBExtGuard (SC (TSBClock "x", ExtEq, 6)))];;
+
+m_actionIsPossible net1 (Fire ("A", Int (TSBAction "a" )));;
+
+ find  (Int (TSBAction "a")) (List.map fst movesList);;
 
 (*Ex: example*)
 let r1 = [TSBClock "x";TSBClock "t"];;

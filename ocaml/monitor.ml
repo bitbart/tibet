@@ -228,7 +228,7 @@ let m_onDuty (ExtNetwork (p,q,b,  time)) = match ( (unfold p), (unfold q),b) wit
 |  _ ->  []  ;;
 
  
-let getProcessById p q id =  if getId p == id then p else q;;
+let getProcessById p q id =  if ((getId p) = id) then p else q;;
 
 let getMoves p time =  match  (unfold p) with  
    ExtIntChoice l ->  List.map (fun  (a,TSBExtGuard g,r,p) -> (Int a,TSBExtGuard g)) l
@@ -236,6 +236,7 @@ let getMoves p time =  match  (unfold p) with
 |  _ ->  []  ;;
 
 
+(* returns the list of possible actions WITHOUT checking if they are expired*)
 let m_possibleActions (ExtNetwork (p,q,b,  time)) =  let l = m_onDuty (ExtNetwork (p,q,b,  time)) in 
                            if List.length l = 0 then []
                            else( if List.length l = 1 then 
@@ -250,8 +251,26 @@ let m_possibleActions (ExtNetwork (p,q,b,  time)) =  let l = m_onDuty (ExtNetwor
                        ;;
 
 
+let rec find el l  = match l with
+  [] -> false
+| hd::tl -> (el = hd) || find el tl; 
 
+(* isAllowed says if the action s is both possible and in time for process pid*)    
+let m_actionIsAllowed (ExtNetwork (p,q,b,  time) )  s = match s with 
+  Delay d ->  true 
+| Fire (pid, Int act) ->   find (Int act)  (*tell if there is the action act*)
+                              (List.map fst  (*get the first component*)
+															   (List.filter ( fun (act,TSBExtGuard guard) -> evaluate (past guard) time ) (*filters only the abilitate ones*)
+																         (getMoves (getProcessById p q pid) time))) (*get all the actions*)
+| Fire (pid, Ext act) ->   find (Ext act)  (List.map fst  (*get the first component*)
+															   (List.filter ( fun (act,TSBExtGuard guard) -> evaluate (past guard) time ) (*filters only the abilitate ones*)
+																         (getMoves (getProcessById p q pid) time)))
+																				;; 
+																				
+  
 
+ 
+	
 (*************************************************)
 (*                SERIALIZATION                  *)
 (*************************************************)
