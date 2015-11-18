@@ -1,3 +1,23 @@
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
+open Tipi;;open Tools;;open Errors;;open ExtTipi;;open Python;;
 (** ************************************************************************** **)
 (**                                                                            **)
 (**  	KINDSYSTEM (5): Offers functions to calculate the dual of a contract.    **)
