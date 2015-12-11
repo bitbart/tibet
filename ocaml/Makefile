@@ -28,7 +28,7 @@ all:
 	sed -i '1iopen Tipi;;open ExtTipi;;open Mapping;;open Kindsystem;;open ToXML;;open FromXML;;open Cparser;;open Monitor;;' main.ml
 	ocamlopt -c -I +xml-light xml-light.cmxa main.ml
 
-	ocamlopt -o ctu unix.cmxa str.cmxa xml-light/xml-light.cmxa errors.cmx tools.cmx tipi.cmx extTipi.cmx python.cmx kindsystem.cmx mapping.cmx toXML.cmx fromXML.cmx cparser.cmx monitor.cmx main.cmx
+	ocamlopt -o ctu unix.cmxa str.cmxa xml-light.cmxa errors.cmx tools.cmx tipi.cmx extTipi.cmx python.cmx kindsystem.cmx mapping.cmx toXML.cmx fromXML.cmx cparser.cmx monitor.cmx main.cmx
 
 
 test:
@@ -47,7 +47,7 @@ test:
 	ocamlopt -c tests/testPython.ml
 	ocamlopt -I tests -c tests/main.ml
 
-	ocamlopt -o applicationTest unix.cmxa str.cmxa XML_LIGHT/xml-light.cmxa errors.cmx tools.cmx tipi.cmx extTipi.cmx python.cmx kindsystem.cmx  mapping.cmx toXML.cmx fromXML.cmx cparser.cmx monitor.cmx tests/testPython.cmx tests/main.cmx
+	ocamlopt -o applicationTest unix.cmxa str.cmxa xml-light.cmxa errors.cmx tools.cmx tipi.cmx extTipi.cmx python.cmx kindsystem.cmx  mapping.cmx toXML.cmx fromXML.cmx cparser.cmx monitor.cmx tests/testPython.cmx tests/main.cmx
 
 
 clean:

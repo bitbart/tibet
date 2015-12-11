@@ -254,7 +254,6 @@ else
 let rec find el l  = match l with
   [] -> false
 | hd::tl -> (el = hd) || find el tl;; 
-;;
 
 (* isAllowed says if the action s is both possible and in time for process pid*)    
 let m_actionIsAllowed (ExtNetwork (p,q,b,  time) )  s = match s with 
@@ -379,3 +378,5 @@ let get_actions fn r =
 
 
 m_actionIsAllowed (deserialize_net "rete.net") (Fire ("A", Int (TSBAction "a" )));;
+
+String.sub "" 0 1 ;;
