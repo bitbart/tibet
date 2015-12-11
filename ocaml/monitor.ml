@@ -377,7 +377,7 @@ let get_actions fn r =
 ;;
 
 let isAllowed fn r action =
-  let proc = if (p==0) then "A" else "B" in
+  let proc = if (r==0) then "A" else "B" in
   let net = deserialize_net fn in
   if (m_actionIsAllowed net (Fire (proc, Int (TSBAction action )))) then "yes" else "no"
 ;;
