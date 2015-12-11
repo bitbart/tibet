@@ -9,8 +9,6 @@
 (* Inclusions to be used when compiling with makefile - PLEASE IGNORE THE FOLLOWING LINE
    open Tipi;;open ExtTipi;;open Mapping;;open Kindsystem;;open ToXML;;open FromXML;;open Cparser;;open Monitor;; *)
 
-
-
 let find_termination s = 
 	if (Str.string_match (Str.regexp "[a-z0-9\\\"\\/\\<\\>= ]*\\<\\/contract\\>[a-z0-9\\\"\\/\\<\\>= ]+") s 0)
 	then failwith "Wrong input! Please start a new line after each </contract> tag" 

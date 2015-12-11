@@ -361,10 +361,13 @@ let p =  IntChoice[(TSBAction "a",  TSBGuard [(TSBClock "t", Less, 3)], TSBReset
 let q =  ExtChoice[(TSBAction "a",  TSBGuard [(TSBClock "tt", Less, 3)], TSBReset[] , 
                     ExtChoice[(TSBAction "b",  TSBGuard [(TSBClock "tt", Less, 8)], TSBReset[TSBClock "tt"] , Success)])];;
 
+
+(** TEST BASE **)
 (* test interaction (updated) *)
-let net1 = m_start p q;;
+let net1 = m_extStart (toExtTsb p) (toExtTsb q);;
 m_culpable net1;;
 m_onDuty net1;;
+(** END TEST BASE **)
 
 let net2 = m_step net1 (Delay 2.);;
 m_culpable net2;;

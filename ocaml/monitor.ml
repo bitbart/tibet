@@ -253,7 +253,7 @@ let m_possibleActions (ExtNetwork (p,q,b,  time)) =  let l = m_onDuty (ExtNetwor
 
 let rec find el l  = match l with
   [] -> false
-| hd::tl -> (el = hd) || find el tl; 
+| hd::tl -> (el = hd) || find el tl;; 
 
 (* isAllowed says if the action s is both possible and in time for process pid*)    
 let m_actionIsAllowed (ExtNetwork (p,q,b,  time) )  s = match s with 
@@ -377,3 +377,6 @@ let get_actions fn r =
     let net = deserialize_net fn in
     formatActions (listOfActionNames (m_possibleActions net) r)
 ;;
+
+
+m_actionIsAllowed (deserialize_net "rete.net") (Fire ("A", Int (TSBAction "a" )));;
