@@ -1,23 +1,3 @@
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
-open Errors;;open Tipi;;open Mapping;;open Printf;;
 (** ************************************************************************** **)
 (**                                                                            **)
 (**  	TOXML (7): Offers functions which generate xml uppaal templates.         **)

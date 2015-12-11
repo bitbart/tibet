@@ -1,14 +1,3 @@
-open Errors;;open FromXML;;
-open Errors;;open FromXML;;
-open Errors;;open FromXML;;
-open Errors;;open FromXML;;
-open Errors;;open FromXML;;
-open Errors;;open FromXML;;
-open Errors;;open FromXML;;
-open Errors;;open FromXML;;
-open Errors;;open FromXML;;
-open Errors;;open FromXML;;
-open Errors;;open FromXML;;
 (** 
  *************************************************************************************
  **																																						      **

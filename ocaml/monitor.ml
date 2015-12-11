@@ -1,19 +1,3 @@
-open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
-open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
-open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
-open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
-open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
-open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
-open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
-open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
-open Errors;;
-open Tipi;;
-open ExtTipi;;
-open Mapping;;
-open ToXML;;
-open FromXML;;
-open Python;;
-open Kindsystem;;
 (** 
  ********************************************************************************
  **                                                                            **

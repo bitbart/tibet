@@ -1,23 +1,3 @@
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
-open Errors;;open Tipi;;open ExtTipi;;open Python;;
 (** 
  ********************************************************************************
  **                                                                            **
