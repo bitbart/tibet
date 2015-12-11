@@ -378,5 +378,3 @@ let get_actions fn r =
 
 
 m_actionIsAllowed (deserialize_net "rete.net") (Fire ("A", Int (TSBAction "a" )));;
-
-String.sub "" 0 1 ;;
