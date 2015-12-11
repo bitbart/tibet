@@ -1,3 +1,19 @@
+open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
+open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
+open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
+open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
+open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
+open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
+open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
+open Errors;;open Tipi;;open ExtTipi;;open Mapping;;open ToXML;;open FromXML;;open Python;;open Kindsystem;;
+open Errors;;
+open Tipi;;
+open ExtTipi;;
+open Mapping;;
+open ToXML;;
+open FromXML;;
+open Python;;
+open Kindsystem;;
 (** 
  ********************************************************************************
  **                                                                            **
@@ -23,7 +39,7 @@
 (*let  bindEnv   (Env rho) id p = Env ( fun y -> if y = id then p else rho id);;*)
 
 (*Environment as a list of couples*)
-type extTsb_env = Env of ( string * extTsb ) list;;
+ type extTsb_env = Env of ( string * extTsb ) list;;
 let emptyEnv = Env [];;
 
 let rec getEnv l id = match l with
@@ -59,8 +75,8 @@ let applyTime (Time (curr, nu)) t = curr -. (getTime nu t) ;;
 
 (*to reset the time for all the clock in l, we prior eliminate these clocks from nu, and then we reinsert them*)
 let resetTime (Time (curr, nu)) l  =  
-        Time (curr, (List.map (fun x -> (x,curr)) l)
-               @(List.filter(fun (y,f) -> if (List.mem y l) then false  else true) nu ));;
+  Time (curr, (List.map (fun x -> (x,curr)) l)
+        @(List.filter(fun (y,f) -> if (List.mem y l) then false  else true) nu ));;
 
 let incrTime  (Time (curr, nu)) d  = Time( curr  +. d, nu);;
 
@@ -88,21 +104,21 @@ let getEnvProcess (pid, p, env) = env;;
 
 (*conversion of tsb_ext_relation in the corresponding ocaml function*)
 let op_of_rel rel = match rel with
-    ExtLess -> (<)
-  | ExtGreat -> (>)
-  | ExtLessEq -> (<=)
-  | ExtGreatEq -> (>=)
-  | ExtEq -> (==);;
+  ExtLess -> (<)
+| ExtGreat -> (>)
+| ExtLessEq -> (<=)
+| ExtGreatEq -> (>=)
+| ExtEq -> (==);;
 
 (*checks if a clock evaluation nu satisfy the guard g. nu must be of type: tsb_clock -> float*)
 let rec evaluate g time  = match g with
-    False -> false
-  | True -> true
-  | SC(x,rel,d) -> (op_of_rel rel) (applyTime time x) (float_of_int d)
-  | DC(x,y,rel,d) -> (op_of_rel rel) ((applyTime time x) -. (applyTime time y)) (float_of_int d)
-  | And(g,g') -> (evaluate g time ) && (evaluate  g' time)
-  | Or(g,g') -> (evaluate  g time ) || (evaluate  g' time)
-  | Not(g) -> not (evaluate  g time);;
+  False -> false
+| True -> true
+| SC(x,rel,d) -> (op_of_rel rel) (applyTime time x) (float_of_int d)
+| DC(x,y,rel,d) -> (op_of_rel rel) ((applyTime time x) -. (applyTime time y)) (float_of_int d)
+| And(g,g') -> (evaluate g time ) && (evaluate  g' time)
+| Or(g,g') -> (evaluate  g time ) || (evaluate  g' time)
+| Not(g) -> not (evaluate  g time);;
 
 
 (***************************************************************************)
@@ -123,14 +139,14 @@ let findAction l act = List.mem act (List.map (fun (a,b,c,d) -> a ) l);;
 (*Enqueuing an action p is an action , b is the buffer *************************************************)
 let rec enqueue' p b rho  time pid act =   match (p, b) with 
   ( ExtIntChoice l, EmptyBuffer) ->  if  not (findAction l act) then   (ExtNil, b, rho,  time)
-                                     else let (TSBExtGuard guard, TSBReset reset, p') = getAction l act 
-                                          in (
-			                      if  not (evaluate  guard time ) then  (ExtNil, b, rho,  time) 
-			                      else (p', Buffer (pid,act), rho, resetTime time reset)
-			                  ) 
-  | (ExtRec (id, p'),_) ->   enqueue' p' b (bindEnv rho id p') time pid act
-  | (ExtCall id, _) -> enqueue' (applyEnv rho id) b rho time pid act
-  | _->  (ExtNil, b, rho, time);;
+  else let (TSBExtGuard guard, TSBReset reset, p') = getAction l act 
+  in (
+  if  not (evaluate  guard time ) then  (ExtNil, b, rho,  time) 
+  else (p', Buffer (pid,act), rho, resetTime time reset)
+   ) 
+| (ExtRec (id, p'),_) ->   enqueue' p' b (bindEnv rho id p') time pid act
+| (ExtCall id, _) -> enqueue' (applyEnv rho id) b rho time pid act
+| _->  (ExtNil, b, rho, time);;
 
 
 
@@ -143,17 +159,17 @@ let enqueue (ExtNetwork ((p_id,p,rhop),(q_id,q,rhoq),b, time)) pid  act =
 (*Dequeuing an action***********************************************************)
 let rec dequeue' p b rho time pid act =   match (p, b) with 
   ( ExtExtChoice l, Buffer (currBpid, currBact) ) ->  if  ( not (findAction l act) || (*act not present in choice*)
-                                                       not (act = currBact) ||   (*act not  matching buffer's one*)
-                                                       pid == currBpid ) (*not the right pid*) 
-                                                   then  (ExtNil, b, rho, time)
-                            else let (TSBExtGuard guard, TSBReset reset, p') = getAction l act 
-                                 in (
-			              if  not (evaluate guard time) then  (ExtNil, b, rho, time) 
-                                      else (p', EmptyBuffer, rho, resetTime time reset)
-			         )
-  | (ExtRec (id, p'),_) ->   dequeue' p' b (bindEnv rho id p') time pid act
-  | (ExtCall id, _) -> dequeue' (applyEnv rho id) b rho time pid act
-  | _->  (ExtNil, b, rho, time);;
+  not (act = currBact) ||   (*act not  matching buffer's one*)
+  pid == currBpid ) (*not the right pid*) 
+  then  (ExtNil, b, rho, time)
+  else let (TSBExtGuard guard, TSBReset reset, p') = getAction l act 
+  in (
+  if  not (evaluate guard time) then  (ExtNil, b, rho, time) 
+  else (p', EmptyBuffer, rho, resetTime time reset)
+   )
+| (ExtRec (id, p'),_) ->   dequeue' p' b (bindEnv rho id p') time pid act
+| (ExtCall id, _) -> dequeue' (applyEnv rho id) b rho time pid act
+| _->  (ExtNil, b, rho, time);;
 
 let dequeue (ExtNetwork ((p_id,p,rhop),(q_id,q,rhoq),b, time)) pid  act =  
   if pid = p_id then let (p',b', rho', time') =  dequeue' p b rhop time p_id act  in  ExtNetwork ((p_id,p',rho'),(q_id,q,rhoq),b',time')
@@ -163,9 +179,9 @@ let dequeue (ExtNetwork ((p_id,p,rhop),(q_id,q,rhoq),b, time)) pid  act =
 
 (*delaying: if the buffer contains something, then the other participant is gone Nil*)
 let delay  (ExtNetwork (p,q,b, time))  d = match b with 
-    Buffer (currBpid, currBact) -> if  getProcessName p = currBpid 
-                                       then (ExtNetwork (p,  ((getProcessName q), ExtNil, (getEnvProcess q)) ,b, incrTime time d )) 
-                                       else (ExtNetwork ( ((getProcessName p), ExtNil, (getEnvProcess p)),q,b, incrTime time d )) 
+  Buffer (currBpid, currBact) -> if  getProcessName p = currBpid 
+  then (ExtNetwork (p,  ((getProcessName q), ExtNil, (getEnvProcess q)) ,b, incrTime time d )) 
+  else (ExtNetwork ( ((getProcessName p), ExtNil, (getEnvProcess p)),q,b, incrTime time d )) 
 | EmptyBuffer -> (ExtNetwork (p,q,b, incrTime time d ));;
 
 
@@ -177,7 +193,7 @@ let delay  (ExtNetwork (p,q,b, time))  d = match b with
 
 (* p and q are  extTsb*)
 let m_extStart p q = 
-      ExtNetwork (("A",p,emptyEnv),("B",q,emptyEnv), EmptyBuffer,  startTime);;
+  ExtNetwork (("A",p,emptyEnv),("B",q,emptyEnv), EmptyBuffer,  startTime);;
 
 let m_extStep (ExtNetwork (p,q,b, time)) s = match s with 
   Delay d ->  delay (ExtNetwork(p,q,b, time)) d
@@ -209,80 +225,79 @@ let isCulpable p  time = match (unfold  p) with
 | _ -> false;;
 
 let m_culpable (ExtNetwork (p, q, b, time)) =  
-                 (if isCulpable p  time then [getProcessName p] else []) @  
-                 (if isCulpable  q   time then [getProcessName q] else []);; 
+  (if isCulpable p  time then [getProcessName p] else []) @  
+  (if isCulpable  q   time then [getProcessName q] else []);; 
 
 let getId (a,b,c) = a;;
 
 (*return the pid of the process which is onDuty*)
 let m_onDuty (ExtNetwork (p,q,b,  time)) = match ( (unfold p), (unfold q),b) with 
-    ( p', q', Buffer(idb, actb)) -> if not (isCulpable p  time ) &&  (getId p) != idb 
-                                    then [getId p]
-                                    else if not (isCulpable q  time ) &&  (getId q) != idb 
-                                         then [getId q] else []
+  ( p', q', Buffer(idb, actb)) -> if not (isCulpable p  time ) &&  (getId p) != idb 
+  then [getId p]
+  else if not (isCulpable q  time ) &&  (getId q) != idb 
+  then [getId q] else []
 |  ( ExtIntChoice lp,  ExtIntChoice lq, EmptyBuffer)-> 
-               (if not (isCulpable q  time ) then [getId q] else []) @ 
-               (if not (isCulpable p   time ) then [getId p] else []) 
+    (if not (isCulpable q  time ) then [getId q] else []) @ 
+    (if not (isCulpable p   time ) then [getId p] else []) 
 |  ( ExtIntChoice l,  q', EmptyBuffer)-> if not (isCulpable p   time ) then [getId p] else []
 |  ( p',  ExtIntChoice l, EmptyBuffer)-> if not (isCulpable q   time ) then [getId q] else [] 
 |  _ ->  []  ;;
 
- 
+
 let getProcessById p q id =  if ((getId p) = id) then p else q;;
 
 let getMoves p time =  match  (unfold p) with  
-   ExtIntChoice l ->  List.map (fun  (a,TSBExtGuard g,r,p) -> (Int a,TSBExtGuard g)) l
+  ExtIntChoice l ->  List.map (fun  (a,TSBExtGuard g,r,p) -> (Int a,TSBExtGuard g)) l
 |  ExtExtChoice l ->  List.map (fun  (a,TSBExtGuard g,r,p) -> (Ext a,TSBExtGuard g)) l
 |  _ ->  []  ;;
 
 
 (* returns the list of possible actions WITHOUT checking if they are expired*)
 let m_possibleActions (ExtNetwork (p,q,b,  time)) =  let l = m_onDuty (ExtNetwork (p,q,b,  time)) in 
-                           if List.length l = 0 then []
-                           else( if List.length l = 1 then 
-                                 let id = List.nth  l 0 
-                                 in [ (id, getMoves (getProcessById p q id) time)]
-                                 else   
-                                       let id1 = List.nth  l 0 in
-                                       let id2 = List.nth  l 1 
-                                       in [ (id1, getMoves (getProcessById p q id1) time);
-                                            (id2, getMoves (getProcessById p q id2) time) ]
-                           )
-                       ;;
+if List.length l = 0 then []
+else( if List.length l = 1 then 
+  let id = List.nth  l 0 
+  in [ (id, getMoves (getProcessById p q id) time)]
+else   
+  let id1 = List.nth  l 0 in
+  let id2 = List.nth  l 1 
+  in [ (id1, getMoves (getProcessById p q id1) time);
+       (id2, getMoves (getProcessById p q id2) time) ]
+     )
+;;
 
 
 let rec find el l  = match l with
   [] -> false
 | hd::tl -> (el = hd) || find el tl;; 
+;;
 
 (* isAllowed says if the action s is both possible and in time for process pid*)    
 let m_actionIsAllowed (ExtNetwork (p,q,b,  time) )  s = match s with 
   Delay d ->  true 
 | Fire (pid, Int act) ->   find (Int act)  (*tell if there is the action act*)
-                              (List.map fst  (*get the first component*)
-															   (List.filter ( fun (act,TSBExtGuard guard) -> evaluate (past guard) time ) (*filters only the abilitate ones*)
-																         (getMoves (getProcessById p q pid) time))) (*get all the actions*)
+      (List.map fst  (*get the first component*)
+	 (List.filter ( fun (act,TSBExtGuard guard) -> evaluate (past guard) time ) (*filters only the abilitate ones*)
+	    (getMoves (getProcessById p q pid) time))) (*get all the actions*)
 | Fire (pid, Ext act) ->   find (Ext act)  (List.map fst  (*get the first component*)
-															   (List.filter ( fun (act,TSBExtGuard guard) -> evaluate (past guard) time ) (*filters only the abilitate ones*)
-																         (getMoves (getProcessById p q pid) time)))
-																				;; 
-																				
-  
+					      (List.filter ( fun (act,TSBExtGuard guard) -> evaluate (past guard) time ) (*filters only the abilitate ones*)
+						 (getMoves (getProcessById p q pid) time)))
+;; 
 
- 
-	
+
 (*************************************************)
 (*                SERIALIZATION                  *)
 (*************************************************)
+
 let serialize_net n f =
-	let chan1 = open_out_bin f in
-	output_value chan1 n; flush chan1
+  let chan1 = open_out_bin f in
+  output_value chan1 n; flush chan1
 ;;
 
 let deserialize_net f =
-	let chan1 = open_in_bin f in
-	let net = input_value chan1 in
-	net
+  let chan1 = open_in_bin f in
+  let net = input_value chan1 in
+  net
 ;;
 
 let rec findDualTag attrs =
@@ -293,89 +308,89 @@ let rec findDualTag attrs =
 ;;
 
 let is_dual xml =
-	let input = Xml.parse_string xml in
+  let input = Xml.parse_string xml in
   match input with
   | Xml.Element ("contract", attrs, c) -> findDualTag attrs
   | _ -> failwith _ERR_103
 ;;
 
 let tmp_readXmlContract p = 
-	if (is_dual p) then dualof (toExtTsb (readXmlContract p)) 
-	else toExtTsb (readXmlContract p)
+  if (is_dual p) then dualof (toExtTsb (readXmlContract p)) 
+  else toExtTsb (readXmlContract p)
 ;;
 
 let start_mon p q filename = 
-	let net1 = m_extStart (tmp_readXmlContract p) (tmp_readXmlContract q) in
-	serialize_net net1 filename
+  let net1 = m_extStart (tmp_readXmlContract p) (tmp_readXmlContract q) in
+  serialize_net net1 filename
 ;;
 
 let fire_act pn act d fn fn' check =
-	let net1 = deserialize_net fn in
-	let proc = if (pn == 0) then "A" else "B" in
-	let proc' = if (pn == 0) then "B" else "A" in
-	let net2 = m_extStep net1 (Delay d) in
-	let net3 = m_extStep net2 (Fire (proc, Int (TSBAction act))) in
-	let net4 = m_extStep net3 (Fire (proc', Ext (TSBAction act))) in
-	if (check == 0) then serialize_net net4 fn' else serialize_net net3 fn'
+  let net1 = deserialize_net fn in
+  let proc = if (pn == 0) then "A" else "B" in
+  let proc' = if (pn == 0) then "B" else "A" in
+  let net2 = m_extStep net1 (Delay d) in
+  let net3 = m_extStep net2 (Fire (proc, Int (TSBAction act))) in
+  let net4 = m_extStep net3 (Fire (proc', Ext (TSBAction act))) in
+  if (check == 0) then serialize_net net4 fn' else serialize_net net3 fn'
 ;;
 
 let rec isCulpab' p l =
-	match l with
-	| a::l' -> if (String.compare a p == 0) then true else isCulpab' p l'
-	| [] -> false
+  match l with
+  | a::l' -> if (String.compare a p == 0) then true else isCulpab' p l'
+  | [] -> false
 ;;
 
 let isCulpab p fn =
-	let proc = if (p==0) then "A" else "B" in
-	let net = deserialize_net fn in
-	if (isCulpab' proc (m_culpable net)) then "yes" else "no"
+  let proc = if (p==0) then "A" else "B" in
+  let net = deserialize_net fn in
+  if (isCulpab' proc (m_culpable net)) then "yes" else "no"
 ;;
 
 let rec isOnDuty' p l =
-    match l with
-    | a::l' -> if (String.compare a p == 0) then true else isOnDuty' p l'
-    | [] -> false
+  match l with
+  | a::l' -> if (String.compare a p == 0) then true else isOnDuty' p l'
+  | [] -> false
 ;;
 
 let isOnDuty p fn =
-    let proc = if (p==0) then "A" else "B" in
-    let net = deserialize_net fn in
-    if (isOnDuty' proc (m_onDuty net)) then "yes" else "no"
+  let proc = if (p==0) then "A" else "B" in
+  let net = deserialize_net fn in
+  if (isOnDuty' proc (m_onDuty net)) then "yes" else "no"
 ;;
 
 let isEnded fn = (String.compare (isOnDuty 0 fn) "no" == 0) && (String.compare (isOnDuty 1 fn) "no" == 0) 
-								&& (String.compare (isCulpab 0 fn) "no" == 0) && (String.compare (isCulpab 1 fn) "no" == 0);;
+    && (String.compare (isCulpab 0 fn) "no" == 0) && (String.compare (isCulpab 1 fn) "no" == 0);;
 
 let delay_net d fn fn' =
-    let net1 = deserialize_net fn in
-    let net2 = m_extStep net1 (Delay d) in
-		serialize_net net2 fn'
+  let net1 = deserialize_net fn in
+  let net2 = m_extStep net1 (Delay d) in
+  serialize_net net2 fn'
 ;;
 
 let rec extractActions b = 
-	match b with
-	| (Int (TSBAction a), c)::b' -> a :: (extractActions b')
-	| [] -> []
-	| _ -> failwith "Invalid element found in extractActions"
+  match b with
+  | (Int (TSBAction a), c)::b' -> a :: (extractActions b')
+  | [] -> []
+  | _ -> failwith "Invalid element found in extractActions"
 ;;
 
 let rec listOfActionNames l r = 
-	match l with
-	| (a, b)::l' -> if ((r == 0 && String.compare "A" a == 0) || (r == 1 && String.compare "B" a == 0)) then (extractActions b) @ (listOfActionNames l' r) else (listOfActionNames l' r) 
-	| [] -> []
+  match l with
+  | (a, b)::l' -> if ((r == 0 && String.compare "A" a == 0) || (r == 1 && String.compare "B" a == 0)) then (extractActions b) @ (listOfActionNames l' r) else (listOfActionNames l' r) 
+  | [] -> []
 ;;
 
 let rec formatActions' l =
-	match l with
-	| a::l' -> "\t<action name=\"" ^ a ^ "\" time=\"-1\" />\n" ^ formatActions' l'
-	| [] -> "</actionlist>"
+  match l with
+  | a::l' -> "\t<action name=\"" ^ a ^ "\" time=\"-1\" />\n" ^ formatActions' l'
+  | [] -> "</actionlist>"
 ;; 
 
 let formatActions l = "<actionlist>\n" ^ formatActions' l;; 
 
 let get_actions fn r =
-    let net = deserialize_net fn in
-    formatActions (listOfActionNames (m_possibleActions net) r)
+  let net = deserialize_net fn in
+  formatActions (listOfActionNames (m_possibleActions net) r)
 ;;
 
 
