@@ -364,6 +364,7 @@ let q =  ExtChoice[(TSBAction "a",  TSBGuard [(TSBClock "tt", Less, 3)], TSBRese
 
 (** TEST BASE **)
 (* test interaction (updated) *)
+
 let net1 = m_extStart (toExtTsb p) (toExtTsb q);;
 m_culpable net1;;
 m_onDuty net1;;

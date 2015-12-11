@@ -93,6 +93,7 @@ let main =
 		| 5 -> 
       (
       match (Sys.argv.(1)) with
+			| "-isa" -> print_string (isAllowed (Sys.argv.(2)) (int_of_string (Sys.argv.(3))) (Sys.argv.(4)))
       | "-delay" -> delay_net (float_of_string (Sys.argv.(2))) (Sys.argv.(3)) (Sys.argv.(4))
       | _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
       )	

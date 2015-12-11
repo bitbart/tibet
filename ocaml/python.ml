@@ -80,8 +80,6 @@ let rec python_remove_spaces s =
 
 
 
-
-
 (** 										SECTION #2											**)
 (** COPARSER FROM EXTENDED GUARD TO PYTHON DELCARATION. **)
 (* It doesn't exists a 'main function' that merges all the results about next functions. *)
@@ -418,6 +416,8 @@ let past guard =
 	  python_down^
 	  python_command_end in
   	toGuard (syscall command);;
+
+past (toExtGuard ([(TSBClock "t", Less, 3)]));;
 
 
 (** #4.2 INVRESET: CALLS PYTHON FUNCTION 'INVRESET' **)

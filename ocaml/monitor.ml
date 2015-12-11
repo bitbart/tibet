@@ -376,5 +376,8 @@ let get_actions fn r =
   formatActions (listOfActionNames (m_possibleActions net) r)
 ;;
 
-
-m_actionIsAllowed (deserialize_net "rete.net") (Fire ("A", Int (TSBAction "a" )));;
+let isAllowed fn r action =
+  let proc = if (p==0) then "A" else "B" in
+  let net = deserialize_net fn in
+  if (m_actionIsAllowed net (Fire (proc, Int (TSBAction action )))) then "yes" else "no"
+;;
