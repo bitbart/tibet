@@ -58,7 +58,7 @@ function translate_contract($input) {
 
 function areCompliant($c1, $c2) {
 
-    $url = 'http://co2.unica.it:8080/middleware/api/complaince/areCompliant';
+    $url = 'http://co2.unica.it:8080/middleware/api/compliance/areCompliant';
  
     $data = array(
                     'firstContract' => str_replace(PHP_EOL, '', $c1),
