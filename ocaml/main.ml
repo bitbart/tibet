@@ -68,6 +68,7 @@ let main =
                     | [] -> ""
                     | (Label h)::t -> h^", "^(printLabels t)) in
                     print_string (printLabels set))
+        | "--to-string" -> let rc = read_one_contract stdin in print_string(extTsbToString (toExtTsb (readXmlContract rc)))
         | _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
       )
 
