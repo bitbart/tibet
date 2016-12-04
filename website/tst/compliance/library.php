@@ -8,39 +8,54 @@ function newLineFilter($string) {
 
 function translate_contract($input) {
 
-    $url = 'http://78.46.167.74:8080/server/api/translate';
+    $url = 'http://localhost:8080/middleware/api/translation/translate';
     
-    $params = array(
-                    'c1' => str_replace(PHP_EOL, '', $input)
-                );
+    //$params = array(
+    //                'firstContract' => str_replace(PHP_EOL, '', $input)
+    //            );
+    
+    $data = array("firstContract" => str_replace(PHP_EOL, '', $input));                                                                    
+    $params = json_encode($data); 
     
     $ch = curl_init( $url );
-    curl_setopt( $ch, CURLOPT_POST, 1);
-    curl_setopt( $ch, CURLOPT_POSTFIELDS, http_build_query($params));
-    curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-    curl_setopt( $ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_setopt( $ch, CURLOPT_POSTFIELDS, $params);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+    'Content-Type: application/json',                                                                                
+    'Content-Length: ' . strlen($params))                                                                       
+    ); 
     curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+    $result = curl_exec( $ch );
+    $array = json_decode($result, true);
     
-    return curl_exec( $ch );
+    return $array["content"];
 }
 
 function areCompliant($c1, $c2) {
     
-    $url = 'http://78.46.167.74:8080/server/api/areCompliant';
+    $url = 'http://localhost:8080/middleware/api/compliance/areCompliant';
             
-    $params = array(
-                    'c1' => str_replace(PHP_EOL, '', $c1),
-                    'c2' => str_replace(PHP_EOL, '', $c2)
+    $data = array(
+                    'firstContract' => str_replace(PHP_EOL, '', $c1),
+                    'secondContract' => str_replace(PHP_EOL, '', $c2)
                 );
     
-    $ch = curl_init( $url );
-    curl_setopt( $ch, CURLOPT_POST, 1);
-    curl_setopt( $ch, CURLOPT_POSTFIELDS, http_build_query($params));
-    curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-    curl_setopt( $ch, CURLOPT_HEADER, 0);
-    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+    $params = json_encode($data); 
     
-    return curl_exec( $ch );
+    $ch = curl_init( $url );
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_setopt( $ch, CURLOPT_POSTFIELDS, $params);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+    'Content-Type: application/json',                                                                                
+    'Content-Length: ' . strlen($params))                                                                       
+    ); 
+    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+    $result = curl_exec( $ch );
+    $array = json_decode($result, true);
+    
+    return $array["content"];
 }
 
 function hasErrors($contract) {
