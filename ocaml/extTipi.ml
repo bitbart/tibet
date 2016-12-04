@@ -186,12 +186,12 @@ let rec simplify_guards' stringInput oldValue newValue =
 
 (* It simplifies AND, OR in guards *)
 let simplify_guards stringInput =
-	let s = simplify_guards' stringInput "true && true" "true" in
-	let s = simplify_guards' s " && true" "" in
-	let s = simplify_guards' s "true &&" "" in
-	let s = simplify_guards' s " || false" "" in
-	let s = simplify_guards' s "false || " "" in 
-	simplify_guards' s "{true}" "";;
+  let s = simplify_guards' stringInput "[\ ]*true[\ ]*&[\ ]*true[\ ]*" "true" in
+  let s = simplify_guards' s "[\ ]*&[\ ]*true[\ ]*" "" in
+  let s = simplify_guards' s "[\ ]*true[\ ]&[\ ]*" "" in
+  let s = simplify_guards' s "[\ ]*|[\ ]*false[\ ]*" "" in
+  let s = simplify_guards' s "[\ ]*false[\ ]*|[\ ]*" "" in
+  simplify_guards' s "{true}" "";;
 
 (* Main function to perform the translation from extended tsb to string, and then to postprocess the result. *)
 let extTsbToString stringInput = 
