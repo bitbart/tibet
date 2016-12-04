@@ -117,7 +117,7 @@ if (isset($_POST['c2s']) && !isset($_POST['clearsecond']))
 </table><br />
 <center>
 Select an example: 
-<select id="mainselect" style="border:1px solid #111; width:400px; margin-left:10px; margin-bottom:20px; margin-right:110px" onchange="checkSyntax1();checkSyntax2();fadeMyErrors();fillContracts();">
+<select id="mainselect" style="border:1px solid #111; width:400px; margin-left:10px; margin-bottom:20px; margin-right:110px" onchange="fadeMyErrors();fillContracts();checkSyntax1();checkSyntax2();">
   <option disabled selected>---</option>
   <option value="zip1">Ex. zip code 1: not compliant</option>
   <option value="zip2">Ex. zip code 2: not compliant</option>
