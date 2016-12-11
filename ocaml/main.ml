@@ -48,27 +48,41 @@ let main =
     | 2 ->
       (
         match (Sys.argv.(1)) with
-        | "-s" -> print_string (parse_multiple_contracts (input_line stdin))
-        | "-v" -> 
+        | "-v" 
+        | "--validate" -> 
           let rc = read_one_contract stdin in
             if (checkRecursion (readXmlContract rc))
             then print_string ("Contract is valid")
             else print_string ("Contract is not valid")
-        | "-da" -> 
+
+        | "-da" 
+        | "--admit-compliant" -> 
             let rc = read_one_contract stdin in
             if (admitsCompliant (toExtTsb (readXmlContract rc))) then print_string("yes") else print_string("no")
-        | "-dk" -> let rc = read_one_contract stdin in print_string(extGuardToString (kindof (toExtTsb (readXmlContract rc))))
-        | "-dd" -> let rc = read_one_contract stdin in print_string(extTsbToString (dualof (toExtTsb (readXmlContract rc))))
-        | "-ba" -> let contract = readXmlContract (read_one_contract stdin) in
+
+        | "-dk" 
+        | "--kind-of" -> let rc = read_one_contract stdin in print_string(extGuardToString (kindof (toExtTsb (readXmlContract rc))))
+
+
+        | "-dd" 
+        | "--dual-of" -> let rc = read_one_contract stdin in print_string(extTsbToString (dualof (toExtTsb (readXmlContract rc))))
+
+        | "-ba" 
+        | "--build-automaton" -> let contract = readXmlContract (read_one_contract stdin) in
                      print_string (ta_to_string (buildAutomatonMain (toExtTsb contract) "p"))
-        | "-gl" -> let contract = readXmlContract (read_one_contract stdin) in
+
+        | "-gl" 
+        | "--get-labels" -> let contract = readXmlContract (read_one_contract stdin) in
                     (
                     let set = getLabels (buildAutomatonMain (toExtTsb contract) "p") in
                     let rec printLabels l = (match l with
                     | [] -> ""
                     | (Label h)::t -> h^", "^(printLabels t)) in
                     print_string (printLabels set))
-        | "--to-string" -> let rc = read_one_contract stdin in print_string(extTsbToString (toExtTsb (readXmlContract rc)))
+
+        | "-s"
+        | "--tst-to-xml"  -> print_string (parse_multiple_contracts (input_line stdin))
+        | "--xml-to-tst"  -> let rc = read_one_contract stdin in print_string(extTsbToString (toExtTsb (readXmlContract rc)))
         | _ -> print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
       )
 
@@ -78,7 +92,8 @@ let main =
         | "-start" -> 
               let rc = read_input stdin in
               start_mon (List.hd rc) (List.hd (List.rev rc)) (Sys.argv.(2))
-        | "-ie" ->
+        | "-ie" 
+        | "--is-ended" ->
               if (isEnded (Sys.argv.(2))) then print_string("yes") else print_string("no")
         | _ -> 
             print_string ("Wrong input!\nUnrecognized or misused option: " ^ (Sys.argv.(1)) ^ "\n")
