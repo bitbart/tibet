@@ -2,61 +2,82 @@
 
 include("library.php");
 
-// Controllo se l'input C1 viola i simboli permessi
-if (isset($_POST['c1s']) && preg_match("/^[a-zA-Z0-9\?\'\[\]\<\>\!\s\{\}\,\;\.\&\+\)\(]*$/", $_POST['c1s']) == 0)
-{
-    $inv_input = 1; // ERRORE: C1 CONTIENE SIMBOLI VIETATI
-    preg_match("/(?![a-zA-Z0-9\?\'\[\]\<\>\!\s\{\}\,\;\.\&\+\)\(]+)/", $_POST['c1s'], $matches, PREG_OFFSET_CAPTURE);
-    $pos = $matches[0][1];
-}
+$flag = $_POST['action'];
 
-// Controllo se l'input C2 viola i simboli permessi
-if (isset($_POST['c2s']) && preg_match("/^[a-zA-Z0-9\?\'\[\]\<\>\!\s\{\}\,\;\.\&\+\)\(]*$/", $_POST['c2s']) == 0 && !isset($inv_input))
-{
-    $inv_input = 2; // ERRORE: C2 CONTIENE SIMBOLI VIETATI
-    preg_match("/(?![a-zA-Z0-9\?\'\[\]\<\>\!\s\{\}\,\;\.\&\+\)\(]+)/", $_POST['c2s'], $matches, PREG_OFFSET_CAPTURE);
-    $pos = $matches[0][1];
-}
+if ($flag == "dual") {
 
-// Controllo se c'è almeno un contratto vuoto, in tal caso restituisco un errore 
-if (isset($_POST['c1s']) && $_POST['c1s'] == "")
-{
-    $inv_input = 7; // ERRORE: C1S vuoto
-}
-else if (isset($_POST['c2s']) && $_POST['c2s'] == "")
-{
-    $inv_input = 8; // ERRORE: C2S vuoto
-}
-
-if (!isset($inv_input)) {
-
-    if (isset($_POST['compliance']))
+    $con = $_POST['contract'];
+    if ($con != "")
     {
-        $translate1 = translate_contract($_POST['c1s']);
+        $trans = translate_contract($con);
         
-        if (hasErrors($translate1))
+        if (startsWith($trans, "<con"))
         {
-            $inv_input = 5;
+            $dual_c = htmlspecialchars($_POST['contract']);
+            $dual_admit_compl = admitsCompliant($trans);
+            $dual_kind = kindOf($trans);
+            $dual_c_dual = dualOf($trans);
         }
-    
-        if (!isset($inv_input))
+        else
+            $dual_err = "Error: contract submitted is not valid.";
+    }
+}
+else if ($flag == "compliance") {
+    // Controllo se l'input C1 viola i simboli permessi
+    if (isset($_POST['c1s']) && preg_match("/^[a-zA-Z0-9\?\'\[\]\<\>\!\s\{\}\,\;\.\&\+\)\(]*$/", $_POST['c1s']) == 0)
+    {
+        $inv_input = 1; // ERRORE: C1 CONTIENE SIMBOLI VIETATI
+        preg_match("/(?![a-zA-Z0-9\?\'\[\]\<\>\!\s\{\}\,\;\.\&\+\)\(]+)/", $_POST['c1s'], $matches, PREG_OFFSET_CAPTURE);
+        $pos = $matches[0][1];
+    }
+
+    // Controllo se l'input C2 viola i simboli permessi
+    if (isset($_POST['c2s']) && preg_match("/^[a-zA-Z0-9\?\'\[\]\<\>\!\s\{\}\,\;\.\&\+\)\(]*$/", $_POST['c2s']) == 0 && !isset($inv_input))
+    {
+        $inv_input = 2; // ERRORE: C2 CONTIENE SIMBOLI VIETATI
+        preg_match("/(?![a-zA-Z0-9\?\'\[\]\<\>\!\s\{\}\,\;\.\&\+\)\(]+)/", $_POST['c2s'], $matches, PREG_OFFSET_CAPTURE);
+        $pos = $matches[0][1];
+    }
+
+    // Controllo se c'è almeno un contratto vuoto, in tal caso restituisco un errore 
+    if (isset($_POST['c1s']) && $_POST['c1s'] == "")
+    {
+        $inv_input = 7; // ERRORE: C1S vuoto
+    }
+    else if (isset($_POST['c2s']) && $_POST['c2s'] == "")
+    {
+        $inv_input = 8; // ERRORE: C2S vuoto
+    }
+
+    if (!isset($inv_input)) {
+
+        if (isset($_POST['compliance']))
         {
-            // Traduco il secondo contratto
-            $translate2 = translate_contract($_POST['c2s']);
+            $translate1 = translate_contract($_POST['c1s']);
             
-            if (hasErrors($translate2))
+            if (hasErrors($translate1))
             {
-                $inv_input = 6;
+                $inv_input = 5;
             }
-            
+        
             if (!isset($inv_input))
             {
-                $response = areCompliant($translate1, $translate2);
+                // Traduco il secondo contratto
+                $translate2 = translate_contract($_POST['c2s']);
+                
+                if (hasErrors($translate2))
+                {
+                    $inv_input = 6;
+                }
+                
+                if (!isset($inv_input))
+                {
+                    $response = areCompliant($translate1, $translate2);
+                }
             }
         }
     }
 }
-
 
 ?>
 
@@ -78,7 +99,11 @@ if (!isset($inv_input)) {
 <img src="online-tst-validator.png" style="margin-bottom:15px; margin-top:-5px" />
 <div style="font-family:Arial; font-size:13pt; border:1px solid #111;background: #5696BC; border-radius:10px; width:100%;">
 <div style="padding:15px">
+
 <form method="post" action="index.php" style="margin-bottom:0px; padding-bottom:0px; font-size:8pt; color:#fff;text-shadow:1px 1px 3px #111">
+
+<input type="hidden" name="action" value="compliance">
+
 <table style="width:100%; font-size:8pt; padding:10px; color:#fff; text-shadow:1px 1px 3px #111">
 <tr><td style="width:49%;">
 Contract #1:<br />
@@ -135,7 +160,7 @@ Select an example:
   <!--<option value="external">External choice</option>
   <option value="recursion">Recursion</option>-->
 </select><br />
-<input type="submit" name="compliance" id="compliancebutton" value="CHECK COMPLIANCE" onclick="<?php 
+<input type="submit" name="compliance" id="compliancebutton" class="compliancebutton" value="CHECK COMPLIANCE" onclick="<?php 
 
 if(isset($_SERVER['HTTP_USER_AGENT'])){
     $agent = $_SERVER['HTTP_USER_AGENT'];
@@ -151,68 +176,92 @@ else
     echo "hourGlass();"; ?>" /></center>
 
 </form>
-<!-- <form method="POST" action="index.php">
-<input name="uploadedfile" type="file" />
-<input type="submit" value="Carica file" />
-</form> -->
+
+<h2>TST Dualizer</h2>
+<div style="margin-bottom:0px; padding-bottom:0px; font-size:8pt; color:#fff;text-shadow:1px 1px 3px #111">Type your contract here:</div>
+<form method="post" action="index.php">
+<input type="hidden" name="action" value="dual">
+<input type="text" name="contract" size="60">
+
+<input type="submit" class="compliancebutton" value="GET DUAL" />
+</form>
+
 </div>
 </div>
 <div style="margin:auto;margin-top:4px;font-size:8pt; color:#999; font-family:Arial">&copy 2015 Trustworthy Computational Societies, University of Cagliari.</div>
 <div style="margin:auto; width:100%; text-align:center; margin-top:20px">
 <div id="msgwrap" style="margin:auto; font-size:12pt; font-family:Arial">
+
+
 <?php
-    if (isset($response) && !isset($inv_input))
-    {
-        if (strpos($response,"Property is not satisfied") !== false)
-            echo "<div id=\"message\" class=\"message\" style=\"color:#FF0000\">The two contracts are not compliant!</div>";
-        else if (strpos($response,"Property is satisfied") !== false)
-            echo "<div id=\"message\" class=\"message\" style=\"color:#009933\">The two contracts are compliant!</div>";
-        else
-            echo "<div id=\"message\"  class=\"message\" style=\"color:#660066\">An error occured: check the log file.</div>";// (".htmlspecialchars($response).").</div>";
+
+    if ($flag == "dual" && $con!="") {
+
+        if (isset($dual_err)) {
+            echo "<div id=\"message\" class=\"message\" style=\"color:#FF0000\">".$dual_err."</div>";
+        }
+        else if ($dual_c_dual) {
+            echo    "<div id=\"message_\"  class=\"message\" style=\"color:#009933; text-align:left\">".
+                        "Contract: <span style=\"color:#000000; font-family:monospace; font-weight:normal\";>".$dual_c."</span></br>".
+                        "Compliant: <span style=\"color:#000000; font-family:monospace; font-weight:normal\";>".$dual_admit_compl."</span></br>".
+                        "Dual: <span style=\"color:#000000; font-family:monospace; font-weight:normal\";>".$dual_c_dual."</span>".
+                    "</div>";
+        }
     }
-    
-    if (isset($inv_input))
-    {   
-        if ($inv_input == 1) {
-            echo "<div id=\"error\" class=\"message\" style=\"color:#660066\">You've entered a prohibited symbol in your first contract!</div>";
-            
-            if ($pos > 10)
-                echo "<div id=\"errordet\" style=\"font-size:10pt; height:30px; font-weight:normal\" class=\"message\"><b>Error details</b>: the invalid symbol '<i>".substr($_POST['c1s'], $pos, 1)."</i>' can be found after '<i>".substr($_POST['c1s'], $pos-10, 10)."</i>'.</div>";
+    else if ($flag == "compliance") {
+        if (isset($response) && !isset($inv_input))
+        {
+            if (strpos($response,"Property is not satisfied") !== false)
+                echo "<div id=\"message\" class=\"message\" style=\"color:#FF0000\">The two contracts are not compliant!</div>";
+            else if (strpos($response,"Property is satisfied") !== false)
+                echo "<div id=\"message\" class=\"message\" style=\"color:#009933\">The two contracts are compliant!</div>";
             else
-                echo "<div id=\"errordet\" style=\"font-size:10pt; height:30px; font-weight:normal\" class=\"message\"><b>Error details</b>: the invalid symbol '<i>".substr($_POST['c1s'], $pos, 1)."</i>' can be found at the beginning of the contract.";
+                echo "<div id=\"message\"  class=\"message\" style=\"color:#660066\">An error occured: check the log file.</div>";// (".htmlspecialchars($response).").</div>";
         }
-        else if ($inv_input == 2)  {
-            echo "<div id=\"error\" class=\"message\" style=\"color:#660066\">You've entered a prohibited symbol in your second contract!</div>";
+        
+        if (isset($inv_input))
+        {   
+            if ($inv_input == 1) {
+                echo "<div id=\"error\" class=\"message\" style=\"color:#660066\">You've entered a prohibited symbol in your first contract!</div>";
+                
+                if ($pos > 10)
+                    echo "<div id=\"errordet\" style=\"font-size:10pt; height:30px; font-weight:normal\" class=\"message\"><b>Error details</b>: the invalid symbol '<i>".substr($_POST['c1s'], $pos, 1)."</i>' can be found after '<i>".substr($_POST['c1s'], $pos-10, 10)."</i>'.</div>";
+                else
+                    echo "<div id=\"errordet\" style=\"font-size:10pt; height:30px; font-weight:normal\" class=\"message\"><b>Error details</b>: the invalid symbol '<i>".substr($_POST['c1s'], $pos, 1)."</i>' can be found at the beginning of the contract.";
+            }
+            else if ($inv_input == 2)  {
+                echo "<div id=\"error\" class=\"message\" style=\"color:#660066\">You've entered a prohibited symbol in your second contract!</div>";
+                
+                if ($pos > 10)
+                    echo "<div id=\"errordet\" style=\"font-size:10pt; height:30px; font-weight:normal\" class=\"message\"><b>Error details</b>: the invalid symbol '<i>".substr($_POST['c2s'], $pos, 1)."</i>' can be found after '<i>".substr($_POST['c2s'], $pos-10, 10)."</i>'.</div>";
+                else
+                    echo "<div id=\"errordet\" style=\"font-size:10pt; height:30px; font-weight:normal\" class=\"message\"><b>Error details</b>: the invalid symbol '<i>".substr($_POST['c2s'], $pos, 1)."</i>' can be found at the beginning of the contract.";
+            }
+            else if ($inv_input == 3)
+                echo "<div id=\"error\" class=\"message\" style=\"color:#660066\">Why do you want to check compliance for empty contracts?</div>";
+            else if ($inv_input == 4)
+                echo "<div id=\"error\" class=\"message\" style=\"color:#660066\">Input too long, operation canceled.</div>";
+            else if ($inv_input == 5) {
             
-            if ($pos > 10)
-                echo "<div id=\"errordet\" style=\"font-size:10pt; height:30px; font-weight:normal\" class=\"message\"><b>Error details</b>: the invalid symbol '<i>".substr($_POST['c2s'], $pos, 1)."</i>' can be found after '<i>".substr($_POST['c2s'], $pos-10, 10)."</i>'.</div>";
-            else
-                echo "<div id=\"errordet\" style=\"font-size:10pt; height:30px; font-weight:normal\" class=\"message\"><b>Error details</b>: the invalid symbol '<i>".substr($_POST['c2s'], $pos, 1)."</i>' can be found at the beginning of the contract.";
+                echo "<div id=\"error\" class=\"message\" style=\"color:#660066\">There's a syntax error in your first string contract!</div>";
+                echo "<div id=\"errordet\" style=\"font-size:10pt; height:30px; font-weight:normal\" class=\"message\"><b>Error details</b>: ".errorFilter($translate1)."</div>";
+            }
+            else if ($inv_input == 6) {
+            
+                echo "<div id=\"error\" class=\"message\" style=\"color:#660066\">There's a syntax error in your second string contract!</div>";
+                echo "<div id=\"errordet\" style=\"font-size:10pt; height:30px; font-weight:normal\" class=\"message\"><b>Error details</b>: ".errorFilter($translate2)."</div>";
+            }
+            else if ($inv_input == 7) {
+            
+                echo "<div id=\"error\" class=\"message\" style=\"color:996600\">Your first contract is empty!</div>";
+            }
+            else if ($inv_input == 8) {
+            
+                echo "<div id=\"error\" class=\"message\" style=\"color:996600\">Your second contract is empty!</div>";
+            }
+            
+            unset($inv_input);
         }
-        else if ($inv_input == 3)
-            echo "<div id=\"error\" class=\"message\" style=\"color:#660066\">Why do you want to check compliance for empty contracts?</div>";
-        else if ($inv_input == 4)
-            echo "<div id=\"error\" class=\"message\" style=\"color:#660066\">Input too long, operation canceled.</div>";
-        else if ($inv_input == 5) {
-        
-            echo "<div id=\"error\" class=\"message\" style=\"color:#660066\">There's a syntax error in your first string contract!</div>";
-            echo "<div id=\"errordet\" style=\"font-size:10pt; height:30px; font-weight:normal\" class=\"message\"><b>Error details</b>: ".errorFilter($translate1)."</div>";
-        }
-        else if ($inv_input == 6) {
-        
-            echo "<div id=\"error\" class=\"message\" style=\"color:#660066\">There's a syntax error in your second string contract!</div>";
-            echo "<div id=\"errordet\" style=\"font-size:10pt; height:30px; font-weight:normal\" class=\"message\"><b>Error details</b>: ".errorFilter($translate2)."</div>";
-        }
-        else if ($inv_input == 7) {
-        
-            echo "<div id=\"error\" class=\"message\" style=\"color:996600\">Your first contract is empty!</div>";
-        }
-        else if ($inv_input == 8) {
-        
-            echo "<div id=\"error\" class=\"message\" style=\"color:996600\">Your second contract is empty!</div>";
-        }
-        
-        unset($inv_input);
     }
 ?>
 </div>

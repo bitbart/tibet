@@ -16,7 +16,7 @@ BODY
 {
     font-weight:bold; 
     margin:auto;
-    padding-top:15px;
+    padding:15px;
     margin-bottom:10px;
     border:1px dashed #777; 
     background: #f8f8f8;
@@ -24,10 +24,9 @@ BODY
     border-radius:10px;
     font-size:14pt; 
     width:700px; 
-    height:38px;
 } 
 
-#compliancebutton 
+.compliancebutton 
 {
     width:300px;
     height:50px; 

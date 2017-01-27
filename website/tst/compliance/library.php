@@ -5,59 +5,6 @@ function newLineFilter($string) {
     return str_replace(PHP_EOL, ' ', $string);
 }
 
-
-function translate_contract($input) {
-
-    $url = 'http://localhost:8080/middleware/api/translation/translate';
-    
-    //$params = array(
-    //                'firstContract' => str_replace(PHP_EOL, '', $input)
-    //            );
-    
-    $data = array("firstContract" => str_replace(PHP_EOL, '', $input));                                                                    
-    $params = json_encode($data); 
-    
-    $ch = curl_init( $url );
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-    curl_setopt( $ch, CURLOPT_POSTFIELDS, $params);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
-    'Content-Type: application/json',                                                                                
-    'Content-Length: ' . strlen($params))                                                                       
-    ); 
-    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
-    $result = curl_exec( $ch );
-    $array = json_decode($result, true);
-    
-    return $array["content"];
-}
-
-function areCompliant($c1, $c2) {
-    
-    $url = 'http://localhost:8080/middleware/api/compliance/areCompliant';
-            
-    $data = array(
-                    'firstContract' => str_replace(PHP_EOL, '', $c1),
-                    'secondContract' => str_replace(PHP_EOL, '', $c2)
-                );
-    
-    $params = json_encode($data); 
-    
-    $ch = curl_init( $url );
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-    curl_setopt( $ch, CURLOPT_POSTFIELDS, $params);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
-    'Content-Type: application/json',                                                                                
-    'Content-Length: ' . strlen($params))                                                                       
-    ); 
-    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
-    $result = curl_exec( $ch );
-    $array = json_decode($result, true);
-    
-    return $array["content"];
-}
-
 function hasErrors($contract) {
 
     if (strpos($contract, "<contract>") === false)
@@ -75,6 +22,136 @@ function errorFilter($string) {
     $s3 = str_replace("<xml><response type=\"error\">Fatal error: exception Failure(\"", "", $s2);
     
     return substr($s3, 9, strlen($s3) - 8);
+}
+
+function dualOf($contract) {
+
+    $url = 'http://co2.unica.it:8080/middleware/api/dualize/dualof';
+
+    $data = array(
+                    'firstContract' => str_replace(PHP_EOL, '', $contract)
+                );
+    $params = json_encode($data);
+
+    $ch = curl_init( $url );
+    curl_setopt( $ch, CURLOPT_POST, true);
+    curl_setopt( $ch, CURLOPT_POSTFIELDS, $params);
+    curl_setopt( $ch, CURLOPT_HTTPHEADER, array("Content-type: application/json"));
+    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true);
+
+    $json_response = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $response = json_decode($json_response,true);
+    return $response["content"];
+}
+
+
+
+function translate_contract($input) {
+
+    $url = 'http://co2.unica.it:8080/middleware/api/translation/translate';
+
+    $data = array(
+                    'firstContract' => str_replace(PHP_EOL, '', $input)
+                );
+
+    $params = json_encode($data);
+
+    $ch = curl_init( $url );
+    curl_setopt( $ch, CURLOPT_POST, true);
+    curl_setopt( $ch, CURLOPT_POSTFIELDS, $params);
+    curl_setopt( $ch, CURLOPT_HTTPHEADER, array("Content-type: application/json"));
+    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true);
+
+    $json_response = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $response = json_decode($json_response,true);
+    return $response["content"];
+}
+
+
+function areCompliant($c1, $c2) {
+
+    $url = 'http://co2.unica.it:8080/middleware/api/compliance/areCompliant';
+ 
+    $data = array(
+                    'firstContract' => str_replace(PHP_EOL, '', $c1),
+                    'secondContract' => str_replace(PHP_EOL, '', $c2)
+                );
+
+    $params = json_encode($data);
+
+    $ch = curl_init( $url );
+    curl_setopt( $ch, CURLOPT_POST, true);
+    curl_setopt( $ch, CURLOPT_POSTFIELDS, $params);
+    curl_setopt( $ch, CURLOPT_HTTPHEADER, array("Content-type: application/json"));
+    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true);
+
+    $json_response = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $response = json_decode($json_response,true);
+    return $response["content"];
+}
+
+
+function admitsCompliant($contract) {
+
+    $url = 'http://co2.unica.it:8080/middleware/api/dualize/admitsCompliant';
+
+
+    $data = array(
+                    'firstContract' => str_replace(PHP_EOL, '', $contract)
+                );
+    $params = json_encode($data);
+
+    $ch = curl_init( $url );
+    curl_setopt( $ch, CURLOPT_POST, true);
+    curl_setopt( $ch, CURLOPT_POSTFIELDS, $params);
+    curl_setopt( $ch, CURLOPT_HTTPHEADER, array("Content-type: application/json"));
+    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true);
+
+    $json_response = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $response = json_decode($json_response,true);
+    return $response["content"];
+}
+
+function kindOf($contract) {
+
+    $url = 'http://co2.unica.it:8080/middleware/api/dualize/kindof';
+
+
+    $data = array(
+                    'firstContract' => str_replace(PHP_EOL, '', $contract)
+                );
+    $params = json_encode($data);
+
+    $ch = curl_init( $url );
+    curl_setopt( $ch, CURLOPT_POST, true);
+    curl_setopt( $ch, CURLOPT_POSTFIELDS, $params);
+    curl_setopt( $ch, CURLOPT_HTTPHEADER, array("Content-type: application/json"));
+    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true);
+
+    $json_response = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $response = json_decode($json_response,true);
+    return $response["content"];
+
+}
+
+function startsWith($haystack, $needle) {
+
+    return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== FALSE;
 }
 
 ?>
