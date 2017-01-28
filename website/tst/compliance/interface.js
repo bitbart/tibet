@@ -1,5 +1,12 @@
-function checkSyntax1(contract)
+function checkSyntax1()
 {
+    var contract = encodeURIComponent(document.getElementById('c1s').value.trim());
+
+    if (!contract) {
+      document.getElementById("check1").innerHTML = "<img src='yes2.png' style='width:24px; height:24px; vertical-align:middle' />";
+      return;
+    }
+
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -12,11 +19,18 @@ function checkSyntax1(contract)
     }
     xmlhttp.open("POST", "check_syntax.php", true);
     xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-    xmlhttp.send("contract=" + encodeURIComponent(document.getElementById('c1s').value));
+    xmlhttp.send("contract=" + contract);
 }
 
-function checkSyntax2(contract)
+function checkSyntax2()
 {
+    var contract = encodeURIComponent(document.getElementById('c2s').value.trim());
+
+    if (!contract) {
+      document.getElementById("check2").innerHTML = "<img src='yes2.png' style='width:24px; height:24px; vertical-align:middle' />";
+      return;
+    }
+
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -29,7 +43,7 @@ function checkSyntax2(contract)
     }
     xmlhttp.open("POST", "check_syntax.php", true);
     xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-    xmlhttp.send("contract=" + encodeURIComponent(document.getElementById('c2s').value));
+    xmlhttp.send("contract=" + contract);
 }
 
 function clearSelect() 

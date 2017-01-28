@@ -112,18 +112,17 @@ else if ($flag == "compliance") {
         <textarea id="c1s" name="c1s" onkeyup="checkSyntax1();" onchange="checkSyntax1();clearSelect();fadeMyErrors();">
         <?php
 
-        if (!empty($_FILES['uploadedfile'])) 
-        {
-           echo htmlentities(file_get_contents($_FILES['uploadedfile']['tmp_name']) , ENT_QUOTES, 'UTF-8');
-        }
-        else if (isset($_POST['c1s']) && !isset($_POST['clearfirst']))
+        if (isset($_POST['c1s']) && !isset($_POST['clearfirst']))
         {
             echo htmlspecialchars($_POST['c1s']);
         }
 
         ?>
         </textarea><br>
-        <div style="height:16px; margin-top:4px;float:left"><span style="display:inline-block;height:100%; margin-right:2px">Syntax checking: </span><span id="check1"></span></div>
+        <div style="height:16px; margin-top:4px;float:left">
+            <span style="display:inline-block;height:100%; margin-right:2px">Syntax checking: </span><span id="check1"></span>
+        </div>
+
         <input type="submit" style="float:right; width:120px;margin-top:3px; border:1px solid #111; border-radius:3px; font-size:8pt; line-height:20px"  value="CLEAR" name="clearfirst" />
         </td><td style="width:2%"></td><td style="width:49%">
         Contract #2:<br />
@@ -137,7 +136,9 @@ else if ($flag == "compliance") {
 
         ?>
         </textarea><br>
-        <div style="height:16px; margin-top:4px;float:left"><span style="display:inline-block;height:100%; margin-right:2px">Syntax checking: </span><span id="check2"></span></div>
+        <div style="height:16px; margin-top:4px;float:left">
+            <span style="display:inline-block;height:100%; margin-right:2px">Syntax checking: </span><span id="check2"></span>
+        </div>
         <input style="width:120px; margin-top:3px; float:right; border:1px solid #111; border-radius:3px; font-size:8pt; line-height:20px" type="submit" value="CLEAR" name="clearsecond" />
         </td>
         </tr>
