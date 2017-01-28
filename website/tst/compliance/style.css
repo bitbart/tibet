@@ -4,6 +4,12 @@ BODY
     background:#e4e4e4;
 }
 
+H2 {
+    color: #eee;
+    font-variant: small-caps;
+    text-shadow: 2px 2px 4px #000;
+}
+
 #wrapper
 {
     margin:auto;

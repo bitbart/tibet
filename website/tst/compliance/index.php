@@ -98,95 +98,97 @@ else if ($flag == "compliance") {
  | <a href="../doc/index.html"><span style="color: #0066CC; margin-right:10px;margin-left:10px">Libraries documentation</span></a></div>
 <img src="online-tst-validator.png" style="margin-bottom:15px; margin-top:-5px" />
 <div style="font-family:Arial; font-size:13pt; border:1px solid #111;background: #5696BC; border-radius:10px; width:100%;">
-<div style="padding:15px">
+    <div style="padding:15px">
 
-<form method="post" action="index.php" style="margin-bottom:0px; padding-bottom:0px; font-size:8pt; color:#fff;text-shadow:1px 1px 3px #111">
+        <h2>Compliance Checker</h2>
+        
+        <form method="post" action="index.php" style="margin-bottom:0px; padding-bottom:0px; font-size:8pt; color:#fff;text-shadow:1px 1px 3px #111">
 
-<input type="hidden" name="action" value="compliance">
+        <input type="hidden" name="action" value="compliance">
 
-<table style="width:100%; font-size:8pt; padding:10px; color:#fff; text-shadow:1px 1px 3px #111">
-<tr><td style="width:49%;">
-Contract #1:<br />
-<textarea id="c1s" name="c1s" onkeyup="checkSyntax1();" onchange="checkSyntax1();clearSelect();fadeMyErrors();">
-<?php
+        <table style="width:100%; font-size:8pt; padding:10px; color:#fff; text-shadow:1px 1px 3px #111">
+        <tr><td style="width:49%;">
+        Contract #1:<br />
+        <textarea id="c1s" name="c1s" onkeyup="checkSyntax1();" onchange="checkSyntax1();clearSelect();fadeMyErrors();">
+        <?php
 
-if (!empty($_FILES['uploadedfile'])) 
-{
-   echo htmlentities(file_get_contents($_FILES['uploadedfile']['tmp_name']) , ENT_QUOTES, 'UTF-8');
-}
-else if (isset($_POST['c1s']) && !isset($_POST['clearfirst']))
-{
-    echo htmlspecialchars($_POST['c1s']);
-}
+        if (!empty($_FILES['uploadedfile'])) 
+        {
+           echo htmlentities(file_get_contents($_FILES['uploadedfile']['tmp_name']) , ENT_QUOTES, 'UTF-8');
+        }
+        else if (isset($_POST['c1s']) && !isset($_POST['clearfirst']))
+        {
+            echo htmlspecialchars($_POST['c1s']);
+        }
 
-?>
-</textarea><br>
-<div style="height:16px; margin-top:4px;float:left"><span style="display:inline-block;height:100%; margin-right:2px">Syntax checking: </span><span id="check1"></span></div>
-<input type="submit" style="float:right; width:120px;margin-top:3px; border:1px solid #111; border-radius:3px; font-size:8pt; line-height:20px"  value="CLEAR" name="clearfirst" />
-</td><td style="width:2%"></td><td style="width:49%">
-Contract #2:<br />
-<textarea id="c2s" name="c2s" onkeyup="checkSyntax2();" onchange="checkSyntax2();clearSelect();fadeMyErrors();">
-<?php
+        ?>
+        </textarea><br>
+        <div style="height:16px; margin-top:4px;float:left"><span style="display:inline-block;height:100%; margin-right:2px">Syntax checking: </span><span id="check1"></span></div>
+        <input type="submit" style="float:right; width:120px;margin-top:3px; border:1px solid #111; border-radius:3px; font-size:8pt; line-height:20px"  value="CLEAR" name="clearfirst" />
+        </td><td style="width:2%"></td><td style="width:49%">
+        Contract #2:<br />
+        <textarea id="c2s" name="c2s" onkeyup="checkSyntax2();" onchange="checkSyntax2();clearSelect();fadeMyErrors();">
+        <?php
 
-if (isset($_POST['c2s']) && !isset($_POST['clearsecond']))
-{
-    echo htmlspecialchars($_POST['c2s']);
-}
+        if (isset($_POST['c2s']) && !isset($_POST['clearsecond']))
+        {
+            echo htmlspecialchars($_POST['c2s']);
+        }
 
-?>
-</textarea><br>
-<div style="height:16px; margin-top:4px;float:left"><span style="display:inline-block;height:100%; margin-right:2px">Syntax checking: </span><span id="check2"></span></div>
-<input style="width:120px; margin-top:3px; float:right; border:1px solid #111; border-radius:3px; font-size:8pt; line-height:20px" type="submit" value="CLEAR" name="clearsecond" />
-</td>
-</tr>
-</table><br />
-<center>
-Select an example: 
-<select id="mainselect" style="border:1px solid #111; width:400px; margin-left:10px; margin-bottom:20px; margin-right:110px" onchange="fadeMyErrors();fillContracts();checkSyntax1();checkSyntax2();">
-  <option disabled selected>---</option>
-  <option value="zip1">Ex. zip code 1: not compliant</option>
-  <option value="zip2">Ex. zip code 2: not compliant</option>
-  <option value="ex2a">Ex. 2a  : compliant</option>
-  <option value="ex2b">Ex. 2b  : not compliant</option>
-  <option value="payPal1">Ex. 3 paypal short: compliant</option>
-  <option value="ex4">Ex. 4  : compliant</option>
-  <option value="ex5a">Ex. 5a  : not compliant</option>
-  <option value="ex5b">Ex. 5b  : compliant</option>
-  <option value="ex5c">Ex. 5c  : not compliant</option>
-  <option value="ex8">Ex. 8  :  compliant</option>
-  <option value="exP1">Ex. paypal full Alice:  compliant</option>
-  <option value="exP2">Ex. paypal full Bob:  compliant</option>
-  <option value="exP2">Ex. 11:  compliant</option>
-  <!--<option value="external">External choice</option>
-  <option value="recursion">Recursion</option>-->
-</select><br />
-<input type="submit" name="compliance" id="compliancebutton" class="compliancebutton" value="CHECK COMPLIANCE" onclick="<?php 
+        ?>
+        </textarea><br>
+        <div style="height:16px; margin-top:4px;float:left"><span style="display:inline-block;height:100%; margin-right:2px">Syntax checking: </span><span id="check2"></span></div>
+        <input style="width:120px; margin-top:3px; float:right; border:1px solid #111; border-radius:3px; font-size:8pt; line-height:20px" type="submit" value="CLEAR" name="clearsecond" />
+        </td>
+        </tr>
+        </table><br />
+        <center>
+        Select an example: 
+        <select id="mainselect" style="border:1px solid #111; width:400px; margin-left:10px; margin-bottom:20px; margin-right:110px" onchange="fadeMyErrors();fillContracts();checkSyntax1();checkSyntax2();">
+          <option disabled selected>---</option>
+          <option value="zip1">Ex. zip code 1: not compliant</option>
+          <option value="zip2">Ex. zip code 2: not compliant</option>
+          <option value="ex2a">Ex. 2a  : compliant</option>
+          <option value="ex2b">Ex. 2b  : not compliant</option>
+          <option value="payPal1">Ex. 3 paypal short: compliant</option>
+          <option value="ex4">Ex. 4  : compliant</option>
+          <option value="ex5a">Ex. 5a  : not compliant</option>
+          <option value="ex5b">Ex. 5b  : compliant</option>
+          <option value="ex5c">Ex. 5c  : not compliant</option>
+          <option value="ex8">Ex. 8  :  compliant</option>
+          <option value="exP1">Ex. paypal full Alice:  compliant</option>
+          <option value="exP2">Ex. paypal full Bob:  compliant</option>
+          <option value="exP2">Ex. 11:  compliant</option>
+          <!--<option value="external">External choice</option>
+          <option value="recursion">Recursion</option>-->
+        </select><br />
+        <input type="submit" name="compliance" id="compliancebutton" class="compliancebutton" value="CHECK COMPLIANCE" onclick="<?php 
 
-if(isset($_SERVER['HTTP_USER_AGENT'])){
-    $agent = $_SERVER['HTTP_USER_AGENT'];
-    
-    if(strlen(strstr($agent,"Firefox")) > 0 ){      
-    
-        echo "hourGlassFirefox();";
-    }
-    else
-        echo "hourGlass();";
-}
-else
-    echo "hourGlass();"; ?>" /></center>
+        if(isset($_SERVER['HTTP_USER_AGENT'])){
+            $agent = $_SERVER['HTTP_USER_AGENT'];
+            
+            if(strlen(strstr($agent,"Firefox")) > 0 ){      
+            
+                echo "hourGlassFirefox();";
+            }
+            else
+                echo "hourGlass();";
+        }
+        else
+            echo "hourGlass();"; ?>" /></center>
 
-</form>
+        </form>
 
-<h2>TST Dualizer</h2>
-<div style="margin-bottom:0px; padding-bottom:0px; font-size:8pt; color:#fff;text-shadow:1px 1px 3px #111">Type your contract here:</div>
-<form method="post" action="index.php">
-<input type="hidden" name="action" value="dual">
-<input type="text" name="contract" size="60">
+        <h2>TST Dualizer</h2>
+        <div style="margin-bottom:0px; padding-bottom:0px; font-size:8pt; color:#fff;text-shadow:1px 1px 3px #111">Type your contract here:</div>
+        <form method="post" action="index.php">
+        <input type="hidden" name="action" value="dual">
+        <input type="text" name="contract" size="60">
 
-<input type="submit" class="compliancebutton" value="GET DUAL" />
-</form>
+        <input type="submit" class="compliancebutton" value="GET DUAL" />
+        </form>
 
-</div>
+    </div>
 </div>
 <div style="margin:auto;margin-top:4px;font-size:8pt; color:#999; font-family:Arial">&copy 2015 Trustworthy Computational Societies, University of Cagliari.</div>
 <div style="margin:auto; width:100%; text-align:center; margin-top:20px">
@@ -201,10 +203,10 @@ else
             echo "<div id=\"message\" class=\"message\" style=\"color:#FF0000\">".$dual_err."</div>";
         }
         else if ($dual_c_dual) {
-            echo    "<div id=\"message_\"  class=\"message\" style=\"color:#009933; text-align:left\">".
+            echo    "<div id=\"message\"  class=\"message\" style=\"color:#009933; text-align:left\">".
                         "Contract: <span style=\"color:#000000; font-family:monospace; font-weight:normal\";>".$dual_c."</span></br>".
-                        "Compliant: <span style=\"color:#000000; font-family:monospace; font-weight:normal\";>".$dual_admit_compl."</span></br>".
-                        "Dual: <span style=\"color:#000000; font-family:monospace; font-weight:normal\";>".$dual_c_dual."</span>".
+                        "Dual: <span style=\"color:#000000; font-family:monospace; font-weight:normal\";>".$dual_c_dual."</span></br>".
+                        "<span style=\"color:#000000; font-family:monospace; font-weight:normal\";>".$dual_admit_compl."</span>".
                     "</div>";
         }
     }

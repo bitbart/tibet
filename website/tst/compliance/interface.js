@@ -179,7 +179,7 @@ $(document).ready(function() {
 )
 
 function fadeMyDiv() {
-   $("#message").fadeOut(1500);
+   $("#message").fadeOut(3000);
 }
 function fadeMyErrors() {
    $("#error").fadeOut(1000);
