@@ -91,11 +91,13 @@ else if ($flag == "compliance") {
 
 <body onload="checkSyntax1();checkSyntax2()">
 <div id="wrapper">
-<div style="font-family:Arial; font-size:8pt; margin-bottom:15px ">
-<a href="index.php"><span style="color: #0066CC; margin-right:10px" >Home</span></a> |
- <a href="../syntax_tutorial.pdf"><span style="color: #0066CC;margin-right:10px;margin-left:10px" >Brief tutorial (PDF)</span></a> |
- <a href="/downloads/co2api"><span style="color: #0066CC; margin-right:10px;margin-left:10px" >Download CO2 Libraries (JAR)</span></a> 
- | <a href="../doc/index.html"><span style="color: #0066CC; margin-right:10px;margin-left:10px">Libraries documentation</span></a></div>
+    <!--<div style="font-family:Arial; font-size:8pt; margin-bottom:15px ">
+        <a href="index.php"><span style="color: #0066CC; margin-right:10px" >Home</span></a> |
+        <a href="../syntax_tutorial.pdf"><span style="color: #0066CC;margin-right:10px;margin-left:10px" >Brief tutorial (PDF)</span></a> |
+        <a href="/downloads/co2api"><span style="color: #0066CC; margin-right:10px;margin-left:10px" >Download CO2 Libraries (JAR)</span></a> |
+        <a href="../doc/index.html"><span style="color: #0066CC; margin-right:10px;margin-left:10px">Libraries documentation</span></a>
+    </div>-->
+
 <img src="online-tst-validator.png" style="margin-bottom:15px; margin-top:-5px" />
 <div style="font-family:Arial; font-size:13pt; border:1px solid #111;background: #5696BC; border-radius:10px; width:100%;">
     <div style="padding:15px">
